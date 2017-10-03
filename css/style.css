@@ -123,8 +123,9 @@ body,
   height: 100%;
 }
 body {
-  background: url("/body.png");
+  background: url("/images/body.png");
   background-repeat: repeat;
+  background-attachment: fixed;
   font: 15px "Apple LiGothic Medium", "Microsoft JhengHei";
   -webkit-text-size-adjust: 100%;
 }
