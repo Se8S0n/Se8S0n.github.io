@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://Se8S0n.github.io.git/"/>
-  <updated>2017-10-04T01:41:51.931Z</updated>
+  <updated>2017-10-04T00:23:39.295Z</updated>
   <id>http://Se8S0n.github.io.git/</id>
   
   <author>
@@ -15,28 +15,6 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>A great Test!</title>
-    <link href="http://Se8S0n.github.io.git/2017/10/04/A-great-Test/"/>
-    <id>http://Se8S0n.github.io.git/2017/10/04/A-great-Test/</id>
-    <published>2017-10-03T16:03:35.000Z</published>
-    <updated>2017-10-04T01:41:51.931Z</updated>
-    
-    <content type="html"><![CDATA[<p>#This is an H1</p><h2 id="This-is-an-H2"><a href="#This-is-an-H2" class="headerlink" title="##This is an H2"></a>##This is an H2</h2><blockquote><p>这<br>是<br>引<br>言</p></blockquote><p>###This is  a table test</p><ol><li>Bird</li><li>McHale</li><li>Parish</li></ol>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;#This is an H1&lt;/p&gt;
-&lt;h2 id=&quot;This-is-an-H2&quot;&gt;&lt;a href=&quot;#This-is-an-H2&quot; class=&quot;headerlink&quot; title=&quot;##This is an H2&quot;&gt;&lt;/a&gt;##This is an H2&lt;/h2&gt;&lt;bl
-      
-    
-    </summary>
-    
-    
-  </entry>
   
   <entry>
     <title>Hello World</title>
