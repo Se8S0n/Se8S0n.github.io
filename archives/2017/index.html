@@ -20,6 +20,16 @@
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   
+  <script>
+    (function(){
+        if('{{ page.password }}'){
+            if (prompt('请输入文章密码') !== '{{ page.password }}'){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+  </script>
 </head>
 <body>
   <div id="container">
@@ -75,6 +85,25 @@
     <article class="archive-article archive-type-post">
   <div class="archive-article-inner">
     <header class="archive-article-header">
+      <a href="/2017/10/04/A-great-Test/" class="archive-article-date">
+  <time datetime="2017-10-03T16:03:35.000Z" itemprop="datePublished">10月 4</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2017/10/04/A-great-Test/">A great Test!</a>
+    </h1>
+  
+
+    </header>
+  </div>
+</article>
+  
+    
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
       <a href="/2017/09/29/hello-world/" class="archive-article-date">
   <time datetime="2017-09-29T05:52:10.639Z" itemprop="datePublished">9月 29</time>
 </a>
@@ -100,7 +129,6 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Se8S0n<br>
-      <a href="https://github.com/ken8203/hexo-theme-alberta" target="_blank">Alberta</a> by <a href="http://jaychung.tw" target="_blank">jaychung</a>. Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Thank <a href="http://subtlepatterns.com/" target="_blank">Subtlepatterns</a>
     </div>
   </div>
 </footer>

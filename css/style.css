@@ -100,6 +100,10 @@ td {
 a img {
   border: none;
 }
+body {
+  background: url("/body.png");
+  background-attachment: fixed;
+}
 input,
 button {
   margin: 0;
@@ -1046,7 +1050,7 @@ a.article-title:hover {
   text-decoration: none;
 }
 #page-nav a:hover {
-  background: #999;
+  background: color-black;
   color: #fff;
 }
 #page-nav .prev {
@@ -1280,8 +1284,4 @@ pre .javascript .function {
   .mobile-nav-link:hover {
     color: #fff;
   }
-}
-body {
-  background: url("/body.png");
-  background-attachment: fixed;
 }

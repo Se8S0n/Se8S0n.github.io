@@ -24,6 +24,16 @@
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   
+  <script>
+    (function(){
+        if('{{ page.password }}'){
+            if (prompt('请输入文章密码') !== '{{ page.password }}'){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+  </script>
 </head>
 <body>
   <div id="container">
@@ -87,7 +97,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/404.html" data-id="cj8bs40lv0000iovvior1g8w7" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/404.html" data-id="cj8cb7tge0000m8vv37xg0p12" class="article-share-link">Share</a>
       
       
     </footer>
@@ -105,7 +115,6 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Se8S0n<br>
-      <a href="https://github.com/ken8203/hexo-theme-alberta" target="_blank">Alberta</a> by <a href="http://jaychung.tw" target="_blank">jaychung</a>. Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Thank <a href="http://subtlepatterns.com/" target="_blank">Subtlepatterns</a>
     </div>
   </div>
 </footer>
