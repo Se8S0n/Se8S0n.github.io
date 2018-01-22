@@ -95,17 +95,34 @@ PyCharm 2017.2.3
 <li>因为电脑装VS之后出现了点问题，所以不能按照<a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="external">林智仁LIBSVM     python包的安装与使用</a>这个链接中64位机的解决方法。就直接用了翔翔发给我的libsvm.dll。将相关链接中的“用vs2013运行过的libsvm.dll”下载好直接放在C:\Windows\System32下即可。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631573/dll%E5%AD%98%E6%94%BE%E4%BD%8D%E7%BD%AE_iapklk.png" alt=""><br>  <strong>Tips</strong>：或者在Anaconda离线包的链接中下载，按照“林智仁LIBSVM python包的安装与使用”进行操作。当时在页面不能直接找到VS的Prompt快捷方式，打开D:\develop\Visual Studio\Common7\Tools\Shortcuts中的VS2013 x64 本机工具命令提示进行nmake操作。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631572/TIM%E5%9B%BE%E7%89%8720180122141218_qko6gg.png" alt=""></li>
 <li><p>直接将libsvm文件夹中python下的 svmutil.py和svm.py两个文件复制粘贴到D:\develop\Anaconda\Lib下</p>
 </li>
-<li><p>在python环境下测试是否安装成功<br>(1) 输入测试代码<br> from svmutil import *<br> y,x = svm_read_problem(‘../heart_scale’)<br> m = svm_train(y[:200], x[:200], ‘-c 4’)<br> p_label, p_acc, p_val = svm_predict(y[200:], x[200:], m)<br>(2) 测试代码结果输出：<br> optimization finished, #iter = 257<br> nu = 0.351161<br> obj = -225.628984, rho = 0.636110<br> nSV = 91, nBSV = 49<br> Total nSV = 91<br> Accuracy = 84.2857% (59/70) (classification)</p>
-</li>
+<li><p>在python环境下测试是否安装成功<br>(1) 输入测试代码</p>
+<pre><code>from svmutil import *
+y, x = svm_read_problem(&apos;../heart_scale&apos;)
+m = svm_train(y[:200], x[:200], &apos;-c 4&apos;)
+p_label, p_acc, p_val = svm_predict(y[200:], x[200:], m)
+</code></pre><p>(2) 测试代码结果输出：</p>
+<pre><code>optimization finished, #iter = 257
+nu = 0.351161
+obj = -225.628984, rho = 0.636110
+nSV = 91, nBSV = 49
+Total nSV = 91
+Accuracy = 84.2857% (59/70) (classification)
+</code></pre></li>
 </ol>
 <h2 id="libsvm使用方法-非常简易版本"><a href="#libsvm使用方法-非常简易版本" class="headerlink" title="libsvm使用方法-非常简易版本"></a>libsvm使用方法-非常简易版本</h2><ul>
-<li><p>svm_train函数<br>这里用的是彭亮视频中的例子<br>  from svmutil import *<br>  x = [[1,1], [2,0], [2,3]]<br>  y = [0, 0, 1]<br>  clf = svm_train(y, x, ‘-s 0 -t 0’)</p>
-</li>
-<li><p>相关参数解释说明<br>  x是特征向量<br>  (在这里，x必须是list或者是tuple，因为svm_train函数第二个参数传入时限定了，如果不是的话，会有报错）<br>  y是特征向量对应的标记<br>  clf是分类器<br>  ‘-s 0 -t 0’是option,详情请见<a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="external">LIBSVM详细介绍和使用方法</a></p>
-</li>
-<li><p>svm_predict函数</p>
-<p>  from svutil import *<br>  x = [[1,1], [2,0], [2,3]]<br>  y = [0, 0, 1]<br>  x1 = [[1,1], [2,0]]<br>  y1 = [0, 1]<br>  svm_predict(y1, x1, clf)</p>
-</li>
+<li>svm_train函数<br>这里用的是彭亮视频中的例子<pre><code>from svmutil import *
+x = [[1,1], [2,0], [2,3]]
+y = [0, 0, 1]
+clf = svm_train(y, x, &apos;-s 0 -t 0&apos;)
+</code></pre></li>
+<li>相关参数解释说明<br>  x是特征向量<br>  (在这里，x必须是list或者是tuple，因为svm_train函数第二个参数传入时限定了，如果不是的话，会有报错）<br>  y是特征向量对应的标记<br>  clf是分类器<br>  ‘-s 0 -t 0’是option,详情请见<a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="external">LIBSVM详细介绍和使用方法</a></li>
+<li>svm_predict函数<pre><code>from svutil import *
+x = [[1,1], [2,0], [2,3]]
+y = [0, 0, 1]
+x1 = [[1,1], [2,0]]
+y1 = [0, 1]
+svm_predict(y1, x1, clf)
+</code></pre></li>
 </ul>
 <h2 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h2><hr>
 <p>   <a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="external">林智仁LIBSVM python包的安装与使用</a><br>   <a href="https://anaconda.org/conda-forge/repo" target="_blank" rel="external">Anaconda离线包</a><br>   <a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="external">LIBSVM详细介绍和使用方法</a><br>   <a href="https://pan.baidu.com/s/1hthwNis" target="_blank" rel="external">用vs2013运行过的libsvm.dll 密码:aiu7</a><br>   <a href="https://pan.baidu.com/s/1htfuUNE" target="_blank" rel="external">libsvm-3.22 离线包 密码：gbpl</a></p>
