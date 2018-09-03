@@ -3,7 +3,7 @@
   
     
     <entry>
-      <title><![CDATA[HTTP系列(一)：客户端标识]]></title>
+      <title><![CDATA[HTTP系列(三)：客户端标识]]></title>
       <url>/2018/08/24/HTTP%E7%B3%BB%E5%88%97(%E4%B8%89)/</url>
       <content type="html"><![CDATA[<p>到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。</p>
 <p>你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。</p>
@@ -81,35 +81,34 @@
 <p>浏览器将Cookie信息储存在Cookie数据库中, 并在用户下次访问该页面或网站时返回Cookie。浏览器可以处理成千上万不同的cookie, 并且知道每一个cookie什么时候提供(给用户)。</p>
 <p>下面为(使用Cookie的)流程的示例。</p>
 <ol>
-<li>用户代理(User Agent) -&gt; 服务器 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">POST /acme/login HTTP/1.1</div><div class="line">[form data]</div></pre></td></tr></table></figure>
+<li><p>用户代理(User Agent) -&gt; 服务器 </p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">POST /acme/login HTTP/1.1</div><div class="line">[form data]</div></pre></td></tr></table></figure>
+<p> 用户(代理)通过表单输入的内容识别用户。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Set-Cookie2: Customer=&quot;WILE_E_COYOTE&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</div></pre></td></tr></table></figure>
+<p> 服务器向用户代理(浏览器)发送Set-Cookie2响应首部字段, 指示用户代理在cookie中写入用户相关信息。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">POST /acme/pickitem HTTP/1.1</div><div class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;</div><div class="line">[form data]</div></pre></td></tr></table></figure>
+<p> 用户将选择的物品添加到购物车中。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Set-Cookie2: Part_Number=&quot;Rocket_Launcher_0001&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</div></pre></td></tr></table></figure>
+<p> 购物车中添加了所选出物品。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">POST /acme/shipping HTTP/1.1</div><div class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;; </div><div class="line">        Part_Number=&quot;Rocket_Launcher_0001&quot;;</div><div class="line">[form data]</div></pre></td></tr></table></figure>
+<p> 用户选择送货方式。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Set-Cookie2: Shipping=&quot;FedEx&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</div></pre></td></tr></table></figure>
+<p> 产生新的Coookie中映射出送货方式。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">POST /acme/process HTTP/1.1</div><div class="line">Cookie: $Version=&quot;1&quot;;</div><div class="line">Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;;</div><div class="line">Part_Number=&quot;Rocket_Launcher_0001&quot;; $Path=&quot;/acme&quot;;</div><div class="line">Shipping=&quot;FedEx&quot;; $Path=&quot;/acme&quot;</div><div class="line">[form data]</div></pre></td></tr></table></figure>
 </li>
 </ol>
-<p>用户(代理)通过表单输入的内容识别用户。</p>
-<ol>
-<li>服务器 -&gt; 用户代理<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Set-Cookie2: Customer=&quot;WILE_E_COYOTE&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>服务器向用户代理(浏览器)发送Set-Cookie2响应首部字段, 指示用户代理在cookie中写入用户相关信息。</p>
-<ol>
-<li>用户代理 -&gt; 服务器<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">POST /acme/pickitem HTTP/1.1</div><div class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;</div><div class="line">[form data]</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>用户将选择的物品添加到购物车中。</p>
-<ol>
-<li>服务器 -&gt; 用户代理<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Set-Cookie2: Part_Number=&quot;Rocket_Launcher_0001&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>购物车中添加了所选出物品。</p>
-<ol>
-<li>用户代理 -&gt; 服务器<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">POST /acme/shipping HTTP/1.1</div><div class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;; </div><div class="line">        Part_Number=&quot;Rocket_Launcher_0001&quot;;</div><div class="line">[form data]</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>用户选择送货方式。</p>
-<ol>
-<li>服务器 -&gt; 用户代理<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Set-Cookie2: Shipping=&quot;FedEx&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</div><div class="line">``` </div><div class="line"></div><div class="line">产生新的Coookie中映射出送货方式。</div><div class="line"></div><div class="line">7. 用户代理 -&gt; 服务器</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>POST /acme/process HTTP/1.1<br>Cookie: $Version=”1”;<br>        Customer=”WILE_E_COYOTE”; $Path=”/acme”;<br>        Part_Number=”Rocket_Launcher_0001”; $Path=”/acme”;<br>        Shipping=”FedEx”; $Path=”/acme”<br>[form data]<br>```</p>
 <p>这就是完整的流程。</p>
 <p>有一点我必须要提醒你, Cookie并不是完美的。除开安全考虑, 还有一个问题, Cookie的使用会与REST架构风格发生冲突。</p>
 <p><em>注:发生冲突的原因可见文末的附加内容。若对<a href="https://www.infoq.com/articles/rest-anti-patterns" target="_blank" rel="external">英文版的完整解释</a>有兴趣的话, 可以点击打开。</em></p>
@@ -121,14 +120,19 @@
 <li><p>漫画内容翻译<br> A：让我们开始会议吧, 但是你要知道, 我会(在会议过程中)记录下你所有的欺凌行为。<br> B :emmmm, 我根本不是一个欺凌者, 但是你现在的确认偏误搞得像我在欺凌你一样, 这让我很难受。<br> A:可以请你重复一下你暗示我我是个妄想的女巫之后的内容吗？</p>
 </li>
 <li><p>Cookie与REST架构产生冲突的原因</p>
-</li>
-</ol>
 <blockquote>
 <p>One of the key ideas of REST is statelessness – not in the sense that a server can not store any data: it’s fine if there is resource state, or client state.</p>
 </blockquote>
+</li>
+</ol>
 <p>REST的主要思想是无状态, 无状态并不意味着服务器不能存储任何数据, 而是它只能用来存储资源状态、客户端状态。</p>
-<p>&gt;<br>The most typical use of cookies is to store a key that links to some server-side data structure that is kept in memory. This means that the cookie, which the browser passes along with each request, is used to establish conversational, or session, state.<br>&gt;<br>通常, cookie都被用来存储一个由服务器端发来的值, 该值最后存储于用户硬盘中。这就意味着, 浏览器随每个请求一起发送的cookie, 都是用于设定通信的状态或传送会话的状态。</p>
-<p>&gt;<br>If a cookie is used to store some information, such as an authentication token, that the server can validate without reliance on session state, cookies are perfectly RESTful<br>&gt;</p>
+<blockquote>
+<p>The most typical use of cookies is to store a key that links to some server-side data structure that is kept in memory. This means that the cookie, which the browser passes along with each request, is used to establish conversational, or session, state.</p>
+</blockquote>
+<p>通常, cookie都被用来存储一个由服务器端发来的值, 该值最后存储于用户硬盘中。这就意味着, 浏览器随每个请求一起发送的cookie, 都是用于设定通信的状态或传送会话的状态。</p>
+<blockquote>
+<p>If a cookie is used to store some information, such as an authentication token, that the server can validate without reliance on session state, cookies are perfectly RESTful </p>
+</blockquote>
 <p>假如cookie中存储了认证信息(例如token), 那么服务器不用验证会话状态就可直接登陆(账户), 此时使用cookie就会完全符合REST原则。</p>
 ]]></content>
       
