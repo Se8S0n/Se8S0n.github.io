@@ -18,7 +18,7 @@
 <meta property="og:image" content="https://code-maze.com/wp-content/uploads/2017/06/proxy-server-1.png">
 <meta property="og:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1534998705/HTTP/CacheFlow.png">
 <meta property="og:image" content="https://code-maze.com/wp-content/uploads/2017/06/Web-crawler.png">
-<meta property="og:updated_time" content="2018-08-24T04:38:51.027Z">
+<meta property="og:updated_time" content="2018-09-03T12:14:09.673Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTP系列(二):HTTP的结构体系">
 <meta name="twitter:description" content="在本系列的第一篇文章中, 我们探讨了HTTP的基本概念。有了(前面的)基础, 我们就可以开始HTTP结构体系的学习。 HTTP协议不仅仅只是用来发送和接收数据的。 实际上, HTTP协议本身是不能作为应用程序协议工作的, 但是因为它的基础结构是由硬件和软件组成, 软硬件协同工作提供了不同的服务, 这才能在万维网上实现有效的通信。 本文是HTTP系列文章的第二部分。 在本文中, 你可以了解到以下内容">
@@ -142,12 +142,13 @@
 <li><strong>压缩(Compression)</strong> —— 就是简单地利用压缩内容的方式加快通信速度。</li>
 <li><strong>监控(Monitoring)和过滤(filtering)</strong> —— 用代理服务器(进行监控和过滤)不失为一个阻止小学生访问成人网站好方法。🙂</li>
 <li><strong>安全(Security)</strong> —— 代理(服务器)可以作为整个网络的一个独立的入口点, 它们能够检测恶意软件和对应用层协议设限。</li>
-<li><strong>匿名性(Anonymity)</strong> —— 代理可以修改请求(报文)以提高匿名性, 它可以从请求中剥离敏感信息, 只留下重要的东西。尽管向服务器发送较少的信息会降低用户体验, 但是有时侯, 匿名性(比用户体验)更重要。</li>
+<li><strong>匿名性(Anonymity)</strong> —— 代理可以修改请求(报文)以提高匿名性, 它可以从请求中剥离敏感信息, 只留下重要的东西。尽管向服务器发送较少的信息会降低用户体验,<br>但是有时侯, 匿名性(比用户体验)更重要。</li>
 <li><strong>访问控制(Access control)</strong> —— 若要实现对多个服务器的访问控制, 集中管理单个代理服务器即可。</li>
-<li><strong>缓存(Caching)</strong> —— 使用代理服务器缓存常用的内容, 会大大降低加载速度。<em>注:这里的加载速度按照我自己的理解, 应该是如果存在缓存的话, 服务器需要先去加载缓存中的内容, 这会降低加载的速度</em></li>
+<li><strong>缓存(Caching)</strong> —— 使用代理服务器缓存常用的内容, 会大大降低加载速度。<em>注:这里的加载速度按照我自己的理解, 应该是如果存在缓存的话,<br>服务器需要先去加载缓存中的内容, 这会降低加载的速度</em></li>
 <li><strong>负载均衡(Load balancing)</strong> —— 如果服务达到性能的临界点, 你可以使用<a href="https://zhuanlan.zhihu.com/p/32854860" target="_blank" rel="external">负载均衡器</a>——负载均衡器是一种可均衡分配路由通信量的代理, 可避免在服务性能达到临界点时导致单个服务器超负荷——分配在资源或Web服务器中的负载。</li>
-<li><strong>转码(Transcoding)</strong> —— 代理服务器有修改报文主体的功能。<br>综上所述, 代理(服务器)有功能多样且可灵活使用的特点。</li>
+<li><strong>转码(Transcoding)</strong> —— 代理服务器有修改报文主体的功能。</li>
 </ul>
+<p>综上所述, 代理(服务器)有功能多样且可灵活使用的特点。</p>
 <h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>Web 缓存(系统)是一种可以自动复制请求报文数据并将其保存到本地存储中的设备。</p>
 <p>Web缓存的优点:</p>
 <ul>
@@ -182,7 +183,7 @@
 <p>不过, 鉴于万维网的庞大, 即使是有史以来最强大的爬虫, 也无法抓取整个网络的资源并编纂整个网络的索引。这就是爬虫使用<strong>选择策略(selection policy)</strong>抓取关联性最大的部分的原因。此外, 万维网经常发生动态变化, 因此爬虫必须用<strong>重新访问策略(freshness policy )</strong>去计算它们是否能再次访问网站。并且, 爬虫轻松覆盖整个服务器的资源时, 会采取发送过于快速和繁多的请求的举措, 因此爬虫会采取<strong>平衡礼貌策略(politeness policy)</strong>避免造成服务器不能正常使用。已知的大部分爬虫, 以低至20秒高至3-4分钟的时间间隔对服务器进行轮询, 避免使服务器上超载。</p>
 <p><em>注:重新访问策略其实就是为了避免资源过期, 爬虫进行确认的一个机制。</em></p>
 <p>你可能听说过神秘又邪恶的深网或暗网。但是, 深网(暗网)只是网络的一部分, 搜索引擎为了将(其中的)信息藏起来故意不把它们编入索引。</p>
-<p>##总结<br>这个链接是<a href="">HTTP系列</a>的目录及简介。相信你现在脑海中对HTTP工作流程已经有了更加清晰的概念, 学到了比(原本的)请求、响应、状态码更多的知识正是不同的软硬件结合的整体架构, 才让作为应用层协议的HTTP能够发挥出它的潜能。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个链接是<a href="">HTTP系列</a>的目录及简介。相信你现在脑海中对HTTP工作流程已经有了更加清晰的概念, 学到了比(原本的)请求、响应、状态码更多的知识正是不同的软硬件结合的整体架构, 才让作为应用层协议的HTTP能够发挥出它的潜能。</p>
 <p>我在这篇文章谈到的每个概念都很庞大, 大到足以用一篇文章甚至一本书来细细讲述。不过, 我只是想大概介绍一下概念, 这样你们就知道这些概念是如何搭配使用的, 方便你们之后查找相关内容。</p>
 <p>如果在阅读的过程中, 你发现有些内容解释得过于简短和不清晰并且没有看过我之前的文章, 你可以阅读这篇文章的<a href="">第一部分</a>和<a href="">HTTP指南</a>, 在这两篇文章中都有关于HTTP基本概念的概述。</p>
 <p>感谢你阅读本文, 敬请关注HTTP系列的<a href="">第三部分</a>, 我在这篇文章中讲述了服务器是如何识别客户端的。</p>
@@ -190,7 +191,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="cjl7ib6ep000328vvfrc5157t" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="cjlm90siy00037cvvg1vrri8y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -200,6 +201,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2018/08/24/HTTP系列(三)/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          HTTP系列(一)：客户端标识
+        
+      </div>
+    </a>
   
   
     <a href="/2018/06/19/HTTP系列(一)/" id="article-nav-older" class="article-nav-link-wrap">

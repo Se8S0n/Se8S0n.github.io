@@ -5,21 +5,21 @@
   
   <title>HTTP系列(一)：HTTP的基础概念概述 | Se8S0n</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言在网上看到这篇很棒的文章, 接下来会翻译HTTP系列。如果想看原文, 网站地址是:https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。在翻译这篇文章的过程中, 我也加深了对HTTP的认识。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP">
+  <meta name="description" content="前言在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译HTTP系列这篇文章。如果想阅读原文, 你可以访问这个网站: https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP协议?  如果你">
 <meta name="keywords" content="HTTP">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HTTP系列(一)：HTTP的基础概念概述">
 <meta property="og:url" content="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/index.html">
 <meta property="og:site_name" content="Se8S0n">
-<meta property="og:description" content="前言在网上看到这篇很棒的文章, 接下来会翻译HTTP系列。如果想看原文, 网站地址是:https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。在翻译这篇文章的过程中, 我也加深了对HTTP的认识。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP">
+<meta property="og:description" content="前言在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译HTTP系列这篇文章。如果想阅读原文, 你可以访问这个网站: https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP协议?  如果你">
 <meta property="og:locale" content="zh-cn">
 <meta property="og:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png">
 <meta property="og:image" content="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg">
 <meta property="og:image" content="https://cdn.crunchify.com/wp-content/uploads/2012/10/Crunchify.com-RESTful-Introduction.png">
-<meta property="og:updated_time" content="2018-08-23T04:01:39.930Z">
+<meta property="og:updated_time" content="2018-08-24T04:48:25.998Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTP系列(一)：HTTP的基础概念概述">
-<meta name="twitter:description" content="前言在网上看到这篇很棒的文章, 接下来会翻译HTTP系列。如果想看原文, 网站地址是:https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。在翻译这篇文章的过程中, 我也加深了对HTTP的认识。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP">
+<meta name="twitter:description" content="前言在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译HTTP系列这篇文章。如果想阅读原文, 你可以访问这个网站: https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP协议?  如果你">
 <meta name="twitter:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png">
   
   
@@ -90,8 +90,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在网上看到这篇很棒的文章, 接下来会翻译<a href="https://code-maze.com/http-series/" target="_blank" rel="external">HTTP系列</a>。<br>如果想看原文, 网站地址是:<a href="https://code-maze.com/" target="_blank" rel="external">https://code-maze.com/</a></p>
-<p>原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。在翻译这篇文章的过程中, 我也加深了对HTTP的认识。</p>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译<a href="https://code-maze.com/http-series/" target="_blank" rel="external">HTTP系列</a>这篇文章。<br>如果想阅读原文, 你可以访问这个网站: <a href="https://code-maze.com/" target="_blank" rel="external">https://code-maze.com/</a></p>
+<p>原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。</p>
 <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>本文会对HTTP的基础概念进行介绍。</p>
 <h2 id="为什么要学HTTP"><a href="#为什么要学HTTP" class="headerlink" title="为什么要学HTTP?"></a>为什么要学HTTP?</h2><p>你可能会问：为什么要了解HTTP协议? </p>
 <p>如果你是软件开发人员, 学习HTTP协议通信过程, 会让你知道怎么样才能写出更好的应用程序。<br>如果你是系统架构师或者是网络管理员, 学习HTTP通信过程, 会让你进一步学习复杂的网络体系结构设计。</p>
@@ -191,7 +191,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/" data-id="cjl7ib6ep000128vvuwq208gv" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/" data-id="cjlm90sih00017cvvn0z7nhvg" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
