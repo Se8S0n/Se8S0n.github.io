@@ -15,7 +15,7 @@
 <meta property="og:locale" content="zh-cn">
 <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Nonce-cnonce-uml.svg/345px-Nonce-cnonce-uml.svg.png">
 <meta property="og:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1536501208/HTTP/mim.png">
-<meta property="og:updated_time" content="2018-09-09T14:14:23.399Z">
+<meta property="og:updated_time" content="2018-09-09T14:18:58.044Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTP系列(四)：HTTP的基础概念概述">
 <meta name="twitter:description" content="在上一篇文章中, 我们讨论了网站用多种方法去标识浏览网站的用户(身份)。 标识本身仅仅表示一个声明, (用户通过声明)表明自己的身份, 然而除此之外, 并没有其他证据可以证明用户的身份。 认证, 用另一种方式来说, 就是用户证明自身身份的证据, 展示个人ID和输入用户密码是两种证明自身身份常见的方法。 通常情况下,只有通过认证, 网站才能为用户提供敏感资源。 HTTP自身拥有认证机制, 该机制允许">
@@ -165,14 +165,7 @@
 <p> 客户端发送不含认证(信息)的请求。</p>
 </li>
 <li><p>服务器 -&gt; 用户代理</p>
-<p> HTTP/1.0 401 Unauthorized<br> WWW-Authenticate: Digest realm=”shire@middleearth.com”,</p>
-<pre><code>qop=&quot;auth,auth-int&quot;,
-nonce=&quot;cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ&quot;,
-opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0cmluZw&quot;
-</code></pre><p> Content-Type: text/html<br> Content-Length: 153</p>
-<p> &lt;!DOCTYPE html&gt;</p>
- <html><br>   <head><br>     <meta charset="UTF-8"><br>     <title>Error</title><br>   </head><br>   <body><br>     <h1>401 Unauthorized.</h1><br>   </body><br> </html>
-
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">HTTP/1.0 401 Unauthorized</div><div class="line">WWW-Authenticate: Digest realm=&quot;shire@middleearth.com&quot;,</div><div class="line">                        qop=&quot;auth,auth-int&quot;,</div><div class="line">                        nonce=&quot;cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ&quot;,</div><div class="line">                        opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0cmluZw&quot;</div><div class="line">Content-Type: text/html</div><div class="line">Content-Length: 153</div><div class="line">&lt;--空行--!&gt;</div><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line">&lt;html&gt;</div><div class="line">  &lt;head&gt;</div><div class="line">    &lt;meta charset=&quot;UTF-8&quot; /&gt;</div><div class="line">    &lt;title&gt;Error&lt;/title&gt;</div><div class="line">  &lt;/head&gt;</div><div class="line">  &lt;body&gt;</div><div class="line">    &lt;h1&gt;401 Unauthorized.&lt;/h1&gt;</div><div class="line">  &lt;/body&gt;</div><div class="line">&lt;/html&gt;</div></pre></td></tr></table></figure>
 <p> 服务器对客户端发出质询, 要求其用digest认证进行认证, 并向客户端发送(认证时)所需的信息。</p>
 </li>
 <li><p>用户代理 -&gt; 服务器</p>
@@ -218,7 +211,7 @@ opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0cmluZw&quot;
 <h2 id="安全小讲堂"><a href="#安全小讲堂" class="headerlink" title="安全小讲堂"></a>安全小讲堂</h2><p>  在找相关知识的时候, 发现有一个人用了一个很通俗易懂的方式来讲密码学里面的知识, 感觉很有趣。今天来尝试一波。</p>
 <p>  假设小明和小兰互相不认识, 在老师严抓早恋的背景下, 俩人都学习了写情书的新姿势, 将自己写的文字加密并发出, 然后通过情书培养感情。小草也喜欢小兰, 为了阻(heng)止(dao)他(duo)们(ai), 采取了以下攻击方式。</p>
 <ol>
-<li><p>选择明文攻击<br> 小草很了解小兰(但没有学习过上面的新姿势), 知道小兰最爱在信里表示自己很”开心”, 所以信加密后出现最高频率的词, 这就是知道”开心”加密之后的密文是啥了。<br> ————已知密文。</p>
+<li><p>选择明文攻击<br> 小草很了解小兰(但没有学习过上面的新姿势), 知道小兰最爱在信里表示自己很”开心”, 所以信加密后出现最高频率的词, hexo这就是知道”开心”加密之后的密文是啥了。<br> ————已知密文。</p>
 <p> 如果有一天, 小兰写”开心”的次数变少了, 小草就可以找机会雪(chen)中(xu)送(er)炭(ru)了。</p>
 </li>
 <li><p>中间人攻击<br> 小明和小兰协商好, 在书信里面放入自己的信物表明自己的身份, 为了防止第三者做些乱七八糟的事情, 这个方式也是很明智了。但是未曾想, 小草在一开始协商信物的时候, 就窃取了他们的信物——这个信物就是公钥——并且将自己事先准备好的两个信物与小明和小兰原本的信物进行对调。</p>
@@ -231,7 +224,7 @@ opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0cmluZw&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="cjluxx7390006iwvvf5upexf1" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="cjluxy93t0006n4vv6u6whkuh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
