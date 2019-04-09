@@ -18,7 +18,7 @@
 <meta property="og:image" content="https://code-maze.com/wp-content/uploads/2017/06/proxy-server-1.png">
 <meta property="og:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1534998705/HTTP/CacheFlow.png">
 <meta property="og:image" content="https://code-maze.com/wp-content/uploads/2017/06/Web-crawler.png">
-<meta property="og:updated_time" content="2018-09-11T03:35:42.615Z">
+<meta property="og:updated_time" content="2019-03-23T02:44:44.986Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTP系列(二):HTTP的结构体系">
 <meta name="twitter:description" content="在本系列的第一篇文章中, 我们探讨了HTTP的基本概念。有了(前面的)基础, 我们就可以开始HTTP结构体系的学习。 HTTP协议不仅仅只是用来发送和接收数据的。 实际上, HTTP协议本身是不能作为应用程序协议工作的, 但是因为它的基础结构是由硬件和软件组成, 软硬件协同工作提供了不同的服务, 这才能在万维网上实现有效的通信。 本文是HTTP系列文章的第二部分。 文章概要:  Web服务器(We">
@@ -103,7 +103,7 @@
 <li><a href="">网关(Gateways), 隧道(Tunnels), 中继代理(Relays)</a></li>
 <li><a href="">网络爬虫(Web Crawlers)</a></li>
 </ul>
-<p>这些都是我们网络生活中不可分割的一部分, 接下来, 你可以(通过本文)全面地了解它们的用途及其工作形式。这些知识可以帮你把第一篇文章中的(知识)点串接起来, 使你更加熟悉HTTP通信过程。</p>
+<p>这些都是我们网络生活中不可分割的一部分, 接下来, 你可以(通过本文)全面地了解它们的用途及其工作形式。接下来学习的内容可以帮你把第一篇文章中的(知识)点串起来, 这样, 你就可以熟悉HTTP通信过程。</p>
 <p>那么, 让我们现在就开始学习吧！</p>
 <h2 id="Web服务器"><a href="#Web服务器" class="headerlink" title="Web服务器"></a>Web服务器</h2><p>正如第一篇文章所提到的, Web服务器的主要功能是存储资源并在接收请求后(按照请求)处理资源。通过Web客户端(又称为Web浏览器)用户可访问Web服务器, 并返回获取请求的资源或更改(资源的)现有的状态。访问Web服务器的操作, 通过网络爬虫, 也可以实现自动化, 相关内容我们会在文章后面进行深入的了解。<br><img src="https://code-maze.com/wp-content/uploads/2017/06/servers.jpg" alt=""><br>你所知道的最流行的服务器, 不外乎是Apache的HTTP 服务器、Nginx、<br>IIS、Glassfish…</p>
 <p>Web服务器可分为(使用)单种简单易用的软件或(使用)多种复杂的软件的服务器。 现代的Web服务器能够执行许多不同的任务, 其基本功能为:</p>
@@ -128,13 +128,13 @@
 <p>如果 Web 服务器接收到的是对(文件)路径的请求, 而不是对文件的请求, 服务器可以用以下几种方式处理请求:返回错误消息; 替代返回路径或遍历路径, 返回默认索引文件;返回带有(所请求)内容的HTML文件。</p>
 <p>服务器还可以将请求(报文)中的URI映射到动态资源上, 这些动态资源是由应用程序生成的。有一类服务器叫做应用程序服务器, 其功能就是管理动态资源, 它还能给Web服务器提供复杂的软件解决方案。</p>
 <h3 id="阶段-4：生成及发送响应"><a href="#阶段-4：生成及发送响应" class="headerlink" title="阶段 4：生成及发送响应"></a>阶段 4：生成及发送响应</h3><p>一旦服务器确定了需要所请求的资源, 它就会生成响应报文, 报文中包含状态码、响应首部字段, 若请求(报文)中需要的话还应有响应主体。</p>
-<p>如果存在响应主体, 那么该响应报文通常包含Content-Length和Content-Length两个首部字段——Content-Length描述主体大小, Content-Length描述返回资源的MIME类型。</p>
-<p>生成响应(报文)后, 服务器选择需要发送响应的客户端。对于非持久性连接(长期连接), 服务器需要在发送整个响应消息后关闭连接。</p>
+<p>如果存在响应主体, 那么该响应报文通常包含Content-Length和Content-Type两个首部字段——Content-Length描述主体大小, Content-Type描述返回资源的MIME类型。</p>
+<p>生成响应(报文)后, 服务器选择需要发送响应的客户端。对于非持久性(长期)连接, 服务器需要在发送整个响应消息后关闭连接。</p>
 <h3 id="阶段-5-记录事务"><a href="#阶段-5-记录事务" class="headerlink" title="阶段 5:记录事务"></a>阶段 5:记录事务</h3><p>服务器在事务完成后将记录文件中的所有事务信息, 大部分的服务器都采用自定义的方式记录日志。</p>
-<h2 id="代理服务器"><a href="#代理服务器" class="headerlink" title="代理服务器"></a>代理服务器</h2><p>代理服务器 (代理) 是的中间服务器, 通常位于Web服务器和Web客户端之间, 因为这个性质, 代理服务器需要具有与Web客户端和Web服务器两者相同的行为(功能)。</p>
-<p>不过, 为什么要用代理服务器呢？我们为什么不直接用Web客户端和Web服务器进行通信？这难道不是更加简单快速吗？</p>
-<p>当然, (直接利用Web客户端和Web服务器)是操作起来是很简单, 不过说到速度快, 那就未必了。接下来, 我们会解释原因的。</p>
-<p>在解释什么是代理服务器之前, 我们先要解决一个问题, 那就是什么是<strong>反向代理服务器(reverse proxy)</strong>, 或者说(探究) <strong>正向代理(forward proxy)</strong>和<strong>反向代理( reverse proxy)</strong>有什么区别。</p>
+<h2 id="代理服务器"><a href="#代理服务器" class="headerlink" title="代理服务器"></a>代理服务器</h2><p>代理服务器 (代理) 是的中间服务器, 通常位于Web服务器和Web客户端之间, 因其性质, 代理服务器需要兼并Web客户端和Web服务器的功能。</p>
+<p>不过, 为什么要用代理服务器呢？为什么不直接用Web客户端和Web服务器进行通信？这难道不是更加简单快速吗？</p>
+<p>当然, (直接利用Web客户端和Web服务器)操作起来是很简单, 不过说到速度快, 那就未必了。接下来, 我们会了解原因的。</p>
+<p>在解释什么是代理服务器之前, 我们先要搬开一块大石头, 那就是<strong>反向代理服务器(reverse proxy)</strong>的概念。 换句话来说就是知道 <strong>正向代理(forward proxy)</strong>和<strong>反向代理( reverse proxy)</strong>有什么区别。</p>
 <p>正向代理负责向Web服务器请求资源, 并将资源返回到客户端。除此之外, 正向代理还能通过防火墙过滤请求或隐藏客户端信息来维护客户端的安全。而反向代理的工作方式(与正向代理)完全相反, 它通常位于防火墙之后来保护 Web 服务器。所有客户端已知其通信对象是实际的Web服务器, 但却了解反向代理背后的(Web服务器所处的)网络。</p>
 <h3 id="代理服务器-1"><a href="#代理服务器-1" class="headerlink" title="代理服务器"></a>代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server.png" alt=""></p>
 <h3 id="反向代理服务器"><a href="#反向代理服务器" class="headerlink" title="反向代理服务器"></a>反向代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server-1.png" alt=""><br>代理(服务器)非常有用并且应用十分广泛。接下来, 让我们来了解一下代理服务器的功能。</p>
@@ -191,7 +191,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="cjnrd1zed0008lwvv3ibbc6tn" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="cju9ru7c20004q0vvvylycz1y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -229,7 +229,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2018 Se8S0n<br>
+      &copy; 2019 Se8S0n<br>
     </div>
   </div>
 </footer>

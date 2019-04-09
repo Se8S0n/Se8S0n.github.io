@@ -3,19 +3,160 @@
   
     
     <entry>
-      <title><![CDATA[HTTP指南]]></title>
-      <url>/2018/09/17/HTTP%E6%8C%87%E5%8D%97/</url>
-      <content type="html"><![CDATA[<p>本文为HTTP系列文章的参考内容。在需要快速查询HTTP状态码的含义时, 你可以在这份指南中找到你想要的。不过, 这其实是我为了偷懒写的文章, 毕竟这些东西还是要熟记于心的。无论如何, 希望这份指南能帮到你。</p>
-<p>文章概要:</p>
-<ul>
-<li><a href="">请求方法</a></li>
-<li><a href="">状态码</a></li>
-<li><a href="">首部字段(头部, Headers)</a></li>
-<li><a href="">MIME类型</a></li>
-</ul>
-<p>HTTP请求方法列表(动词)。</p>
-<h4 id="请求方法"><a href="#请求方法" class="headerlink" title="请求方法"></a>请求方法</h4>]]></content>
+      <title><![CDATA[用Android通讯APP发消息发现的BUG]]></title>
+      <url>/2019/03/31/%E7%94%A8Android%E9%80%9A%E8%AE%AFAPP%E5%8F%91%E6%B6%88%E6%81%AF%E5%8F%91%E7%8E%B0%E7%9A%84BUG/</url>
+      <content type="html"><![CDATA[<h1 id="用Android通讯APP发消息发现的BUG"><a href="#用Android通讯APP发消息发现的BUG" class="headerlink" title="用Android通讯APP发消息发现的BUG"></a>用Android通讯APP发消息发现的BUG</h1><hr>
+<p>原文地址:<a href="https://googleprojectzero.blogspot.com/2019/03/android-messaging-few-bugs-short-of.html" target="_blank" rel="external">https://googleprojectzero.blogspot.com/2019/03/android-messaging-few-bugs-short-of.html</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>大概一年半以前, 我对 Android的通讯和邮件客户端进行了一些测试。当时, 在这些客户端中发现了一些bug, 然而没能把这些bug组合成有效的攻击链, 所以没有将成果发到博客上。不过, 和当初想公布研究成果的想法不同, 我现在决定将研究成果分享出来。毕竟, 了解(客户端的)设计上的抉择会对安全造成什么影响, 也是一件有趣的事情。</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>在研究过程中, 对Messages (Android默认的短信客户端)、 Android上的Gmail客户端、 微软 Outlook, Facebook Messenger, WhatsApp、 Signal和Telegram这些是Google Play上最流行的通讯和邮件客户端进行了测试。</p>
+<h2 id="通讯客户端说明-体系结构、攻击面、测试方法"><a href="#通讯客户端说明-体系结构、攻击面、测试方法" class="headerlink" title="通讯客户端说明(体系结构、攻击面、测试方法)"></a>通讯客户端说明(体系结构、攻击面、测试方法)</h2><p>从高层次上看, 通讯客户端具有类似的体系结构, 其功能是与服务器进行通讯, 负责定位要与用户通讯的收件人, 通常还要保留通讯过程中的session。消息需要通过服务器, 再由服务器直接发给收件人, 支持端到端加密的客户端可以将消息用某种信封加密技术密封起来。</p>
+<p>不同客户端使用的通讯协议是不一样的, 尽管如此, Facebook Messenger、WhatsApp 和 Telegram 还是有相似的地方的, 这些客户端通讯协议都是采用分层方法实现的, 使用该方法发送的消息可以在一个层次结构包含类型不同的字段。 Telegram使用的<a href="https://core.telegram.org/schema" target="_blank" rel="external">通讯协议</a>是公开的, 用它发送出的一条消息就同时包含了发送给服务器端和接收者的信息。</p>
+<p>一开始，我从Facebook messenger处理未加密信息的方式入手, 没想到, 这个攻击思路颇具挑战性。发送消息的协议(如mobile和 WEB API)有挺多可以用的, 再加上在目标设备接收到消息之前消息还会经过大量处理, 这两点大大提升了找到客户端中可攻击点的难度。因此, 我决定将重点放在加密后的消息上, 因为服务器不能过滤这些邮件。</p>
+<p>我没有 Facebook Messenger和 WhatsApp 的源码, 所以我只能用apktool从这些应用的APK文件中提取出smali代码来进行分析。Signal协议的普及简化了找这些应用程序的加密部分的步骤, 因为可以直接在 libsignal 中搜索字符串。之后, 我添加了一个发送消息的函数， 将消息发送到我的服务器上, 该函数还允许在加密之前对消息进行更改的选项, 这样我就可以用格式错误的加密消息来进行测试。</p>
+<p>比起上面两个客户端, 测试邮件和SMS客户端会显得稍微容易些。在测试SMS客户端时, 我调用了<a href="https://developer.android.com/reference/android/telephony/SmsManager.html#sendDataMessage(java.lang.String,%20java.lang.String,%20short,%20byte%5B%5D,%20android.app.PendingIntent,%20android.app.PendingIntent" target="_blank" rel="external">sendDataMessage</a> API发送原始的SMS 消息。而在测试邮件客户端时, 可以直接使用 SMTP 服务器发送 MIME 邮件。</p>
+<h2 id="研究结果提要"><a href="#研究结果提要" class="headerlink" title="研究结果提要"></a>研究结果提要</h2><p>有一点需要注意一下, 这些结果已超过一年, 并且通讯app的客户端的代码已有较大改动, 因此现在测试结果可能会有所不同。本文中提及漏洞均已修复。</p>
+<h3 id="Messages"><a href="#Messages" class="headerlink" title="Messages"></a>Messages</h3><p>Android默认的Messages客户端主要是用 Java写的, 使用 AOSP SMS和MMS来解析消息。因此, Messages几乎不存在内存损坏漏洞。不过Android 会以不同的方式处理一些特殊的 SMS 消息, 解析这些特殊SMS消息有可能会产生漏洞。某些特殊的消息会被被解析为符合可视化语音信箱的<a href="http://www.omtp.org/OMTP_VVM_Specification_v1_3_Final.pdf" target="_blank" rel="external">OMTP</a>规范的信息, 而处理这些消息的过程以及可视化语音信箱的IMAP功能是 Java 实现的。在过去，Android曾经支持SUPL协议(用于 GPS 星历更新的 SMS 协议)在用户空间中解析, 并且进行解析工作的intent对象是存储在 SMS客户端堆栈中。但是, 现在高通的基带就可以直接处理这些消息, 因此处理过程不会在新的设备上的用户空间中进行。Messages客户端中存在的漏洞的主要是由处理媒体文件的库引发的, 过去大多漏洞都是在这些组件中发现的, 然而与之前相比，最近爆出的这样的漏洞少多了,再加上media是由低特权进程处理的。所以，目前我没有在Messages中发现任何漏洞。</p>
+<h3 id="Gmail"><a href="#Gmail" class="headerlink" title="Gmail"></a>Gmail</h3><p>Gmail 应用程序可处理由IMAP、POP 或其他服务器发出的 MIME 消息, 这些消息的内容通常直接由非Gmail用户发出, 不过Gmail的邮件服务器还是能过滤掉一些邮件的。Gmail的客户端会调用AOSP 中的实现邮件协议底层API, 这些API和Gmail的客户端都是用Java实现的。在Gmail的客户端中, 我发现了一个由附件上传引发的目录遍历的<a href="https://bugs.chromium.org/p/project-zero/issues/detail?id=1342" target="_blank" rel="external">bug</a>。</p>
+<h3 id="Outlook"><a href="#Outlook" class="headerlink" title="Outlook"></a>Outlook</h3><p>微软 Outlook 客户端的功能和Gmail的差不太多, 同样会处理另一台服务器发送的 MIME消息, 但其所有协议的处理过程都是由客户端中的代码完成的。Outlook主要是用 Java写的, 其中的native的功能和邮件本身没多大关系。和在Gmail中一样，Outlook也存在着相似<a href="https://bugs.chromium.org/p/project-zero/issues/detail?id=1356" target="_blank" rel="external">目录遍历漏洞</a>。</p>
+<h3 id="Facebook-Messenger"><a href="#Facebook-Messenger" class="headerlink" title="Facebook Messenger"></a>Facebook Messenger</h3><p>与我测试的其他通讯客户端相比, Facebook messenger 的工程量挺大的了, 很多代码很难明确其功能。该应用中包含大量的native库, 几乎每天都要从 Facebook 服务器重新加载数据动态更新。不过, 这些库好像很少直接参与消息的处理。</p>
+<p>Facebook Messenger使用一种叫 “消息队列遥测传输 (<a href="http://mqtt.org/" target="_blank" rel="external">MQTT</a>)” 的协议与服务器进行通信——MQTT 的底层是开源的<a href="https://github.com/facebook/fbthrift/tree/master/thrift/lib/java/thrift/src/main/java/com/facebook/thrift/protocol" target="_blank" rel="external">Thrift协议</a>。应用中实现该协议的有Java 和 c++ 两种的库, 但好像只用了 Java 的库。我检查了协议相关代码, 没有发现Facebook Messenger的漏洞。</p>
+<h3 id="WhatsApp"><a href="#WhatsApp" class="headerlink" title="WhatsApp"></a>WhatsApp</h3><p>WhatsApp 使用的分层协议主要是用 Java 实现的，该应用处理语音和视频呼叫请求的消息代码是在native代码中实现的, 我在我写的<a href="https://googleprojectzero.blogspot.com/2018/12/adventures-in-video-conferencing-part-4.html" target="_blank" rel="external">一篇文章</a>中讨论了相关内容。目前，我没有在 WhatsApp发现任何漏洞。</p>
+<h3 id="Telegram"><a href="#Telegram" class="headerlink" title="Telegram"></a>Telegram</h3><p>Telegram是<a href="https://github.com/DrKLO/Telegram" target="_blank" rel="external">开源</a>的, 其 API代码是公开的。其中有相当多的native代码, 但该部分代码主要用于设备到服务器通信, 而不是端对端通信。因此，远程攻击者可用的攻击面几乎都在 Java 中。在Telegram中, 我发现了一个<a href="https://bugs.chromium.org/p/project-zero/issues/detail?id=1470" target="_blank" rel="external">bug</a>, 同样是一个与附件相关的目录遍历漏洞。</p>
+<h3 id="Signal"><a href="#Signal" class="headerlink" title="Signal"></a>Signal</h3><p>Signal主要由 Java实现, 攻击面相当小。虽然, 它使用的通讯协议有很好的文档记录。但是, 我没有在其中的任何漏洞。</p>
+<h2 id="漏洞影响"><a href="#漏洞影响" class="headerlink" title="漏洞影响"></a>漏洞影响</h2><p>总的来说, 我在这些客户端中一共发现了三个目录遍历漏洞。这些漏洞惊人地相似, 都与附件名有关，是由附件在下载时允许附件名包含特殊字符造成的。目录遍历问题在 Android 应用中非常常见,造成该漏洞的部分原因应该是 Java API 在文件名方面处理得不够严谨。</p>
+<p>不过, 这些漏洞具有局限性。首先, Gmail 和 Outlook 邮件客户端中的bug仅在客户端与非标准电子邮件地址一起使用时才起作用 (即 Gmail 与非 Gmail 帐户一起使用, 或者 Outlook 与非 outlook 电子邮件地址一起使用)。虽然，Gmail 和 Outlook 邮件客户端都经常与非标准电子邮件地址一起使用, 但这些漏洞不会影响每个用户。并且想要利用这些漏洞， 还需要用户进行下载附件的操作。</p>
+<p>该漏洞的利用还有一些限制条件。比如, 想要利用这些漏洞不能覆盖存在的文件, 只能往里面写入新文件。因此, 攻击者需要在某个地方放置系统可以处理但不存在的文件。但Android 上的应用程序权限有限, 通常不能在其应用程序目录之外写入。</p>
+<p>上面失败之后,又有了一个绝妙的idea进入到我脑子里, 通过利用SQLite 中漏洞实现攻击, 因为Gmail 和 Outlook 都使用 SQLite 数据库来存储数据。SQLite 支持日志记录, 这意味着当 SQLite 数据库发生更改时, 会先写到日志文件里面, 防止在写入过程中系统崩溃或断电时数据库的数据丢失。如果发生系统崩溃或断电的情况, 在下次访问数据库时，就会存在一个保存着更改信息日志文件, 这时SQLite就知道要还原已更改信息。一旦信息还原完成, 日志文件就会被删除。这意味着, 可以通过在同一目录下写入具有特定名称的日志文件来更改SQLite数据库, 也满足此文件在一般情况下不存在的条件。</p>
+<p>我尝试过这个方法, 并且更改了数据库, 但只能改变用户在应用中看到的邮件, 不能进行提权或执行非法操作。为了寻找更通用的方法, 我想到了可以从SQLite 解析日志文件或数据库文件的方式下手。</p>
+<p>Telegram的漏洞有可能直接利用, 因为恰好有一个默认情况下不存在的配置文件, 如果该配置文件存在的话， Telegram可对处理该配置文件, 并且在处理代码中会引发一个内存损坏漏洞。不过, 我找不到一个可实现该攻击方法的邮件客户端。</p>
+<p>上面失败之后,又有了一个绝妙的idea进入到我脑子里, 通过利用SQLite 中漏洞实现攻击, 因为Gmail 和 Outlook 都使用 SQLite 数据库来存储数据。SQLite 支持日志记录, 这意味着当 SQLite 数据库发生更改时, 会先写到日志文件里面, 防止在写入过程中系统崩溃或断电时数据库的数据丢失。如果发生系统崩溃或断电的情况, 在下次访问数据库时，就会存在一个保存着更改信息日志文件, 这时SQLite就知道要还原已更改信息。一旦信息还原完成, 日志文件就会被删除。这意味着, 可以通过在同一目录下写入具有特定名称的日志文件来更改SQLite数据库, 也满足此文件在一般情况下不存在的条件。</p>
+<p>我尝试过这个方法, 并且更改了数据库, 但只能改变用户在应用中看到的邮件, 不能进行提权或执行非法操作。为了寻找更通用的方法, 我想到了可以从SQLite 解析日志文件或数据库文件的方式下手。</p>
+<p>我用 AFL 对数据库的加载和日志处理进行了Fuzzing测试。我发现<a href="https://sqlite.org/src/info/02828d717e2d97b1" target="_blank" rel="external">四个漏洞</a>, 其中三个我认为是不可利用的, 剩下一个利用的可能性非常小。</p>
+<p>我找不到更多的方法来利用目录遍历, 因为不能覆盖 Android 应用程序中的文件, 所以我不认为这些目录遍历漏洞对攻击者来说会特别有价值。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我测试了几个 Android 通讯和邮件客户端，发现了三个目录遍历的漏洞, 但这些漏洞的利用存在一些限制, 现在还不清楚在一般情况下这些漏洞能否被利用。</p>
+<p>这些漏洞非常相似, 箭头直指Android中 Java未能正确处理文件路径方面的问题。仅在客户端与非标准电子邮件地址一起使用时, 邮件客户端中的两个漏洞才能被成功利用，尽管这种应用场景非常常见。漏洞的产生可能是邮件客户端的功能测试不足或审查不足造成的。大部分通讯客户端是用 Java 实现的, 这就增加了在应用程序中找到bug的难度, 因为不能利用内存损坏漏洞进行攻击。</p>
+<p>这项研究的着重点是未经过中间件处理的邮件和消息, 攻击者可以利用这个bug向接收者发送任意数据, 客户端不会对小心进行过滤且会对数据直接进行处理。虽然这些漏洞利用起来很容易, 但它们只是消息或邮件客户端攻击面中的一部分。在将来，我很可能会投入到通讯客户端的中介服务器的功能的研究中去。</p>
+]]></content>
       
+        
+        <tags>
+            
+            <tag> Android安全 翻译 </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[尝试绕过TracerPID反调试]]></title>
+      <url>/2019/03/14/%E5%B0%9D%E8%AF%95%E7%BB%95%E8%BF%87TracerPID%E5%8F%8D%E8%B0%83%E8%AF%95/</url>
+      <content type="html"><![CDATA[<h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="Windows下Linux环境准备"><a href="#Windows下Linux环境准备" class="headerlink" title="Windows下Linux环境准备"></a>Windows下Linux环境准备</h2><ol>
+<li><p>安装<a href="http://www.mingw.org/" target="_blank" rel="external">MinGW</a>, 在官网下好之后, 右键按下图选中要下载的，之后直接在<code>Installation</code>中直接选中<code>Apply change</code>即可。</p>
+<p> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552553170/aa_catmea.png" alt=""></p>
+</li>
+<li><p>进入安装目录<code>&lt;MinGW安装的地方&gt;\MinGW\bin</code>, 将<code>gcc.exe</code>重命名为<code>cc.exe</code>, 就短暂地这样改就好了，之后用完make工具再改回来。反正我没找到哪里可以改Makefile的内容(小辣鸡)。不这样修改的话会出现如下报错：</p>
+<p> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552554377/boerror_ltdeqw.png" alt=""></p>
+<p> 具体原因好像是MinGW的bug, 在Linux环境下一般gcc是等同于cc的, 然而在Windows中却不是这样的, 如果有人找到Makefile的内容可以在哪里改的话, 可以告诉我=v=, 虽然下面并没有可以评论的地方。</p>
+<p> <em>注：还有千万别学人家瞎改名, 把<code>mingw-make.exe</code>改成<code>make.exe</code>直接用, 这样也会报错哒！</em></p>
+<h2 id="准备boot"><a href="#准备boot" class="headerlink" title="准备boot"></a>准备boot</h2></li>
+<li><p>提取boot.img </p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">C:\Users\[your username]&gt;adb shell</div><div class="line">shell@hammerhead:/ $ su</div><div class="line">root@hammerhead:/ # cd /dev/block/platform/msm_sdcc.1/by-name</div><div class="line">root@hammerhead:/dev/block/platform/msm_sdcc.1/by-name # ls -al</div></pre></td></tr></table></figure>
+<p> 输入以上命令即可找到boot的位置。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552572141/boposition_jqxant.png" alt=""></p>
+<p> 将boot导出成boot.img。这里一定要注意, 要按照你自己的情况将boot导出, 要修改<code>if=/dev/block/[实际boot文件夹名]</code>。<br> <code>dd if=/dev/block/mmcblk0p19 of=/data/local/boot.img</code><br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552640930/bocorrect_whui56.png" alt=""></p>
+<p> 重新开一个命令行页面，或直接<code>exit</code>退出，输入如下指令：<br> <code>adb root pull /data/local/boot.img boot.img</code></p>
+<p> 这里加了一个root是因为之前直接pull的时候说我权限不够。加了root之后发现还是一直失败, 就尝试先将boot.img存到<code>/sdcard/Download</code>下面之后直接用pull指令就成功了。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@hammerhead:/sdcard/Download$ su</div><div class="line">root@hammerhead:/sdcard/Download# cp /data/local/boot.img /sdcard/Download/boot.img </div><div class="line">root@hammerhead:/sdcard/Download# exit</div><div class="line">root@hammerhead:/$ exit</div><div class="line">C:/Users/[your username]&gt; adb pull /sdcard/Download/boot.img</div></pre></td></tr></table></figure>
+<p> 在哪个目录下pull的，文件就会存在哪个目录下。</p>
+</li>
+<li><p>准备好bootimg-tools工具<br> <code>git clone https://github.com/pbatard/bootimg-tools.git</code></p>
+<p> 下载后打开文件夹到<code>[MinGW安装的目录]]\MinGW\msys\1.0</code>, 双击<code>msys.bat</code>即可进入到一个模拟Linux环境的GUN界面中。进入<code>[bootimg-tools所在文件夹]/bootimg-tools</code>(如果找不到的话可以用everything找找看), 用<code>make</code>指令生成二进制文件。</p>
+<p> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552574870/afmake_l4lqwi.png" alt=""></p>
+<p> 将boot.img拷到<code>[bootimg-tools所在文件夹]\bootimg-tools\mkbootimg</code>文件夹下, 执行命令<code>./unmkbootimg -i boot.img</code>。(要记录下面输出的一大段字，之后要重新生成boot.img的时候直接复制修改成相应kernel文件名和输出文件名即可)<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552641959/succesun_umfiqv.png" alt=""></p>
+</li>
+<li><p>提取原始zImage<br> 复制<code>kernel</code>文件并将其重命名为<code>zImage.gz</code>。用<code>010 Editor</code>工具找到16进制<code>1f 8b 08 00</code>， 删掉查找到的位置的前面的所有数据, 保存之后再执行命令<code>gunzip zImage.gz</code>。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552650755/succesch_yoj1nf.png" alt=""></p>
+<p> 到这里zImage文件就提取完成了。</p>
+<h2 id="修改内核"><a href="#修改内核" class="headerlink" title="修改内核"></a>修改内核</h2><h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>我这里用的是IDA 7.0</p>
+<h3 id="正式开始"><a href="#正式开始" class="headerlink" title="正式开始"></a>正式开始</h3></li>
+<li><p>用IDA直接打开zImage文件, 并做如下改动<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552653260/IDA1_zugiws.png" alt=""></p>
+<p> 点击OK之后, 继续按照下面修改。TAT也不知道这样硬改中不中, 如果可以的话之后做完完整的步骤再好好找时间探究一下吧！<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659040/IDA2_t9pvte.png" alt="image alt"></p>
+</li>
+<li><p>定位函数位置<br> 打开命令提示符, 输入如下指令关闭符号屏蔽(符号屏蔽又是个啥？？？)并查看函数地址, 因为在IDA中查看二进制文件不好直接用函数名进行定位。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">C:\Users\[your username]&gt;adb shell</div><div class="line">shell@hammerhead:/ $ su</div><div class="line">root@hammerhead:/ # echo 0 &gt; /proc/sys/kernel/kptr_restrict /*关闭符号屏蔽*/</div><div class="line">root@hammerhead:/ # cat /proc/kallsyms |grep proc_pid_status</div><div class="line">root@hammerhead:/proc # cat /proc/kallsyms |grep __task_pid_nr_ns</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<pre><code>函数地址如下：
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552655198/fuposition_lrj63p.png)
+
+在IDA中按下快捷键G跳转到c01b0884(__task_pid_nr_ns函数)
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659250/f1_otrhpf.png)
+
+之后点击函数名c01b0884(__task_pid_nr_ns函数), 按下快捷键X, 会弹出交叉引用, 在其中查找我们上面找的第二个函数c02ba04c( proc_pid_status)的位置。
+</code></pre><p>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659761/f2_iuuo1l.png" alt=""> </p>
+<p>   好的, 上面选中的并不是我想找的函数TAT。这个时候, 就在IDA界面中按下<code>Shift+F12</code>, 在字符串界面查找<code>TracerPid</code>。找到之后双击查询后的结果。<br>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552661104/f3_zrynlg.png" alt=""></p>
+<p>   IDA在解析的时候没有解析好这个文件, 出现了下面的情况。<br>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552661543/f4_tn3sq3.png" alt=""></p>
+<p>   这时候选中<code>S</code>的位置即<code>0x53</code>按下<code>A</code>, 即可正常解析。如果解析出来还不是下面这种格式，可以鼠标左键选中该字符串的所有内容再按一次<code>A</code>。<br>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552703909/CHSU_cre1cq.png" alt=""></p>
+<pre><code>如果字符串都解析出来之后, 还是识别不出来c02ba04c( proc_pid_status)函数的话, 直接`G`跳转到c02ba04c, 并按下C, 但是识别的函数也不是正确的。所以这里采用第三篇参考文章的方法, 直接修改TracePid字符串。
+</code></pre><ol>
+<li><p>修改TracePid字符串</p>
+<p> (1) 选中<code>TracePid</code>中的<code>%d</code></p>
+<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552706938/S1_g980jo.png)
+</code></pre><p> (2) 将<code>TracePid</code>中的<code>%d</code>改为<code>0\t</code>, 选中<code>%d</code>后按下<code>Alt</code>+<code>4</code>。</p>
+<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552707440/p1_mebj3m.png)
+</code></pre><p> 上图中第四行第一个<code>%d</code>就是我们要修改的(TracerPid后的字符串), 十六进制为<code>25 64</code>。点击<code>25</code>前面按下<code>F2</code>, 输入<code>30 09</code>, 再按下<code>F2</code>就修改成功了。</p>
+<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552708361/p2_luiaxd.png)
+</code></pre><p> 最后保存修改的内容, 按下图点开之后直接点OK即可。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552708651/p3_zozpyy.png" alt=""></p>
+</li>
+<li><p>修改kernel文件<br> 在MinGW命令行界面输入命令<code>gzip -n -f -9 zImage</code>, 压缩修改好的文件<code>zImage</code>生成<code>zImage.gz</code>。用<code>010 Editor</code>打开文件<code>kernel</code>, 并在<code>kernel</code>中查找<code>1F 8B 08 00</code>。(下图是覆盖完成的样子)<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1553071178/1553071092_1_fg4s6b.png" alt=""></p>
+<p> 选中<code>1F 8B 08 00</code>位置之后，点开<code>Edit</code>-&gt;<code>Insert/Overwrite</code>-&gt;<code>Overwrite File...</code>, 选择<code>zImage.gz</code>文件即可, 这样就不用自己计算文件大小并且直接覆盖了, 完成之后点击保存为新的文件<code>boot-new.img</code>。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552722307/succ_eyefab.png" alt=""></p>
+<p> 使用执行unmkbootimg生成的命令, 修改-o参数名(要输出的文件名), 直接拷贝到MinGW命令行中直接执行。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">    $ mkbootimg --base 0 --pagesize 2048 --kernel_offset 0x00008000 --ramdisk_offset 0x02900000 --second_offset 0x00f00=</div><div class="line">000 --tags_offset 0x02700000 --cmdline &apos;console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 max</div><div class="line">cpus=2 msm_watchdog_v2.enable=1&apos; --kernel kernel --ramdisk ramdisk.cpio.gz -o boot-new.img</div></pre></td></tr></table></figure>
+</li>
+<li><p>刷机<br> 我这里用的是<a href="http://www.kgfanr.com/articles/3019.html" target="_blank" rel="external">Nexus 5</a>, 直接在关机状态下按<code>音量键-</code>和<code>开机键</code>(或输入命令<code>adb reboot bootloader</code>)即可进入fastboot状态。在命令行中输入<code>fastboot flash boot boot-new.img</code>, 之后再输入<code>fastboot reboot</code>即可。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552722558/succ2_yzvx0w.png" alt=""></p>
+<p> 刷完倒是能正常开机了, 但是我手机又要重新root了…..(这个时候有尝试过用SuperSU刷成砖, 还是用magisk+twrp比较好)</p>
+<h1 id="参考材料-文章"><a href="#参考材料-文章" class="headerlink" title="参考材料\文章"></a>参考材料\文章</h1><p><a href="https://www.xmsec.cc/re-modify-kernel-bypass-antidebug/" target="_blank" rel="external">逆向修改内核，绕过TracerPID反调试</a><br><a href="https://sourceforge.net/p/mingw/bugs/1552/" target="_blank" rel="external">make: cc: Command not found</a><br><a href="https://blog.csdn.net/jiangwei0910410003/article/details/65936634" target="_blank" rel="external">Android逆向之旅—应用的”反调试”方案解析(附加修改IDA调试端口和修改内核信息)</a></p>
+</li>
+</ol>
+]]></content>
+      
+        
+        <tags>
+            
+            <tag> Android </tag>
+            
+        </tags>
+        
+    </entry>
+    
+    <entry>
+      <title><![CDATA[用Android Studio调试Nexus 5]]></title>
+      <url>/2019/03/09/%E7%94%A8Android-Studio%E8%B0%83%E8%AF%95Nexus-5/</url>
+      <content type="html"><![CDATA[<h2 id="环境说明"><a href="#环境说明" class="headerlink" title="环境说明"></a>环境说明</h2><p>Android 4.4<br>Windows 10</p>
+<h2 id="Nexus-5-准备"><a href="#Nexus-5-准备" class="headerlink" title="Nexus 5 准备"></a>Nexus 5 准备</h2><ol>
+<li><p>找到版本号, 并在版本号所在位置点击7次, 打开开发者选项。版本号位置：设置(Setting)-&gt;关于手机(About phone)-&gt;版本号(Build number)</p>
+</li>
+<li><p>打开开发者选项(Developer options),勾选USB debugging。</p>
+</li>
+<li><p>在命令行中输入<code>adb devices</code>,有个前提就是需要将<code>android_sdk/platform-tools/</code>设为全局变量，或者进入到该文件夹中才能使用adb。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552126212/1_tcgmnn.png" alt=""></p>
+</li>
+<li><p>在网上搜<a href="https://www.kingoapp.com/android-root/download.htm" target="_blank" rel="external">Kingo root</a>, 将Nexus 5 与电脑连接, 将手机root, 提示用Kingo root的时候需要科学上网，不然就不能更新库文件啥的。(其实这一步要不是因为之后怕IDA调试的时候要用到, 不然这一步是可以直接省去的)不过在找root工具的时候，发现root工具好像是利用android系统的漏洞实现提权的，以后有时间好好了解一下。</p>
+<h2 id="Android-Studio-准备"><a href="#Android-Studio-准备" class="headerlink" title="Android Studio 准备"></a>Android Studio 准备</h2></li>
+<li><p>点开Edit Configurations…<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552204133/1_vutojr.png" alt=""></p>
+</li>
+<li><p>将Target选项改选为<code>USB Device</code>，据说，在windows上需要下载USB drive，不知道是最新版的改了还是我之前就下载了，很奇妙地能直接使用。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552204472/1_hhkcx4.png" alt=""></p>
+</li>
+<li><p>在Android Studio中查看是否已经连接上真机。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552205774/a_xdgmcj.png" alt=""></p>
+</li>
+<li><p>然后点击下图红框框中的按钮, 就可以直接将apk安装到真机上并且直接运行了, 快乐。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552205588/1_wwaqrx.png" alt=""></p>
+</li>
+</ol>
+]]></content>
+      
+        
+        <tags>
+            
+            <tag> Android </tag>
+            
+        </tags>
         
     </entry>
     
@@ -438,7 +579,7 @@
 <li><a href="">网关(Gateways), 隧道(Tunnels), 中继代理(Relays)</a></li>
 <li><a href="">网络爬虫(Web Crawlers)</a></li>
 </ul>
-<p>这些都是我们网络生活中不可分割的一部分, 接下来, 你可以(通过本文)全面地了解它们的用途及其工作形式。这些知识可以帮你把第一篇文章中的(知识)点串接起来, 使你更加熟悉HTTP通信过程。</p>
+<p>这些都是我们网络生活中不可分割的一部分, 接下来, 你可以(通过本文)全面地了解它们的用途及其工作形式。接下来学习的内容可以帮你把第一篇文章中的(知识)点串起来, 这样, 你就可以熟悉HTTP通信过程。</p>
 <p>那么, 让我们现在就开始学习吧！</p>
 <h2 id="Web服务器"><a href="#Web服务器" class="headerlink" title="Web服务器"></a>Web服务器</h2><p>正如第一篇文章所提到的, Web服务器的主要功能是存储资源并在接收请求后(按照请求)处理资源。通过Web客户端(又称为Web浏览器)用户可访问Web服务器, 并返回获取请求的资源或更改(资源的)现有的状态。访问Web服务器的操作, 通过网络爬虫, 也可以实现自动化, 相关内容我们会在文章后面进行深入的了解。<br><img src="https://code-maze.com/wp-content/uploads/2017/06/servers.jpg" alt=""><br>你所知道的最流行的服务器, 不外乎是Apache的HTTP 服务器、Nginx、<br>IIS、Glassfish…</p>
 <p>Web服务器可分为(使用)单种简单易用的软件或(使用)多种复杂的软件的服务器。 现代的Web服务器能够执行许多不同的任务, 其基本功能为:</p>
@@ -463,13 +604,13 @@
 <p>如果 Web 服务器接收到的是对(文件)路径的请求, 而不是对文件的请求, 服务器可以用以下几种方式处理请求:返回错误消息; 替代返回路径或遍历路径, 返回默认索引文件;返回带有(所请求)内容的HTML文件。</p>
 <p>服务器还可以将请求(报文)中的URI映射到动态资源上, 这些动态资源是由应用程序生成的。有一类服务器叫做应用程序服务器, 其功能就是管理动态资源, 它还能给Web服务器提供复杂的软件解决方案。</p>
 <h3 id="阶段-4：生成及发送响应"><a href="#阶段-4：生成及发送响应" class="headerlink" title="阶段 4：生成及发送响应"></a>阶段 4：生成及发送响应</h3><p>一旦服务器确定了需要所请求的资源, 它就会生成响应报文, 报文中包含状态码、响应首部字段, 若请求(报文)中需要的话还应有响应主体。</p>
-<p>如果存在响应主体, 那么该响应报文通常包含Content-Length和Content-Length两个首部字段——Content-Length描述主体大小, Content-Length描述返回资源的MIME类型。</p>
-<p>生成响应(报文)后, 服务器选择需要发送响应的客户端。对于非持久性连接(长期连接), 服务器需要在发送整个响应消息后关闭连接。</p>
+<p>如果存在响应主体, 那么该响应报文通常包含Content-Length和Content-Type两个首部字段——Content-Length描述主体大小, Content-Type描述返回资源的MIME类型。</p>
+<p>生成响应(报文)后, 服务器选择需要发送响应的客户端。对于非持久性(长期)连接, 服务器需要在发送整个响应消息后关闭连接。</p>
 <h3 id="阶段-5-记录事务"><a href="#阶段-5-记录事务" class="headerlink" title="阶段 5:记录事务"></a>阶段 5:记录事务</h3><p>服务器在事务完成后将记录文件中的所有事务信息, 大部分的服务器都采用自定义的方式记录日志。</p>
-<h2 id="代理服务器"><a href="#代理服务器" class="headerlink" title="代理服务器"></a>代理服务器</h2><p>代理服务器 (代理) 是的中间服务器, 通常位于Web服务器和Web客户端之间, 因为这个性质, 代理服务器需要具有与Web客户端和Web服务器两者相同的行为(功能)。</p>
-<p>不过, 为什么要用代理服务器呢？我们为什么不直接用Web客户端和Web服务器进行通信？这难道不是更加简单快速吗？</p>
-<p>当然, (直接利用Web客户端和Web服务器)是操作起来是很简单, 不过说到速度快, 那就未必了。接下来, 我们会解释原因的。</p>
-<p>在解释什么是代理服务器之前, 我们先要解决一个问题, 那就是什么是<strong>反向代理服务器(reverse proxy)</strong>, 或者说(探究) <strong>正向代理(forward proxy)</strong>和<strong>反向代理( reverse proxy)</strong>有什么区别。</p>
+<h2 id="代理服务器"><a href="#代理服务器" class="headerlink" title="代理服务器"></a>代理服务器</h2><p>代理服务器 (代理) 是的中间服务器, 通常位于Web服务器和Web客户端之间, 因其性质, 代理服务器需要兼并Web客户端和Web服务器的功能。</p>
+<p>不过, 为什么要用代理服务器呢？为什么不直接用Web客户端和Web服务器进行通信？这难道不是更加简单快速吗？</p>
+<p>当然, (直接利用Web客户端和Web服务器)操作起来是很简单, 不过说到速度快, 那就未必了。接下来, 我们会了解原因的。</p>
+<p>在解释什么是代理服务器之前, 我们先要搬开一块大石头, 那就是<strong>反向代理服务器(reverse proxy)</strong>的概念。 换句话来说就是知道 <strong>正向代理(forward proxy)</strong>和<strong>反向代理( reverse proxy)</strong>有什么区别。</p>
 <p>正向代理负责向Web服务器请求资源, 并将资源返回到客户端。除此之外, 正向代理还能通过防火墙过滤请求或隐藏客户端信息来维护客户端的安全。而反向代理的工作方式(与正向代理)完全相反, 它通常位于防火墙之后来保护 Web 服务器。所有客户端已知其通信对象是实际的Web服务器, 但却了解反向代理背后的(Web服务器所处的)网络。</p>
 <h3 id="代理服务器-1"><a href="#代理服务器-1" class="headerlink" title="代理服务器"></a>代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server.png" alt=""></p>
 <h3 id="反向代理服务器"><a href="#反向代理服务器" class="headerlink" title="反向代理服务器"></a>反向代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server-1.png" alt=""><br>代理(服务器)非常有用并且应用十分广泛。接下来, 让我们来了解一下代理服务器的功能。</p>
@@ -540,13 +681,13 @@
 <p>原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。</p>
 <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>本文会对HTTP的基础概念进行介绍。</p>
 <h2 id="为什么要学HTTP"><a href="#为什么要学HTTP" class="headerlink" title="为什么要学HTTP?"></a>为什么要学HTTP?</h2><p>你可能会问：为什么要了解HTTP协议? </p>
-<p>如果你是软件开发人员, 学习HTTP协议通信过程, 会让你知道怎么样才能写出更好的应用程序。<br>如果你是系统架构师或者是网络管理员, 学习HTTP通信过程, 会让你进一步学习复杂的网络体系结构设计。</p>
+<p>如果你是软件开发人员, 学习HTTP协议通信过程, 能让你知道怎么样才能写出更好的应用程序。<br>如果你是系统架构师或者是网络管理员, 学习HTTP通信过程, 能让你进一步学习如何设计复杂的网络体系结构。</p>
 <p><a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank" rel="external">表现层状态转换</a>(REST, Representational State Transfer)是现在一种很重要的架构风格, 使用这个架构时我们需要先了解HTTP协议的特性, 因此, 学习HTTP协议就变得尤为重要了。如果你想做好RESTful架构的产品, 你就必须先学习HTTP协议。</p>
 <p>我必须提醒你, REST架构并不是只能使用HTTP协议的, 它也能用其他的协议来实现。但是, 由于HTTP应用的广泛性, 它在那场战役(选择实现REST架构的协议的那场战争)中获得了胜利, 因此给予找不到用其他协议来实现的REST架构。</p>
 <p>难道, 你想错过这个了解、学习万维网和网络通信的基本概念的机会吗？</p>
-<p>我希望你不会想这样的🙂</p>
-<p>本文会尽可能简单地介绍HTTP重要的部分。我写这篇文章主要是为了将HTTP有用的信息集中到一起, 省去你们在书籍和RFC文档上寻找你们需要信息花费的时间。</p>
-<p>这篇文章是HTTP系列的第一篇文章, 它会简要地介绍HTTP的基础概念。</p>
+<p>我觉得你不会想错过的🙂</p>
+<p>本文会尽可能简单地介绍HTTP重要的部分。这篇文章整合了HTTP中有用的信息, 省去你们花费在书籍和RFC文档上寻找需要信息的时间。</p>
+<p>本文是HTTP系列的第一篇文章, 它简要地介绍HTTP的基础概念。</p>
 <p>文章概要：</p>
 <ul>
 <li>HTTP的定义</li>
@@ -559,9 +700,9 @@
 <li>状态码</li>
 </ul>
 <p>闲话少说, 直接进入下面的学习吧！</p>
-<h2 id="HTTP的定义"><a href="#HTTP的定义" class="headerlink" title="HTTP的定义"></a>HTTP的定义</h2><p>万维网的发明者Tim Berners-Lee发明了HTTP协议。纵观HTTP的发展史, Roy Fielding(REST架构风格的发明者)同样是一个重要人物。</p>
-<p><strong>超文本传输协议(The Hypertext Transerfer Protocol)</strong>是应用程序之间的通信协议。本质上, HTTP协议是负责委派互联网中客户端和服务器端之间的媒体文件(包括HTML、图片、文本文件、电影等客户端和服务器端之间传输的所有文件), 使用HTTP协议能使媒体文件快速、可靠地传输。因为HTTP被用于应用层通信, 所以HTTP协议是应用层协议而不是传输层协议。下图为网络栈的构成, 放在这里是为了让你们回忆起(相关知识)。<br><img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png" alt=""><br>在上图中,你可以清晰地看到HTTP是应用层协议,而(不像)TCP是传输层协议。</p>
-<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><p><img src="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg" alt=""><br>因特网上所有的内容都是资源(Resource), 而HTTP正是处理这些资源的协议——包括文件、(数据)流、 服务和其他所有的东西。HTML页面、youtube上的视频、WEB应用程序上日常任务电子表格…这些都是资源。(相信通过上面的举例)你已经知道了什么是资源了。</p>
+<h2 id="HTTP的定义"><a href="#HTTP的定义" class="headerlink" title="HTTP的定义"></a>HTTP的定义</h2><p>纵观HTTP的发展史,有两个重要人物，一个是发明万维网和HTTP协议的Tim Berners-Lee, 另一个是REST架构风格的发明者Roy Fielding。</p>
+<p><strong>超文本传输协议(The Hypertext Transerfer Protocol)</strong>是应用程序之间的通信协议。本质上, HTTP协议是负责委派互联网中客户端和服务器端之间的媒体文件(包括HTML、图片、文本文件、电影等客户端和服务器端之间传输的所有文件), 通过HTTP协议媒体文件能够快速、可靠地传输。HTTP被用于应用层通信, 因此HTTP协议是应用层协议而不是传输层协议。为了让你们记起相关知识, 我在下面放出了网络栈的构成图。<br><img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png" alt=""><br>在上图中, 你可以清晰地看到, HTTP是应用层协议, 而TCP才是传输层协议。</p>
+<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><p><img src="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg" alt=""><br>因特网上所有的内容都是资源(Resource), HTTP正是处理这些资源的协议——包括文件、(数据)流、 服务和其他所有的东西。HTML页面、youtube上的视频、WEB应用程序上日常任务电子表格…这些都是资源。(相信通过上面的举例)你已经知道了什么是资源了。</p>
 <p>接下来就要思考另一个问题了, 如何区分不同的资源?</p>
 <p>通过给资源标识URLs(Uniform resource locators, 统一资源定位符)——这里URL和URI(统一资源标识符)在大部分时候都可以混用。</p>
 <p>URL指向唯一的(资源存放)位置。</p>
@@ -625,7 +766,7 @@
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>emmm, 这个信息量挺大的。</p>
 <p>学习HTTP协议的基础概念, 虽然不能帮助你直接解决问题, 但是从中学习到的互联网通信的基本原则, 几乎适用于所有比HTTP协议更高级别的问题。不管是 REST、APIs、WEB应用程序开发还是网络方面出现的问题, 现在, 在解决这些问题时, 你至少可以更加自信一点。</p>
 <p>不可否认, HTTP讲起来是一个相当大的话题, 之后的内容, 与HTTP协议的基本概念比起来多多了。 </p>
-<p>HTTP体系结构方面会在<a href="">HTTP系列(二)</a>中介绍。</p>
+<p>HTTP体系结构方面会在<a href="https://se8s0n.github.io/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C" target="_blank" rel="external">HTTP系列(二)</a>/)中介绍。</p>
 <h1 id="名词解释与概述："><a href="#名词解释与概述：" class="headerlink" title="名词解释与概述："></a>名词解释与概述：</h1><h2 id="REST"><a href="#REST" class="headerlink" title="REST"></a>REST</h2><p><strong>REST(Representational State Transfer)</strong>——表现层状态转换, 是一种用来描述网络中Client和Server的交互形式的协议。<br>下面对名词进行解释：</p>
 <ol>
 <li><p>表现层(Representation), 直白地说就是<strong>资源(信息实体)具体呈现出来的形式</strong>, 例如:文本表现为TXT格式、HTML格式或者是XML格式。</p>

@@ -4,13 +4,83 @@
 
     
   <url>
-    <loc>http://Se8S0n.github.io.git/2018/09/17/HTTP%E6%8C%87%E5%8D%97/</loc>
-    <lastmod>2018-09-27T08:04:36.692Z</lastmod>
+    <loc>http://Se8S0n.github.io.git/2019/03/31/%E7%94%A8Android%E9%80%9A%E8%AE%AFAPP%E5%8F%91%E6%B6%88%E6%81%AF%E5%8F%91%E7%8E%B0%E7%9A%84BUG/</loc>
+    <lastmod>2019-03-31T07:45:38.352Z</lastmod>
     <data>
         <display>
-        <title>HTTP指南</title>
-        <pubTime>2018-09-17T02:10:09.000Z</pubTime>
+        <title>用Android通讯APP发消息发现的BUG</title>
+        <pubTime>2019-03-31T07:29:29.000Z</pubTime>
         
+        <tag>Android安全 翻译</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://Se8S0n.github.io.git/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C)/</loc>
+    <lastmod>2019-03-23T02:44:44.986Z</lastmod>
+    <data>
+        <display>
+        <title>HTTP系列(二):HTTP的结构体系</title>
+        <pubTime>2018-08-18T03:09:21.000Z</pubTime>
+        
+        <tag>HTTP</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://Se8S0n.github.io.git/2019/03/14/%E5%B0%9D%E8%AF%95%E7%BB%95%E8%BF%87TracerPID%E5%8F%8D%E8%B0%83%E8%AF%95/</loc>
+    <lastmod>2019-03-23T02:44:41.698Z</lastmod>
+    <data>
+        <display>
+        <title>尝试绕过TracerPID反调试</title>
+        <pubTime>2019-03-14T08:31:14.000Z</pubTime>
+        
+        <tag>Android</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://Se8S0n.github.io.git/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/</loc>
+    <lastmod>2019-03-21T00:14:22.747Z</lastmod>
+    <data>
+        <display>
+        <title>HTTP系列(一)：HTTP的基础概念概述</title>
+        <pubTime>2018-06-19T04:15:45.000Z</pubTime>
+        
+        <tag>HTTP</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://Se8S0n.github.io.git/2019/03/09/%E7%94%A8Android-Studio%E8%B0%83%E8%AF%95Nexus-5/</loc>
+    <lastmod>2019-03-17T05:13:47.153Z</lastmod>
+    <data>
+        <display>
+        <title>用Android Studio调试Nexus 5</title>
+        <pubTime>2019-03-09T09:55:41.000Z</pubTime>
+        
+        <tag>Android</tag>
+         
          
            
         </display>
@@ -42,40 +112,6 @@
         <display>
         <title>HTTP系列(三)：客户端标识</title>
         <pubTime>2018-08-24T04:51:05.000Z</pubTime>
-        
-        <tag>HTTP</tag>
-         
-         
-           
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://Se8S0n.github.io.git/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C)/</loc>
-    <lastmod>2018-09-11T03:35:42.615Z</lastmod>
-    <data>
-        <display>
-        <title>HTTP系列(二):HTTP的结构体系</title>
-        <pubTime>2018-08-18T03:09:21.000Z</pubTime>
-        
-        <tag>HTTP</tag>
-         
-         
-           
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://Se8S0n.github.io.git/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/</loc>
-    <lastmod>2018-09-11T03:35:26.879Z</lastmod>
-    <data>
-        <display>
-        <title>HTTP系列(一)：HTTP的基础概念概述</title>
-        <pubTime>2018-06-19T04:15:45.000Z</pubTime>
         
         <tag>HTTP</tag>
          
