@@ -4,11 +4,45 @@
 
     
   <url>
-    <loc>http://Se8S0n.github.io.git/2019/03/31/%E7%94%A8Android%E9%80%9A%E8%AE%AFAPP%E5%8F%91%E6%B6%88%E6%81%AF%E5%8F%91%E7%8E%B0%E7%9A%84BUG/</loc>
-    <lastmod>2019-03-31T07:45:38.352Z</lastmod>
+    <loc>http://Se8S0n.github.io.git/2019/04/19/%E5%B0%9D%E8%AF%95%E7%BB%95%E8%BF%87TracePID%E5%8F%8D%E8%B0%83%E8%AF%95%E4%BA%8C%E2%80%94%E2%80%94%E4%BB%8E%E6%BA%90%E7%A0%81%E5%85%A5%E6%89%8B/</loc>
+    <lastmod>2019-04-21T09:05:45.533Z</lastmod>
     <data>
         <display>
-        <title>用Android通讯APP发消息发现的BUG</title>
+        <title>尝试绕过TracePID反调试——从源码入手</title>
+        <pubTime>2019-04-19T02:43:49.000Z</pubTime>
+        
+        <tag>Android逆向</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://Se8S0n.github.io.git/2019/03/14/%E5%B0%9D%E8%AF%95%E7%BB%95%E8%BF%87TracerPID%E5%8F%8D%E8%B0%83%E8%AF%95%E4%B8%80/</loc>
+    <lastmod>2019-04-16T12:59:05.175Z</lastmod>
+    <data>
+        <display>
+        <title>尝试绕过TracerPID反调试</title>
+        <pubTime>2019-03-14T08:31:14.000Z</pubTime>
+        
+        <tag>Android</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>http://Se8S0n.github.io.git/2019/03/31/%E7%94%A8Android%E9%80%9A%E8%AE%AFAPP%E5%8F%91%E6%B6%88%E6%81%AF%E5%8F%91%E7%8E%B0%E7%9A%84BUG/</loc>
+    <lastmod>2019-04-09T12:53:20.800Z</lastmod>
+    <data>
+        <display>
+        <title>Google Zero团队：Android流行通讯APP中的BUG</title>
         <pubTime>2019-03-31T07:29:29.000Z</pubTime>
         
         <tag>Android安全 翻译</tag>
@@ -29,23 +63,6 @@
         <pubTime>2018-08-18T03:09:21.000Z</pubTime>
         
         <tag>HTTP</tag>
-         
-         
-           
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>http://Se8S0n.github.io.git/2019/03/14/%E5%B0%9D%E8%AF%95%E7%BB%95%E8%BF%87TracerPID%E5%8F%8D%E8%B0%83%E8%AF%95/</loc>
-    <lastmod>2019-03-23T02:44:41.698Z</lastmod>
-    <data>
-        <display>
-        <title>尝试绕过TracerPID反调试</title>
-        <pubTime>2019-03-14T08:31:14.000Z</pubTime>
-        
-        <tag>Android</tag>
          
          
            

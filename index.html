@@ -61,6 +61,123 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-尝试绕过TracePID反调试二——从源码入手" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" class="article-date">
+  <time datetime="2019-04-19T02:43:49.000Z" itemprop="datePublished">2019-04-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/19/尝试绕过TracePID反调试二——从源码入手/">尝试绕过TracePID反调试——从源码入手</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="绕过TracePid反调试二"><a href="#绕过TracePid反调试二" class="headerlink" title="绕过TracePid反调试二"></a>绕过TracePid反调试二</h1><p>第一篇文章是直接修改二进制文件<a href="https://www.52pojie.cn/thread-917096-1-1.html" target="_blank" rel="external">尝试绕过TracerPID反调试</a></p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>接受了评论的建议, 但是因为之前手机还没好加上没试过直接修改kernel的源码, 所以花了很多时间(都是环境惹的祸)。还有因为这个接触了shell code, 真的是一言难尽。事先说明, 下面的环境准备都是在国外的服务器上直接运行的, 难免有一些命令是需要翻墙的, 所以你实际上要用的命令可能跟我的有点不同(如果可以直接用代理之类的, 应该没多大影响)。</p>
+<h2 id="开发环境"><a href="#开发环境" class="headerlink" title="开发环境"></a>开发环境</h2><p>Ubuntu 18.10(建议用Ubuntu 16.04, 至少2MB内存)<br>Android 6.0.1<br>Nexus 5</p>
+<h2 id="Ubuntu环境搭建"><a href="#Ubuntu环境搭建" class="headerlink" title="Ubuntu环境搭建"></a>Ubuntu环境搭建</h2><h3 id="Java环境准备"><a href="#Java环境准备" class="headerlink" title="Java环境准备"></a>Java环境准备</h3><p>下文Java环境搭建都是基于Ubuntu 18.10的, 如果你尝试过不能在自己的Ubuntu环境下使用, 可以到google上找找看, 应该能找到你想要的。如果不是为了之后Android源码调试, 只是为了修改kernel文件可以先不搭建Java环境。</p>
+<h4 id="下载JDK"><a href="#下载JDK" class="headerlink" title="下载JDK"></a>下载JDK</h4><ol>
+<li>为了下载最新的JDK, 可以现在Ubuntu的命令行里面先输入<code>javac</code>, 会显示下面的内容, 按照它提供的命令即可下载最新的JDK。<br> <img src="https://i.imgur.com/hDyztXW.png" alt=""></li>
+<li>很不快乐的是Java 6和Java 7需要有Oracle的账号, 所以只要去Orcle注册一个账号, 就可以下载<a href="https://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html" target="_blank" rel="external">Java 7</a>和<a href="https://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase6-419409.html" target="_blank" rel="external">Java 6</a>了(Java 7是压缩包, Java 6是一个二进制文件)。<strong>文章末尾附有两个jdk文件的链接</strong>。<h4 id="安装JDK"><a href="#安装JDK" class="headerlink" title="安装JDK"></a>安装JDK</h4>因为先安装了Java 8在路径<code>/usr/lib/jvm</code>目录下, 所以将文件文件<code>jdk-6u45-linux-x64.bin</code>和<code>jdk-7u80-linux-x64.tar.gz</code>都用mv命令移到上述目录下。<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root@vultr:~/[jdk 6存放的位置]# mv jdk-6u45-linux-x64.bin /usr/lib/jvm/</div><div class="line">root@vultr:~/[jdk 7存放的位置]# mv jdk-7u80-linux-x64.tar.gz /usr/lib/jvm/</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>解压jdk 6, 进入到<code>/usr/lib/jvm</code>目录下, 先给该文件读写的权限, 之后运行该二进制文件就会在当前目录下生成一个新的文件夹。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">root@vultr:~/[jdk 7存放的位置]# cd /usr/lib/jvm</div><div class="line">root@vultr:/usr/lib/jvm# chmod +x jdk-6u45-linux-x64.bin</div><div class="line">root@vultr:/usr/lib/jvm# ./jdk-6u45-linux-x64.bin</div></pre></td></tr></table></figure></p>
+<p>解压jdk 7<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">root@vultr:/usr/lib/jvm# tar -zxvf jdk-7u80-linux-x64.tar.gz</div></pre></td></tr></table></figure></p>
+<p>为了我们能够在Ubuntu里面自由自在地切换Java版本, 我们可以先写个脚本将jdk-6和jdk-7添加到候选项中。先输入命令<code>vim alternativeJava.sh</code>, 并将下面的内容直接复制到alternativsjava.sh文件里。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">#!/bin/sh</div><div class="line">JAVAHOME=$1 </div><div class="line">if [ -d $JAVAHOME ];then</div><div class="line">        sudo update-alternatives --install /usr/bin/java java $JAVAHOME/bin/java 300</div><div class="line">        sudo update-alternatives --install /usr/bin/javac javac $JAVAHOME/bin/javac 300</div><div class="line">        sudo update-alternatives --install /usr/bin/jar jar $JAVAHOME/bin/jar 300</div><div class="line">        sudo update-alternatives --install /usr/bin/javah javah $JAVAHOME/bin/javah 300</div><div class="line">        sudo update-alternatives --install /usr/bin/javap javap $JAVAHOME/bin/javap 300</div><div class="line">else</div><div class="line">        echo &quot;Wrong input&quot;</div><div class="line">        exit 0</div><div class="line">fi</div></pre></td></tr></table></figure></p>
+<p>用命令<code>chmod+x 
+alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。输入命令<code>./alternativsjava.sh /usr/lib/jvm/jdk1.7.0_80</code>之后(脚本后面添加的路径是你jdk解压后的文件路径),用<code>sudo update-alternatives --config java</code>(切换java版本命令)进行检验。<br><img src="https://i.imgur.com/WgvHJPd.png" alt=""></p>
+<h3 id="准备Android源码运行环境"><a href="#准备Android源码运行环境" class="headerlink" title="准备Android源码运行环境"></a>准备Android源码运行环境</h3><p>以下内容仅编译内核, 并假设你还没有下载整个 AOSP源。因为我要编译的内核版本过旧, 所以用的都是旧的教程, 如果有要编译新的内核的要求的话, 可以看看这两篇文章, <a href="https://github.com/nathanchance/android-kernel-clang#how-to-compile-the-kernel-with-clang-standalone" target="_blank" rel="external">Compiling an Android kernel with Clang</a>和<a href="https://source.android.google.cn/setup/build/building-kernels" target="_blank" rel="external">编译内核</a>。</p>
+<h4 id="安装所需的软件包"><a href="#安装所需的软件包" class="headerlink" title="安装所需的软件包"></a>安装所需的软件包</h4><p>在Ubuntu 14.04中如果下载git出问题, 可以看看这篇文章<a href="https://www.digitalocean.com/community/tutorials/how-to-install-git-on-ubuntu-14-04" target="_blank" rel="external">How To Install Git on Ubuntu 14.04</a>。</p>
+<p>输入下述命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip</div></pre></td></tr></table></figure></p>
+<h4 id="下载源码"><a href="#下载源码" class="headerlink" title="下载源码"></a>下载源码</h4><p>在下载之前先获取手机的内核版本, 从下面的信息可知道手机内核的<code>git short commit id</code>为<code>cf10b7e</code>。<br><img src="https://i.imgur.com/r0l0Gz2.png" alt=""></p>
+<p>因为内核版本比较旧, 所以按照<a href="https://source.android.com/setup/build/building-kernels-deprecated" target="_blank" rel="external">旧版的官方内核</a>编译手册来, 而不是按照<a href="https://source.android.com/setup/build/building-kernels" target="_blank" rel="external">新版的内核编译手册</a>来。如果内核比较新的, 还是直接用repo吧！接下来可以从官方手册上看到, 我需要的kernel源代码位于哪个branch, 然后从github上clone下来。<br><img src="https://i.imgur.com/qZ8Dllc.png" alt=""></p>
+<p>输入命令, 先将msm这个项目clone下来。(这一步花的时间可能会有一点点长)<br><code>$ git clone https://android.googlesource.com/kernel/msm.git</code></p>
+<p>因为我用的是国外的服务器, 所以可以直接从google服务器下下来。如果是自己搭建的机器且觉得开代理太麻烦的话, 可以换成下面的命令。<br><code>$ git clone https://aosp.tuna.tsinghua.edu.cn/kernel/msm.git</code></p>
+<p>将msm从github上clone下来之后, 会发现里面是个空的, 只有一个<code>.git</code>仓库。进入<code>msm</code>目录下, 用<code>git branch -a</code>查看分支。(我的文件路径跟图片下的不符, 实际上应该是<code>/AndroidKernel/msm</code>)<br><img src="https://i.imgur.com/czFhbta.png" alt=""></p>
+<p>现在就要用到我们之前获取的short commit id(显示的是实际的commit id的前7位)了, 直接检出我们需要的代码的分支。<br><code>git branch -r --contains &lt;your short commit id&gt;</code></p>
+<p>从上面的图片我们可以知道, 本地实际上只有<code>master</code>这一个分支, 这时候我们需要做的事就是在远程分支的基础上再分一个本地分支。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ git checkout -b android-msm-hammerhead-3.4-marshmallow-mr3 origin/android-msm-hammerhead-3.4-marshmallow-mr3</div></pre></td></tr></table></figure></p>
+<p><img src="https://i.imgur.com/3J4jtIc.png" alt=""></p>
+<h4 id="安装GCC交叉编译器"><a href="#安装GCC交叉编译器" class="headerlink" title="安装GCC交叉编译器"></a>安装GCC交叉编译器</h4><p>之前不是很能理解为什么官方网站没说要下载这个东西, 之后在<a href="https://appuals.com/how-to-build-a-custom-android-kernel/" target="_blank" rel="external">How to Build a Custom Android Kernel</a>这篇文章里面看到。因为一般我们需要编译的kernel源代码都是基于arm架构编译运行的, 所以直接放在我们64位的Ubuntu里面是不合适的。也可以跟官方一样直接通过USB连接手机直接进行调试。</p>
+<p>在<code>~/AndroidKernel</code>执行如下命令(下载现在Linux环境下的arm编译接口)。这个编译接口尽量别尝试arm-eabi-4.8以上的, 因为旧的内核和交叉编译器不匹配会出现很多麻烦, 例如现在Google已经弃用了gcc, 在最新的交叉编译器里面只能用clang, 即使<code>make</code>操作加了参数<code>CC=clang</code>也会在出现很多很麻烦的报错。所以我这里为了匹配, 用的是旧的交叉编译器。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6</div></pre></td></tr></table></figure></p>
+<p>在这里尝试了一下清华的AOSP源, 也是可以直接用的。参考贴出来的google的url, 直接将里面的<code>https://android.googlesource.com/</code>全部改成<code>https://aosp.tuna.tsinghua.edu.cn/</code>即可。详情可参考<a href="https://mirror.tuna.tsinghua.edu.cn/help/AOSP/" target="_blank" rel="external">Android 镜像使用帮助</a>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ git clone https://aosp.tuna.tsinghua.edu.cn/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6</div></pre></td></tr></table></figure></p>
+<h4 id="添加环境变量"><a href="#添加环境变量" class="headerlink" title="添加环境变量"></a>添加环境变量</h4><p>添加环境变量总共有两种方法, 一种是短期的, 开机重启之后就会失效, 一种是长期的。</p>
+<p>第一种：在<code>~/AndroidKernel</code>目录下执行以下命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ export PATH=~/AndroidKernel/arm-eabi-4.6/bin:$PATH</div></pre></td></tr></table></figure></p>
+<p>第二种：在<code>~/.bashrc</code>中添加环境变量<br><code>$ vim ~/.bashrc</code></p>
+<p>之后在文件末尾添加<code>export PATH=&lt;交叉编译API存放的文件根目录&gt;/arm-linux-androideabi-4.9/bin:$PATH</code></p>
+<p>为了让这个配置立马生效, 我们可以用下面的命令<br><code>$ source ~/.bashrc</code></p>
+<h2 id="修改源码"><a href="#修改源码" class="headerlink" title="修改源码"></a>修改源码</h2><h3 id="修改前准备-修改源码"><a href="#修改前准备-修改源码" class="headerlink" title="修改前准备+修改源码"></a>修改前准备+修改源码</h3><p>如果觉得不想知道为什么要修改<code>base.c</code>和<code>array.c</code>文件, 可以跳过现在这一段, 直接从下一段“修改<code>msm/fs/proc/base.c</code>文件”开始看就好了。</p>
+<p>我将<code>msm/fs/proc</code>目录下的文件都下载到本地(都是先修改完成的), 安装了<a href="https://bbs.pediy.com/thread-215669.htm" target="_blank" rel="external">Source Insight</a>来分析源码。<a href="http://man7.org/linux/man-pages/man5/proc.5.html" target="_blank" rel="external">proc文件</a>, 是以文件系统的方式为访问系统内核的操作提供接口, 动态从系统内核中读出所需信息的。这也就说明, 我们想要修改的TracePid也是通过这个文件中获取到的。</p>
+<p>我们想获取进程信息的时候, 一般会输出下述内容。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">&gt;cat /proc/self/status</div><div class="line"> Name:   cat</div><div class="line"> State:  R (running)</div><div class="line"> Tgid:   5452</div><div class="line"> Pid:    5452</div><div class="line"> PPid:   743</div><div class="line"> TracerPid:      0                     (2.4)</div><div class="line"> Uid:    501     501     501     501</div><div class="line"> Gid:    100     100     100     100</div><div class="line"> FDSize: 256</div><div class="line"> Groups: 100 14 16</div><div class="line"> VmPeak:     5004 kB</div><div class="line"> VmSize:     5004 kB</div><div class="line"> VmLck:         0 kB</div><div class="line"> VmHWM:       476 kB</div><div class="line"> VmRSS:       476 kB</div><div class="line"> VmData:      156 kB</div><div class="line"> VmStk:        88 kB</div><div class="line"> VmExe:        68 kB</div><div class="line"> VmLib:      1412 kB</div><div class="line"> VmPTE:        20 kb</div><div class="line"> VmSwap:        0 kB</div><div class="line"> Threads:        1</div><div class="line"> SigQ:   0/28578</div><div class="line"> SigPnd: 0000000000000000</div><div class="line"> ShdPnd: 0000000000000000</div><div class="line"> SigBlk: 0000000000000000</div><div class="line"> SigIgn: 0000000000000000</div><div class="line"> SigCgt: 0000000000000000</div><div class="line"> CapInh: 00000000fffffeff</div><div class="line"> CapPrm: 0000000000000000</div><div class="line"> CapEff: 0000000000000000</div><div class="line"> CapBnd: ffffffffffffffff</div><div class="line"> Seccomp:        0</div><div class="line"> voluntary_ctxt_switches:        0</div><div class="line"> nonvoluntary_ctxt_switches:     1</div></pre></td></tr></table></figure></p>
+<p>在上述Status信息中我们需要关注的两个部分, 一个是<code>State</code>字段, 一个是<code>TracePid</code>字段。因为这两个字段都可反映出进程是否被监测。详情可参考<a href="https://android.googlesource.com/kernel/msm/+/android-wear-5.1.1_r0.6/Documentation/filesystems/proc.txt?autodive=0%2F%2F%2F" target="_blank" rel="external"> proc.txt </a>的<code>line 209</code>和<code>line 215</code>。</p>
+<p>在<a href="http://man7.org/linux/man-pages/man5/proc.5.html" target="_blank" rel="external">proc手册</a>查找<code>/proc/[pid]/stat</code>, 我们可以知道Status是在<code>fs/proc/array.c</code>定义的, 我们就先从<code>array.c</code>入手。</p>
+<p>先打开查看调用关系的窗口, <code>View-&gt;Panels-&gt;Relation Windows</code>。</p>
+<p>在<code>array.c</code>文件中搜索<code>status</code>, 找到函数<code>proc_pid_status</code>, 之后查看该函数调用与被调用的信息。<br><img src="https://i.imgur.com/jyMavtL.png" alt=""></p>
+<p>在<code>Relation Window</code>中双击<code>get_task_state</code>函数, 就找到了我们想找的<code>TracePid</code>。这个就是我们要修改的第一处了。<br><img src="https://i.imgur.com/rMp60mL.png" alt=""></p>
+<p>TracePid 通常都是对父进程 pid 进行检测, 这里将 ppid 改为 0, 这样不管是否为调试状态, TracePid 都无法检测出。修改的结果如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">180 seq_printf(m,</div><div class="line">181            &quot;State:\t%s\n&quot;</div><div class="line">182            &quot;Tgid:\t%d\n&quot;</div><div class="line">183            &quot;Pid:\t%d\n&quot;</div><div class="line">184            &quot;PPid:\t%d\n&quot;</div><div class="line">185            &quot;TracerPid:\t%d\n&quot;</div><div class="line">186            &quot;Uid:\t%d\t%d\t%d\t%d\n&quot;</div><div class="line">187            &quot;Gid:\t%d\t%d\t%d\t%d\n&quot;,</div><div class="line">188            get_task_state(p),</div><div class="line">189            task_tgid_nr_ns(p, ns),</div><div class="line">190            pid_nr_ns(pid, ns),</div><div class="line">               //修改部分</div><div class="line">191            ppid, 0,</div><div class="line">               //修改结束</div><div class="line">192            cred-&gt;uid, cred-&gt;euid, cred-&gt;suid, cred-&gt;fsuid,</div><div class="line">193            cred-&gt;gid, cred-&gt;egid, cred-&gt;sgid, cred-&gt;fsgid);</div></pre></td></tr></table></figure></p>
+<p>上面的代码段中的<code>get_task_state()</code>函数引起了我的注意, 这个函数应该是获取state的函数。用鼠标选中该函数之后, 右手边的<code>Relation Window</code>会显示该函数所在的位置, 在该窗口双击之后跳转。<br><img src="https://i.imgur.com/MAbWXuR.png" alt=""></p>
+<p>在上图中, 看到了明显用来存放状态的数组<code>task_state_array</code>, 选中该数组之后, 同样的在<code>Relation Window</code>中双击跳转。<br><img src="https://i.imgur.com/O70xlsH.png" alt=""></p>
+<p>将原来状态表中的<code>T</code>和<code>t</code>都修改为<code>S</code>这样就避免了该状态位反映出被监测的状态。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">R  Running</div><div class="line">S  Sleeping in an interruptible wait</div><div class="line">D  Waiting in uninterruptible disk sleep</div><div class="line">Z  Zombie</div><div class="line">T  Stopped (on a signal) or (before Linux 2.6.33)</div><div class="line">   trace stopped</div><div class="line">t  Tracing stop (Linux 2.6.33 onward)</div><div class="line">W  Paging (only before Linux 2.6.0)</div><div class="line">X  Dead (from Linux 2.6.0 onward</div><div class="line">x  Dead (Linux 2.6.33 to 3.13 only)</div><div class="line">K  Wakekill (Linux 2.6.33 to 3.13 only)</div><div class="line">W  Waking (Linux 2.6.33 to 3.13 only)</div><div class="line">P  Parked (Linux 3.9 to 3.13 only)</div></pre></td></tr></table></figure></p>
+<p><code>array.c</code>我们已经修改完毕了, 这时候我们就要修改其他部分了。在<a href="https://blog.csdn.net/MyLinChi/article/details/78459373" target="_blank" rel="external">导入Project</a>之后, 我们在整个proc文件中搜索关键词<code>trace</code>。先按照下图打开<code>Project Search Bar</code>, 并在其中输入<code>trace</code>。<br><img src="https://i.imgur.com/AF3qdP7.png" alt=""></p>
+<p>我们会发现搜索的结果都是在<code>base.c</code>文件中(下图出现的第一个包含<code>trace</code>关键词的函数是我已经修改过的)。<br><img src="https://i.imgur.com/qdR3XWj.png" alt=""></p>
+<p>在检查完有<code>trace</code>关键词的代码没发现有用的, 就在<code>base.c</code>文件中搜索关键词<code>status</code>。</p>
+<p><code>Ctrl+F</code>输入关键词之后没找到, 就通过下图的向下搜索的功能一个个定位, 前面的部分都没找到自己想要找的函数段。<br><img src="https://i.imgur.com/XOlk7fq.png" alt=""></p>
+<p>直到找到了关键的部分, 选中函数<code>proc_pid_status</code>, 在右边<code>Relation Window</code>中继续找我们想要的关键函数。<br><img src="https://i.imgur.com/VV1xxyc.png" alt=""></p>
+<p>但是很遗憾, 在<code>proc_pid_status</code>函数中跟了很多相关的函数仍然没找到我们想要的。那我们就回到我们最开始的地方。这部分最上面的标识是<code>pid_entry</code>。顺着这个部分往下看, 我们就找到了<code>proc_tid_stat</code>函数, 选中该函数之后我们可以找到<code>do_task_stat</code>函数。<br><img src="https://i.imgur.com/akjELQ8.png" alt=""></p>
+<p>接下来, 我们就好好看看这个函数里面有什么。在右边的<code>Relation Window</code>中关注到一个有<code>state</code>关键词的函数, 双击之后跳转到该函数调用的位置。<br><img src="https://i.imgur.com/Z6XIxPk.png" alt=""></p>
+<p>定位到上图那一行之后, 分别跟了<code>state</code>关键词和<code>get_task_state</code>函数, 都没有发现什么(<code>base.c</code>是进程运行之前要做的准备工作, 从<code>get_task_state</code>函数可直接回到之前修改的<code>array.c</code>文件。但因为已修改完成, 所以就留在<code>base.c</code>文件中没有继续定位了)。</p>
+<p>现在看到这段函数之中大部分都用到了变量<code>task</code>, 所以只好将<code>task</code>作为关键词用笨办法来一个一个定位。最后找到了<code>wchan</code>, 真的眼泪都掉下来。(因为事先知道要改这个部分)</p>
+<p>看了<a href="https://gtoad.github.io/2017/06/25/Android-Anti-Debug/" target="_blank" rel="external">Android反调试技术整理与实践</a>这篇文章才知道为什么要修改带有<code>wchan</code>关键词的函数。因为<code>/proc/pid/wchan</code> 和 <code>/proc/pid/task/pid/wchan</code>在调试状态下，里面内容为<code>ptrace_stop</code>, 非调试的状态下为ep_poll。所以也可能会泄露正在被调试的信息, 所以我们直接在Project中查找<code>wchan</code>关键词, 就定位到函数<code>proc_pid_wchan</code><br><img src="https://i.imgur.com/naZExKg.png" alt=""></p>
+<p>定位结束之后我们进行如下修改, 到这里我们的修改就彻底结束了。<br><img src="https://i.imgur.com/dU8GVIZ.png" alt=""></p>
+<h3 id="修改msm-fs-proc-base-c文件"><a href="#修改msm-fs-proc-base-c文件" class="headerlink" title="修改msm/fs/proc/base.c文件"></a>修改<code>msm/fs/proc/base.c</code>文件</h3><p>在Ubuntu中编辑文件<code>vim msm/fs/proc/base.c</code>, 定位函数<code>proc_pid_wchan</code>(大概在268行左右)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">267 static int proc_pid_wchan(struct task_struct *task, char *buffer)</div><div class="line">268 &#123;</div><div class="line">269        unsigned long wchan;</div><div class="line">270        char symname[KSYM_NAME_LEN];</div><div class="line">271</div><div class="line">272        wchan = get_wchan(task);</div><div class="line">273</div><div class="line">274        if (lookup_symbol_name(wchan, symname) &lt; 0)</div><div class="line">275                if (!ptrace_may_access(task, PTRACE_MODE_READ))</div><div class="line">276                        return 0;</div><div class="line">277                else</div><div class="line">278                        return sprintf(buffer, &quot;%lu&quot;, wchan);</div><div class="line">279        else</div><div class="line">280                return sprintf(buffer, &quot;%s&quot;, symname);</div><div class="line">281 &#125;</div></pre></td></tr></table></figure></p>
+<p>改成下面的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">static int proc_pid_wchan(struct task_struct *task, char *buffer)</div><div class="line">&#123;</div><div class="line">    unsigned long wchan;</div><div class="line">    char symname[KSYM_NAME_LEN];</div><div class="line"></div><div class="line">    wchan = get_wchan(task);</div><div class="line"></div><div class="line">    if (lookup_symbol_name(wchan, symname) &lt; 0)</div><div class="line">        if (!ptrace_may_access(task, PTRACE_MODE_READ))</div><div class="line">            return 0;</div><div class="line">        else</div><div class="line">            return sprintf(buffer, &quot;%lu&quot;, wchan);</div><div class="line">    else</div><div class="line">    &#123;   // 更改的内容</div><div class="line">        if(strstr(symname,&quot;trace&quot;))</div><div class="line">            return sprintf(buffer, &quot;%s&quot;, &quot;sys_epoll_wait&quot;);</div><div class="line">        return sprintf(buffer, &quot;%s&quot;, symname);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="修改msm-fs-proc-array-c文件"><a href="#修改msm-fs-proc-array-c文件" class="headerlink" title="修改msm/fs/proc/array.c文件"></a>修改<code>msm/fs/proc/array.c</code>文件</h3><p>用vim对<code>msm/fs/proc/array.c</code>进行编辑, 先修改第一处<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">134 static const char * const task_state_array[] 135 = &#123;</div><div class="line">136        &quot;R (running)&quot;,          /*   0 */</div><div class="line">137        &quot;S (sleeping)&quot;,         /*   1 */</div><div class="line">138        &quot;D (disk sleep)&quot;,       /*   2 */</div><div class="line">139        &quot;T (stopped)&quot;,          /*   4 */</div><div class="line">140        &quot;t (tracing stop)&quot;,     /*   8 */</div><div class="line">141        &quot;Z (zombie)&quot;,           /*  16 */</div><div class="line">142        &quot;X (dead)&quot;,             /*  32 */</div><div class="line">143        &quot;x (dead)&quot;,             /*  64 */</div><div class="line">144        &quot;K (wakekill)&quot;,         /* 128 */</div><div class="line">145        &quot;W (waking)&quot;,           /* 256 */</div><div class="line">146 &#125;;</div></pre></td></tr></table></figure></p>
+<p>修改之后的结果如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">134 static const char * const task_state_array[] 135 = &#123;</div><div class="line">136        &quot;R (running)&quot;,          /*   0 */</div><div class="line">137        &quot;S (sleeping)&quot;,         /*   1 */</div><div class="line">138        &quot;D (disk sleep)&quot;,       /*   2 */</div><div class="line">            //修改的部分</div><div class="line">139        &quot;S (sleeping)&quot;,         /*   4 */</div><div class="line">140        &quot;S (sleeping)&quot;,         /*   8 */</div><div class="line">141        &quot;Z (zombie)&quot;,           /*  16 */</div><div class="line">142        &quot;X (dead)&quot;,             /*  32 */</div><div class="line">143        &quot;x (dead)&quot;,             /*  64 */</div><div class="line">144        &quot;K (wakekill)&quot;,         /* 128 */</div><div class="line">145        &quot;W (waking)&quot;,           /* 256 */</div><div class="line">146 &#125;;</div></pre></td></tr></table></figure></p>
+<p>修改<code>array.c</code>的第二处<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">180 seq_printf(m,</div><div class="line">181            &quot;State:\t%s\n&quot;</div><div class="line">182            &quot;Tgid:\t%d\n&quot;</div><div class="line">183            &quot;Pid:\t%d\n&quot;</div><div class="line">184            &quot;PPid:\t%d\n&quot;</div><div class="line">185            &quot;TracerPid:\t%d\n&quot;</div><div class="line">186            &quot;Uid:\t%d\t%d\t%d\t%d\n&quot;</div><div class="line">187            &quot;Gid:\t%d\t%d\t%d\t%d\n&quot;,</div><div class="line">188            get_task_state(p),</div><div class="line">189            task_tgid_nr_ns(p, ns),</div><div class="line">190            pid_nr_ns(pid, ns),</div><div class="line">191            ppid, tpid,</div><div class="line">192            cred-&gt;uid, cred-&gt;euid, cred-&gt;suid, cred-&gt;fsuid,</div><div class="line">193            cred-&gt;gid, cred-&gt;egid, cred-&gt;sgid, cred-&gt;fsgid);</div></pre></td></tr></table></figure></p>
+<p>修改的结果为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">180 seq_printf(m,</div><div class="line">181            &quot;State:\t%s\n&quot;</div><div class="line">182            &quot;Tgid:\t%d\n&quot;</div><div class="line">183            &quot;Pid:\t%d\n&quot;</div><div class="line">184            &quot;PPid:\t%d\n&quot;</div><div class="line">185            &quot;TracerPid:\t%d\n&quot;</div><div class="line">186            &quot;Uid:\t%d\t%d\t%d\t%d\n&quot;</div><div class="line">187            &quot;Gid:\t%d\t%d\t%d\t%d\n&quot;,</div><div class="line">188            get_task_state(p),</div><div class="line">189            task_tgid_nr_ns(p, ns),</div><div class="line">190            pid_nr_ns(pid, ns),</div><div class="line">               //修改部分</div><div class="line">191            ppid, 0,</div><div class="line">192            cred-&gt;uid, cred-&gt;euid, cred-&gt;suid, cred-&gt;fsuid,</div><div class="line">193            cred-&gt;gid, cred-&gt;egid, cred-&gt;sgid, cred-&gt;fsgid);</div></pre></td></tr></table></figure></p>
+<h2 id="源码的编译运行"><a href="#源码的编译运行" class="headerlink" title="源码的编译运行"></a>源码的编译运行</h2><p>在编译运行之前, 我们需要先用<code>echo $PATH</code>确认交叉编译器在PATH中。<br><img src="https://i.imgur.com/VfALUlJ.png" alt=""></p>
+<p>按照下面来进行配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$ export ARCH=arm #指明目标体系架构，arm、x86、arm64</div><div class="line">$ export SUBARCH=arm</div><div class="line">$ cd msm #进入内核所在目录</div><div class="line">$ make hammerhead_defconfig # 设备名_defconfig</div><div class="line">#指定使用的交叉编译器的前缀</div><div class="line">$ make ARCH=arm CROSS_COMPILE=arm-eabi- -j4 ##如果没有gcc的环境, 就增加了CC=clang</div></pre></td></tr></table></figure></p>
+<p>可以从<a href="https://source.android.com/source/building-kernels.html" target="_blank" rel="external">编译内核</a>这篇文章中找到相应的设备名。</p>
+<p>在编译的过程中, 遇到了下面的报错。<br><img src="https://i.imgur.com/WrDEZh8.png" alt=""></p>
+<p>这时候需要修改<code>kernel/timeconst.pl</code>文件, 用<code>vim kernel/timeconst.pl</code>编辑该文件, 定位到下述代码。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">372     @val = @&#123;$canned_values&#123;$hz&#125;&#125;;           </div><div class="line">373     if (!defined(@val)) &#123;                     </div><div class="line">374         @val = compute_values($hz);           </div><div class="line">375     &#125;                                         </div><div class="line">376     output($hz, @val);</div></pre></td></tr></table></figure></p>
+<p>将<code>if (!defined(@val))</code>改为<code>if (!@val)</code>, 再编译一次就可以了。<br><img src="https://i.imgur.com/sTmrBvr.png" alt=""><br>接下来, 就按照上图提示进入目录<code>arch/arm/boot</code>。<br><img src="https://i.imgur.com/ytyQvDO.png" alt=""></p>
+<h3 id="重打包boot-img"><a href="#重打包boot-img" class="headerlink" title="重打包boot.img"></a>重打包boot.img</h3><p>为了防止发生不可挽回的刷砖错误, 在刷机之前, 一定要按照<a href="https://www.52pojie.cn/thread-917096-1-1.html" target="_blank" rel="external">尝试绕过TracePid反调试</a>将boot.img进行备份。</p>
+<h4 id="准备好bootimg-tools工具"><a href="#准备好bootimg-tools工具" class="headerlink" title="准备好bootimg-tools工具"></a>准备好bootimg-tools工具</h4><p>因为我之前Windows环境是准备好了的, 就直接在本地解决下面的任务。</p>
+<p>在Ubuntu环境中, 输入下面命令就准备完成了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ git clone https://github.com/pbatard/bootimg-tools.git</div><div class="line">$ make</div><div class="line">$ cd mkbootimg</div></pre></td></tr></table></figure></p>
+<p>Windows环境下进入<code>[MinGW安装的目录]]\MinGW\msys\1.0</code>目录下, 双击<code>msys.bat</code>。</p>
+<p>把<a href="https://www.52pojie.cn/thread-917096-1-1.html" target="_blank" rel="external">提取出来的boot.img</a>放到mkbootimg文件夹下, 之后的步骤不管是哪个环境下都是相同的。</p>
+<h4 id="用unmkbootimg解包"><a href="#用unmkbootimg解包" class="headerlink" title="用unmkbootimg解包"></a>用unmkbootimg解包</h4><p>在MinGW输入命令<code>./unmkbootimg -i boot.img</code>, 如果是Ubuntu, 直接去掉前面的<code>./</code>执行命令。</p>
+<p>我们获得了rebuild需要输入的指令, 之后要rebuild的时候要修改一下才能用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">To rebuild this boot image, you can use the command:</div><div class="line">  mkbootimg --base 0 --pagesize 2048 --kernel_offset 0x00008000 --ramdisk_offset 0x02900000 --second_offset 0x00f00000 --tags_offset 0x02700000 --cmdline &apos;console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 maxcpus=2 msm_watchdog_v2.enable=1&apos; --kernel kernel --ramdisk ramdisk.cpio.gz -o boot.img</div></pre></td></tr></table></figure></p>
+<h4 id="替换kernel重新打包"><a href="#替换kernel重新打包" class="headerlink" title="替换kernel重新打包"></a>替换kernel重新打包</h4><p><img src="https://i.imgur.com/EAnFtOB.png" alt=""></p>
+<h4 id="刷入bootnew-img"><a href="#刷入bootnew-img" class="headerlink" title="刷入bootnew.img"></a>刷入bootnew.img</h4><p>在手机开机的情况下, 进入bootnew.img存放的目录输入下述命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ adb reboot bootloader</div><div class="line">$ astboot flash boot bootnew.img</div><div class="line">$ fastboot reboot</div></pre></td></tr></table></figure></p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>现在到了见证奇迹的时刻了<br><img src="https://i.imgur.com/pkdj3P3.png" alt=""></p>
+<h2 id="参考文章或其他链接"><a href="#参考文章或其他链接" class="headerlink" title="参考文章或其他链接"></a>参考文章或其他链接</h2><p><a href="http://www.cnblogs.com/a2211009/p/4265225.html" target="_blank" rel="external">Ubuntu 安装 JDK 7 / JDK8 的两种方式</a><br><a href="https://blog.csdn.net/zhandoushi1982/article/details/50807282" target="_blank" rel="external">在Ubuntu中通过update-alternatives切换java版本</a><br><a href="https://blog.csdn.net/XXOOYC/article/details/85679143" target="_blank" rel="external">编译Android 9.0内核源码并刷入手机</a><br><a href="https://blog.csdn.net/u012417380/article/details/73353670" target="_blank" rel="external">Android系统内核编译及刷机实战 （修改反调试标志位）</a><br><a href="https://source.android.com/setup/build/initializing" target="_blank" rel="external">搭建编译环境</a><br><a href="https://appuals.com/how-to-build-a-custom-android-kernel/" target="_blank" rel="external">How to Build a Custom Android Kernel</a><br><a href="https://blog.csdn.net/fly_hps/article/details/86172698" target="_blank" rel="external">Android源码定制添加反反调试机制</a><br><a href="https://pan.baidu.com/s/1K5LU-h8npuczj4JgjKkaWw" target="_blank" rel="external">Java6+Java7链接</a>  提取码：ma3i</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" data-id="cjus1zwef00070wvvylej8u3z" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-用Android通讯APP发消息发现的BUG" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/03/31/用Android通讯APP发消息发现的BUG/" class="article-date">
@@ -75,7 +192,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/31/用Android通讯APP发消息发现的BUG/">用Android通讯APP发消息发现的BUG</a>
+      <a class="article-title" href="/2019/03/31/用Android通讯APP发消息发现的BUG/">Google Zero团队：Android流行通讯APP中的BUG</a>
     </h1>
   
 
@@ -83,8 +200,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="用Android通讯APP发消息发现的BUG"><a href="#用Android通讯APP发消息发现的BUG" class="headerlink" title="用Android通讯APP发消息发现的BUG"></a>用Android通讯APP发消息发现的BUG</h1><hr>
-<p>原文地址:<a href="https://googleprojectzero.blogspot.com/2019/03/android-messaging-few-bugs-short-of.html" target="_blank" rel="external">https://googleprojectzero.blogspot.com/2019/03/android-messaging-few-bugs-short-of.html</a></p>
+        <p>原文地址:<a href="https://googleprojectzero.blogspot.com/2019/03/android-messaging-few-bugs-short-of.html" target="_blank" rel="external">https://googleprojectzero.blogspot.com/2019/03/android-messaging-few-bugs-short-of.html</a></p>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>大概一年半以前, 我对 Android的通讯和邮件客户端进行了一些测试。当时, 在这些客户端中发现了一些bug, 然而没能把这些bug组合成有效的攻击链, 所以没有将成果发到博客上。不过, 和当初想公布研究成果的想法不同, 我现在决定将研究成果分享出来。毕竟, 了解(客户端的)设计上的抉择会对安全造成什么影响, 也是一件有趣的事情。</p>
 <h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>在研究过程中, 对Messages (Android默认的短信客户端)、 Android上的Gmail客户端、 微软 Outlook, Facebook Messenger, WhatsApp、 Signal和Telegram这些是Google Play上最流行的通讯和邮件客户端进行了测试。</p>
 <h2 id="通讯客户端说明-体系结构、攻击面、测试方法"><a href="#通讯客户端说明-体系结构、攻击面、测试方法" class="headerlink" title="通讯客户端说明(体系结构、攻击面、测试方法)"></a>通讯客户端说明(体系结构、攻击面、测试方法)</h2><p>从高层次上看, 通讯客户端具有类似的体系结构, 其功能是与服务器进行通讯, 负责定位要与用户通讯的收件人, 通常还要保留通讯过程中的session。消息需要通过服务器, 再由服务器直接发给收件人, 支持端到端加密的客户端可以将消息用某种信封加密技术密封起来。</p>
@@ -118,7 +234,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/03/31/用Android通讯APP发消息发现的BUG/" data-id="cju9ru7d7000nq0vvoudtwcu3" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/03/31/用Android通讯APP发消息发现的BUG/" data-id="cjus1zwev000l0wvvu16oz1yv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android安全-翻译/">Android安全 翻译</a></li></ul>
@@ -130,9 +246,9 @@
 
 
   
-    <article id="post-尝试绕过TracerPID反调试" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-尝试绕过TracerPID反调试一" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/03/14/尝试绕过TracerPID反调试/" class="article-date">
+    <a href="/2019/03/14/尝试绕过TracerPID反调试一/" class="article-date">
   <time datetime="2019-03-14T08:31:14.000Z" itemprop="datePublished">2019-03-14</time>
 </a>
     
@@ -144,7 +260,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/03/14/尝试绕过TracerPID反调试/">尝试绕过TracerPID反调试</a>
+      <a class="article-title" href="/2019/03/14/尝试绕过TracerPID反调试一/">尝试绕过TracerPID反调试</a>
     </h1>
   
 
@@ -152,77 +268,120 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="Windows下Linux环境准备"><a href="#Windows下Linux环境准备" class="headerlink" title="Windows下Linux环境准备"></a>Windows下Linux环境准备</h2><ol>
-<li><p>安装<a href="http://www.mingw.org/" target="_blank" rel="external">MinGW</a>, 在官网下好之后, 右键按下图选中要下载的，之后直接在<code>Installation</code>中直接选中<code>Apply change</code>即可。</p>
-<p> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552553170/aa_catmea.png" alt=""></p>
-</li>
-<li><p>进入安装目录<code>&lt;MinGW安装的地方&gt;\MinGW\bin</code>, 将<code>gcc.exe</code>重命名为<code>cc.exe</code>, 就短暂地这样改就好了，之后用完make工具再改回来。反正我没找到哪里可以改Makefile的内容(小辣鸡)。不这样修改的话会出现如下报错：</p>
-<p> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552554377/boerror_ltdeqw.png" alt=""></p>
-<p> 具体原因好像是MinGW的bug, 在Linux环境下一般gcc是等同于cc的, 然而在Windows中却不是这样的, 如果有人找到Makefile的内容可以在哪里改的话, 可以告诉我=v=, 虽然下面并没有可以评论的地方。</p>
-<p> <em>注：还有千万别学人家瞎改名, 把<code>mingw-make.exe</code>改成<code>make.exe</code>直接用, 这样也会报错哒！</em></p>
-<h2 id="准备boot"><a href="#准备boot" class="headerlink" title="准备boot"></a>准备boot</h2></li>
+        <h1 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h1><h2 id="Windows下Linux环境准备"><a href="#Windows下Linux环境准备" class="headerlink" title="Windows下Linux环境准备"></a>Windows下Linux环境准备</h2><pre><code>1. 安装[MinGW](http://www.mingw.org/), 在官网下好之后, 右键按下图选中要下载的，之后直接在`Installation`中直接选中`Apply change`即可。
+
+    ![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552553170/aa_catmea.png)
+2. 进入安装目录`&lt;MinGW安装的地方&gt;\MinGW\bin`, 将`gcc.exe`重命名为`cc.exe`, 就短暂地这样改就好了，之后用完make工具再改回来。反正我没找到哪里可以改Makefile的内容。不这样修改的话会出现如下报错：
+
+    ![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552554377/boerror_ltdeqw.png)
+
+    具体原因好像是MinGW的bug, 在Linux环境下一般gcc是等同于cc的, 然而在Windows中却不是这样的, 如果有人找到Makefile的内容可以在哪里改的话, 可以告诉我=v=, 虽然下面并没有可以评论的地方。
+
+    *注：还有千万别学人家瞎改名, 把`mingw-make.exe`改成`make.exe`直接用, 这样也会报错！*
+</code></pre><h2 id="准备boot"><a href="#准备boot" class="headerlink" title="准备boot"></a>准备boot</h2><ol>
 <li><p>提取boot.img </p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">C:\Users\[your username]&gt;adb shell</div><div class="line">shell@hammerhead:/ $ su</div><div class="line">root@hammerhead:/ # cd /dev/block/platform/msm_sdcc.1/by-name</div><div class="line">root@hammerhead:/dev/block/platform/msm_sdcc.1/by-name # ls -al</div></pre></td></tr></table></figure>
-<p> 输入以上命令即可找到boot的位置。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552572141/boposition_jqxant.png" alt=""></p>
-<p> 将boot导出成boot.img。这里一定要注意, 要按照你自己的情况将boot导出, 要修改<code>if=/dev/block/[实际boot文件夹名]</code>。<br> <code>dd if=/dev/block/mmcblk0p19 of=/data/local/boot.img</code><br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552640930/bocorrect_whui56.png" alt=""></p>
-<p> 重新开一个命令行页面，或直接<code>exit</code>退出，输入如下指令：<br> <code>adb root pull /data/local/boot.img boot.img</code></p>
-<p> 这里加了一个root是因为之前直接pull的时候说我权限不够。加了root之后发现还是一直失败, 就尝试先将boot.img存到<code>/sdcard/Download</code>下面之后直接用pull指令就成功了。</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@hammerhead:/sdcard/Download$ su</div><div class="line">root@hammerhead:/sdcard/Download# cp /data/local/boot.img /sdcard/Download/boot.img </div><div class="line">root@hammerhead:/sdcard/Download# exit</div><div class="line">root@hammerhead:/$ exit</div><div class="line">C:/Users/[your username]&gt; adb pull /sdcard/Download/boot.img</div></pre></td></tr></table></figure>
-<p> 在哪个目录下pull的，文件就会存在哪个目录下。</p>
-</li>
-<li><p>准备好bootimg-tools工具<br> <code>git clone https://github.com/pbatard/bootimg-tools.git</code></p>
-<p> 下载后打开文件夹到<code>[MinGW安装的目录]]\MinGW\msys\1.0</code>, 双击<code>msys.bat</code>即可进入到一个模拟Linux环境的GUN界面中。进入<code>[bootimg-tools所在文件夹]/bootimg-tools</code>(如果找不到的话可以用everything找找看), 用<code>make</code>指令生成二进制文件。</p>
-<p> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552574870/afmake_l4lqwi.png" alt=""></p>
-<p> 将boot.img拷到<code>[bootimg-tools所在文件夹]\bootimg-tools\mkbootimg</code>文件夹下, 执行命令<code>./unmkbootimg -i boot.img</code>。(要记录下面输出的一大段字，之后要重新生成boot.img的时候直接复制修改成相应kernel文件名和输出文件名即可)<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552641959/succesun_umfiqv.png" alt=""></p>
-</li>
-<li><p>提取原始zImage<br> 复制<code>kernel</code>文件并将其重命名为<code>zImage.gz</code>。用<code>010 Editor</code>工具找到16进制<code>1f 8b 08 00</code>， 删掉查找到的位置的前面的所有数据, 保存之后再执行命令<code>gunzip zImage.gz</code>。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552650755/succesch_yoj1nf.png" alt=""></p>
-<p> 到这里zImage文件就提取完成了。</p>
-<h2 id="修改内核"><a href="#修改内核" class="headerlink" title="修改内核"></a>修改内核</h2><h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p>我这里用的是IDA 7.0</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">C:\Users\[your username]&gt;adb shell</div><div class="line">shell@hammerhead:/ $ su</div><div class="line">root@hammerhead:/ # cd /dev/block/platform/msm_sdcc.1/by-name</div><div class="line">root@hammerhead:/dev/block/platform/msm_sdcc.1/by-name # ls -al</div></pre></td></tr></table></figure>
+
+输入以上命令即可找到boot的位置。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552572141/boposition_jqxant.png)
+
+将boot导出成boot.img。这里一定要注意, 要按照你自己的情况将boot导出, 要修改`if=/dev/block/[实际boot文件夹名]`。
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">dd if=/dev/block/mmcblk0p19 of=/data/local/boot.img</div></pre></td></tr></table></figure>
+
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552640930/bocorrect_whui56.png)
+
+重新开一个命令行页面，或直接`exit`退出，输入如下指令：
+`adb root pull /data/local/boot.img boot.img`
+
+这里加了一个root是因为之前直接pull的时候说我权限不够。加了root之后发现还是一直失败, 就尝试先将boot.img存到`/sdcard/Download`下面之后直接用pull指令就成功了。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">root@hammerhead:/sdcard/Download$ su</div><div class="line">root@hammerhead:/sdcard/Download# cp /data/local/boot.img /sdcard/Download/boot.img </div><div class="line">root@hammerhead:/sdcard/Download# exit</div><div class="line">root@hammerhead:/$ exit</div><div class="line">C:/Users/[your username]&gt; adb pull /sdcard/Download/boot.img</div></pre></td></tr></table></figure>
+
+在哪个目录下pull的，文件就会存在哪个目录下。
+</code></pre></li>
+<li><p>准备好bootimg-tools工具</p>
+<pre><code>`git clone https://github.com/pbatard/bootimg-tools.git`
+
+下载后打开文件夹到`[MinGW安装的目录]]\MinGW\msys\1.0`, 双击`msys.bat`即可进入到一个模拟Linux环境的GUN界面中。进入`[bootimg-tools所在文件夹]/bootimg-tools`(如果找不到的话可以用everything找找看), 用`make`指令生成二进制文件。
+
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552574870/afmake_l4lqwi.png)
+
+将boot.img拷到`[bootimg-tools所在文件夹]\bootimg-tools\mkbootimg`文件夹下, 执行命令`./unmkbootimg -i boot.img`。(要记录下面输出的一大段字，之后要重新生成boot.img的时候直接复制修改成相应kernel文件名和输出文件名即可)
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552641959/succesun_umfiqv.png)
+</code></pre></li>
+<li><p>提取原始zImage</p>
+<pre><code>复制`kernel`文件并将其重命名为`zImage.gz`。用`010 Editor`工具找到16进制`1f 8b 08 00`， 删掉查找到的位置的前面的所有数据, 保存之后再执行命令`gunzip zImage.gz`。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552650755/succesch_yoj1nf.png)
+
+到这里zImage文件就提取完成了。
+</code></pre><h2 id="修改内核"><a href="#修改内核" class="headerlink" title="修改内核"></a>修改内核</h2><h3 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h3><p> 我这里用的是IDA 7.0</p>
 <h3 id="正式开始"><a href="#正式开始" class="headerlink" title="正式开始"></a>正式开始</h3></li>
-<li><p>用IDA直接打开zImage文件, 并做如下改动<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552653260/IDA1_zugiws.png" alt=""></p>
-<p> 点击OK之后, 继续按照下面修改。TAT也不知道这样硬改中不中, 如果可以的话之后做完完整的步骤再好好找时间探究一下吧！<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659040/IDA2_t9pvte.png" alt="image alt"></p>
+<li><p>用IDA直接打开zImage文件, 并做如下改动</p>
+<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552653260/IDA1_zugiws.png)
+
+点击OK之后, 继续按照下面修改。
+</code></pre><p>  <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659040/IDA2_t9pvte.png" alt="image alt"></p>
 </li>
-<li><p>定位函数位置<br> 打开命令提示符, 输入如下指令关闭符号屏蔽(符号屏蔽又是个啥？？？)并查看函数地址, 因为在IDA中查看二进制文件不好直接用函数名进行定位。</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">C:\Users\[your username]&gt;adb shell</div><div class="line">shell@hammerhead:/ $ su</div><div class="line">root@hammerhead:/ # echo 0 &gt; /proc/sys/kernel/kptr_restrict /*关闭符号屏蔽*/</div><div class="line">root@hammerhead:/ # cat /proc/kallsyms |grep proc_pid_status</div><div class="line">root@hammerhead:/proc # cat /proc/kallsyms |grep __task_pid_nr_ns</div></pre></td></tr></table></figure>
-</li>
+<li><p>定位函数位置</p>
+<pre><code>打开命令提示符, 输入如下指令关闭符号屏蔽(符号屏蔽又是个啥？？？)并查看函数地址, 因为在IDA中查看二进制文件不好直接用函数名进行定位。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">C:\Users\[your username]&gt;adb shell</div><div class="line">shell@hammerhead:/ $ su</div><div class="line">root@hammerhead:/ # echo 0 &gt; /proc/sys/kernel/kptr_restrict /*关闭符号屏蔽*/</div><div class="line">root@hammerhead:/ # cat /proc/kallsyms |grep proc_pid_status</div><div class="line">root@hammerhead:/proc # cat /proc/kallsyms |grep __task_pid_nr_ns</div></pre></td></tr></table></figure>
+</code></pre></li>
 </ol>
 <pre><code>函数地址如下：
 ![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552655198/fuposition_lrj63p.png)
 
 在IDA中按下快捷键G跳转到c01b0884(__task_pid_nr_ns函数)
-![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659250/f1_otrhpf.png)
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659250/f1_otrhpf.png
 
 之后点击函数名c01b0884(__task_pid_nr_ns函数), 按下快捷键X, 会弹出交叉引用, 在其中查找我们上面找的第二个函数c02ba04c( proc_pid_status)的位置。
-</code></pre><p>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659761/f2_iuuo1l.png" alt=""> </p>
-<p>   好的, 上面选中的并不是我想找的函数TAT。这个时候, 就在IDA界面中按下<code>Shift+F12</code>, 在字符串界面查找<code>TracerPid</code>。找到之后双击查询后的结果。<br>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552661104/f3_zrynlg.png" alt=""></p>
-<p>   IDA在解析的时候没有解析好这个文件, 出现了下面的情况。<br>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552661543/f4_tn3sq3.png" alt=""></p>
-<p>   这时候选中<code>S</code>的位置即<code>0x53</code>按下<code>A</code>, 即可正常解析。如果解析出来还不是下面这种格式，可以鼠标左键选中该字符串的所有内容再按一次<code>A</code>。<br>   <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552703909/CHSU_cre1cq.png" alt=""></p>
-<pre><code>如果字符串都解析出来之后, 还是识别不出来c02ba04c( proc_pid_status)函数的话, 直接`G`跳转到c02ba04c, 并按下C, 但是识别的函数也不是正确的。所以这里采用第三篇参考文章的方法, 直接修改TracePid字符串。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552659761/f2_iuuo1l.png)
+
+好的, 上面选中的并不是我想找的函数TAT。这个时候, 就在IDA界面中按下`Shift+F12`, 在字符串界面查找`TracerPid`。找到之后双击查询后的结果。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552661104/f3_zrynlg.png)
+
+IDA在解析的时候没有解析好这个文件, 出现了下面的情况。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552661543/f4_tn3sq3.png)
+
+这时候选中`S`的位置即`0x53`按下`A`, 即可正常解析。如果解析出来还不是下面这种格式，可以鼠标左键选中该字符串的所有内容再按一次`A`。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552703909/CHSU_cre1cq.png)
+如果字符串都解析出来之后, 还是识别不出来c02ba04c( proc_pid_status)函数的话, 直接`G`跳转到c02ba04c, 并按下C, 但是识别的函数也不是正确的。所以这里采用第三篇参考文章的方法, 直接修改TracePid字符串。
 </code></pre><ol>
 <li><p>修改TracePid字符串</p>
-<p> (1) 选中<code>TracePid</code>中的<code>%d</code></p>
-<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552706938/S1_g980jo.png)
-</code></pre><p> (2) 将<code>TracePid</code>中的<code>%d</code>改为<code>0\t</code>, 选中<code>%d</code>后按下<code>Alt</code>+<code>4</code>。</p>
-<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552707440/p1_mebj3m.png)
-</code></pre><p> 上图中第四行第一个<code>%d</code>就是我们要修改的(TracerPid后的字符串), 十六进制为<code>25 64</code>。点击<code>25</code>前面按下<code>F2</code>, 输入<code>30 09</code>, 再按下<code>F2</code>就修改成功了。</p>
-<pre><code>![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552708361/p2_luiaxd.png)
-</code></pre><p> 最后保存修改的内容, 按下图点开之后直接点OK即可。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552708651/p3_zozpyy.png" alt=""></p>
-</li>
-<li><p>修改kernel文件<br> 在MinGW命令行界面输入命令<code>gzip -n -f -9 zImage</code>, 压缩修改好的文件<code>zImage</code>生成<code>zImage.gz</code>。用<code>010 Editor</code>打开文件<code>kernel</code>, 并在<code>kernel</code>中查找<code>1F 8B 08 00</code>。(下图是覆盖完成的样子)<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1553071178/1553071092_1_fg4s6b.png" alt=""></p>
-<p> 选中<code>1F 8B 08 00</code>位置之后，点开<code>Edit</code>-&gt;<code>Insert/Overwrite</code>-&gt;<code>Overwrite File...</code>, 选择<code>zImage.gz</code>文件即可, 这样就不用自己计算文件大小并且直接覆盖了, 完成之后点击保存为新的文件<code>boot-new.img</code>。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552722307/succ_eyefab.png" alt=""></p>
-<p> 使用执行unmkbootimg生成的命令, 修改-o参数名(要输出的文件名), 直接拷贝到MinGW命令行中直接执行。</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">    $ mkbootimg --base 0 --pagesize 2048 --kernel_offset 0x00008000 --ramdisk_offset 0x02900000 --second_offset 0x00f00=</div><div class="line">000 --tags_offset 0x02700000 --cmdline &apos;console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 max</div><div class="line">cpus=2 msm_watchdog_v2.enable=1&apos; --kernel kernel --ramdisk ramdisk.cpio.gz -o boot-new.img</div></pre></td></tr></table></figure>
-</li>
-<li><p>刷机<br> 我这里用的是<a href="http://www.kgfanr.com/articles/3019.html" target="_blank" rel="external">Nexus 5</a>, 直接在关机状态下按<code>音量键-</code>和<code>开机键</code>(或输入命令<code>adb reboot bootloader</code>)即可进入fastboot状态。在命令行中输入<code>fastboot flash boot boot-new.img</code>, 之后再输入<code>fastboot reboot</code>即可。<br> <img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552722558/succ2_yzvx0w.png" alt=""></p>
-<p> 刷完倒是能正常开机了, 但是我手机又要重新root了…..(这个时候有尝试过用SuperSU刷成砖, 还是用magisk+twrp比较好)</p>
-<h1 id="参考材料-文章"><a href="#参考材料-文章" class="headerlink" title="参考材料\文章"></a>参考材料\文章</h1><p><a href="https://www.xmsec.cc/re-modify-kernel-bypass-antidebug/" target="_blank" rel="external">逆向修改内核，绕过TracerPID反调试</a><br><a href="https://sourceforge.net/p/mingw/bugs/1552/" target="_blank" rel="external">make: cc: Command not found</a><br><a href="https://blog.csdn.net/jiangwei0910410003/article/details/65936634" target="_blank" rel="external">Android逆向之旅—应用的”反调试”方案解析(附加修改IDA调试端口和修改内核信息)</a></p>
+<pre><code>(1) 选中`TracePid`中的`%d`
+    ![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552706938/S1_g980jo.png)
+
+(2) 将`TracePid`中的`%d`改为`0\t`, 选中`%d`后按下`Alt`+`4`。
+    ![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552707440/p1_mebj3m.png)
+
+上图中第四行第一个`%d`就是我们要修改的(TracerPid后的字符串), 十六进制为`25 64`。点击`25`前面按下`F2`, 输入`30 09`, 再按下`F2`就修改成功了。
+    ![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552708361/p2_luiaxd.png)
+
+最后保存修改的内容, 按下图点开之后直接点OK即可。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552708651/p3_zozpyy.png)
+</code></pre></li>
+<li><p>修改kernel文件</p>
+<pre><code>在MinGW命令行界面输入命令`gzip -n -f -9 zImage`, 压缩修改好的文件`zImage`生成`zImage.gz`。用`010 Editor`打开文件`kernel`, 并在`kernel`中查找`1F 8B 08 00`。(下图是覆盖完成的样子)
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1553071178/1553071092_1_fg4s6b.png)
+
+选中`1F 8B 08 00`位置之后，点开`Edit`-&gt;`Insert/Overwrite`-&gt;`Overwrite File...`, 选择`zImage.gz`文件即可, 这样就不用自己计算文件大小并且直接覆盖了, 完成之后点击保存为新的文件`boot-new.img`。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552722307/succ_eyefab.png)
+
+使用执行unmkbootimg生成的命令, 修改-o参数名(要输出的文件名), 直接拷贝到MinGW命令行中直接执行。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">    $ mkbootimg --base 0 --pagesize 2048 --kernel_offset 0x00008000 --ramdisk_offset 0x02900000 --second_offset 0x00f00=</div><div class="line">000 --tags_offset 0x02700000 --cmdline &apos;console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 max</div><div class="line">cpus=2 msm_watchdog_v2.enable=1&apos; --kernel kernel --ramdisk ramdisk.cpio.gz -o boot-new.img</div></pre></td></tr></table></figure>
+</code></pre></li>
+<li><p>刷机</p>
+<pre><code>我这里用的是[Nexus 5](http://www.kgfanr.com/articles/3019.html), 直接在关机状态下按`音量键-`和`开机键`(或输入命令`adb reboot bootloader`)即可进入fastboot状态。在命令行中输入`fastboot flash boot boot-new.img`, 之后再输入`fastboot reboot`即可。
+![](https://res.cloudinary.com/dq4c0zqqy/image/upload/v1552722558/succ2_yzvx0w.png)
+
+刷完倒是能正常开机了, 但是我手机又要重新root了.....(这个时候有尝试过用SuperSU刷成砖, 还是用magisk+twrp比较好)
+</code></pre><h1 id="参考材料-文章"><a href="#参考材料-文章" class="headerlink" title="参考材料\文章"></a>参考材料\文章</h1><p><a href="https://www.xmsec.cc/re-modify-kernel-bypass-antidebug/" target="_blank" rel="external">逆向修改内核，绕过TracerPID反调试</a><br><a href="https://sourceforge.net/p/mingw/bugs/1552/" target="_blank" rel="external">make: cc: Command not found</a><br><a href="https://blog.csdn.net/jiangwei0910410003/article/details/65936634" target="_blank" rel="external">Android逆向之旅—应用的”反调试”方案解析(附加修改IDA调试端口和修改内核信息)</a></p>
 </li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/03/14/尝试绕过TracerPID反调试/" data-id="cju9ru7ck000bq0vvpq2zoffs" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/03/14/尝试绕过TracerPID反调试一/" data-id="cjus1zwev000i0wvvtwaj1qqr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -279,7 +438,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/03/09/用Android-Studio调试Nexus-5/" data-id="cju9ru7cd0009q0vv1dk0xjai" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/03/09/用Android-Studio调试Nexus-5/" data-id="cjus1zwev000g0wvv1wu6lkli" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -420,7 +579,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/09/11/HTTP系列(五)/" data-id="cju9ru7c60006q0vvq92ssi31" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/09/11/HTTP系列(五)/" data-id="cjus1zwef00080wvvm5gd8mf6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -589,7 +748,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="cju9ru7c60005q0vv0efpr5gr" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="cjus1zwev000d0wvvf47hm6te" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -756,7 +915,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/08/24/HTTP系列(三)/" data-id="cju9ru7bp0002q0vv2zn4whdd" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/08/24/HTTP系列(三)/" data-id="cjus1zwdk00010wvvxfvc8jgc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -889,7 +1048,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="cju9ru7c20004q0vvvylycz1y" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="cjus1zwdz00030wvvip56qgnb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -1024,7 +1183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/" data-id="cju9ru7bk0001q0vvhfvt1mre" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/" data-id="cjus1zwef00060wvv0sac0ui2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -1105,7 +1264,7 @@ svm_predict(y1, x1, clf)
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/01/22/libsvm环境配置及使用方法/" data-id="cju9ru7co000eq0vv9d35vho2" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/01/22/libsvm环境配置及使用方法/" data-id="cjus1zwev000b0wvvyasrgi9q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/机器学习/">机器学习</a></li></ul>
