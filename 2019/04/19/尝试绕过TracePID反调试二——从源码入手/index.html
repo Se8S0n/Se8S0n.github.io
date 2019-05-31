@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://i.imgur.com/ytyQvDO.png">
 <meta property="og:image" content="https://i.imgur.com/EAnFtOB.png">
 <meta property="og:image" content="https://i.imgur.com/pkdj3P3.png">
-<meta property="og:updated_time" content="2019-04-21T09:05:45.533Z">
+<meta property="og:updated_time" content="2019-04-23T00:04:38.255Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="尝试绕过TracePID反调试——从源码入手">
 <meta name="twitter:description" content="绕过TracePid反调试二第一篇文章是直接修改二进制文件尝试绕过TracerPID反调试 前言接受了评论的建议, 但是因为之前手机还没好加上没试过直接修改kernel的源码, 所以花了很多时间(都是环境惹的祸)。还有因为这个接触了shell code, 真的是一言难尽。事先说明, 下面的环境准备都是在国外的服务器上直接运行的, 难免有一些命令是需要翻墙的, 所以你实际上要用的命令可能跟我的有点不">
@@ -187,14 +187,14 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
 <h4 id="用unmkbootimg解包"><a href="#用unmkbootimg解包" class="headerlink" title="用unmkbootimg解包"></a>用unmkbootimg解包</h4><p>在MinGW输入命令<code>./unmkbootimg -i boot.img</code>, 如果是Ubuntu, 直接去掉前面的<code>./</code>执行命令。</p>
 <p>我们获得了rebuild需要输入的指令, 之后要rebuild的时候要修改一下才能用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">To rebuild this boot image, you can use the command:</div><div class="line">  mkbootimg --base 0 --pagesize 2048 --kernel_offset 0x00008000 --ramdisk_offset 0x02900000 --second_offset 0x00f00000 --tags_offset 0x02700000 --cmdline &apos;console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 maxcpus=2 msm_watchdog_v2.enable=1&apos; --kernel kernel --ramdisk ramdisk.cpio.gz -o boot.img</div></pre></td></tr></table></figure></p>
 <h4 id="替换kernel重新打包"><a href="#替换kernel重新打包" class="headerlink" title="替换kernel重新打包"></a>替换kernel重新打包</h4><p><img src="https://i.imgur.com/EAnFtOB.png" alt=""></p>
-<h4 id="刷入bootnew-img"><a href="#刷入bootnew-img" class="headerlink" title="刷入bootnew.img"></a>刷入bootnew.img</h4><p>在手机开机的情况下, 进入bootnew.img存放的目录输入下述命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ adb reboot bootloader</div><div class="line">$ astboot flash boot bootnew.img</div><div class="line">$ fastboot reboot</div></pre></td></tr></table></figure></p>
+<h4 id="刷入bootnew-img"><a href="#刷入bootnew-img" class="headerlink" title="刷入bootnew.img"></a>刷入bootnew.img</h4><p>在手机开机的情况下, 进入bootnew.img存放的目录输入下述命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$ adb reboot bootloader</div><div class="line">$ fastboot flash boot bootnew.img</div><div class="line">$ fastboot reboot</div></pre></td></tr></table></figure></p>
 <h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>现在到了见证奇迹的时刻了<br><img src="https://i.imgur.com/pkdj3P3.png" alt=""></p>
 <h2 id="参考文章或其他链接"><a href="#参考文章或其他链接" class="headerlink" title="参考文章或其他链接"></a>参考文章或其他链接</h2><p><a href="http://www.cnblogs.com/a2211009/p/4265225.html" target="_blank" rel="external">Ubuntu 安装 JDK 7 / JDK8 的两种方式</a><br><a href="https://blog.csdn.net/zhandoushi1982/article/details/50807282" target="_blank" rel="external">在Ubuntu中通过update-alternatives切换java版本</a><br><a href="https://blog.csdn.net/XXOOYC/article/details/85679143" target="_blank" rel="external">编译Android 9.0内核源码并刷入手机</a><br><a href="https://blog.csdn.net/u012417380/article/details/73353670" target="_blank" rel="external">Android系统内核编译及刷机实战 （修改反调试标志位）</a><br><a href="https://source.android.com/setup/build/initializing" target="_blank" rel="external">搭建编译环境</a><br><a href="https://appuals.com/how-to-build-a-custom-android-kernel/" target="_blank" rel="external">How to Build a Custom Android Kernel</a><br><a href="https://blog.csdn.net/fly_hps/article/details/86172698" target="_blank" rel="external">Android源码定制添加反反调试机制</a><br><a href="https://pan.baidu.com/s/1K5LU-h8npuczj4JgjKkaWw" target="_blank" rel="external">Java6+Java7链接</a>  提取码：ma3i</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" data-id="cjus3508m000digvvxztkyztg" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" data-id="cjwbuksgv000xpcutmvdk4hq8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
@@ -204,6 +204,15 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
   
     
 <nav id="article-nav">
+  
+    <a href="/2019/05/19/SSRF-LABS指南/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          SSRF-LABS指南
+        
+      </div>
+    </a>
   
   
     <a href="/2019/03/31/用Android通讯APP发消息发现的BUG/" id="article-nav-older" class="article-nav-link-wrap">
