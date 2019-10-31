@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="utf-8">
   
   <title>libsvm环境配置及使用方法 | Se8S0n</title>
@@ -26,7 +26,7 @@
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
   
-</head>
+</head></html>
 <body>
   <div id="container">
     <div id="wrap">
@@ -98,7 +98,7 @@ Visual Studio 2013
 PyCharm 2017.2.3
 </code></pre><h2 id="libsvm环境配置"><a href="#libsvm环境配置" class="headerlink" title="libsvm环境配置"></a>libsvm环境配置</h2><p>以下文件路径仅仅是我电脑中的，如果存放的位置不一样，请自行调整</p>
 <ol>
-<li>因为电脑装VS之后出现了点问题，所以不能按照<a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="external">林智仁LIBSVM     python包的安装与使用</a>这个链接中64位机的解决方法。就直接用了翔翔发给我的libsvm.dll。将相关链接中的“用vs2013运行过的libsvm.dll”下载好直接放在C:\Windows\System32下即可。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631573/dll%E5%AD%98%E6%94%BE%E4%BD%8D%E7%BD%AE_iapklk.png" alt=""><br>  <strong>Tips</strong>：或者在Anaconda离线包的链接中下载，按照“林智仁LIBSVM python包的安装与使用”进行操作。当时在页面不能直接找到VS的Prompt快捷方式，打开D:\develop\Visual Studio\Common7\Tools\Shortcuts中的VS2013 x64 本机工具命令提示进行nmake操作。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631572/TIM%E5%9B%BE%E7%89%8720180122141218_qko6gg.png" alt=""></li>
+<li>因为电脑装VS之后出现了点问题，所以不能按照<a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="noopener">林智仁LIBSVM     python包的安装与使用</a>这个链接中64位机的解决方法。就直接用了翔翔发给我的libsvm.dll。将相关链接中的“用vs2013运行过的libsvm.dll”下载好直接放在C:\Windows\System32下即可。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631573/dll%E5%AD%98%E6%94%BE%E4%BD%8D%E7%BD%AE_iapklk.png" alt><br>  <strong>Tips</strong>：或者在Anaconda离线包的链接中下载，按照“林智仁LIBSVM python包的安装与使用”进行操作。当时在页面不能直接找到VS的Prompt快捷方式，打开D:\develop\Visual Studio\Common7\Tools\Shortcuts中的VS2013 x64 本机工具命令提示进行nmake操作。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631572/TIM%E5%9B%BE%E7%89%8720180122141218_qko6gg.png" alt></li>
 <li><p>直接将libsvm文件夹中python下的 svmutil.py和svm.py两个文件复制粘贴到D:\develop\Anaconda\Lib下</p>
 </li>
 <li><p>在python环境下测试是否安装成功<br>(1) 输入测试代码</p>
@@ -121,7 +121,7 @@ x = [[1,1], [2,0], [2,3]]
 y = [0, 0, 1]
 clf = svm_train(y, x, &apos;-s 0 -t 0&apos;)
 </code></pre></li>
-<li>相关参数解释说明<br>  x是特征向量<br>  (在这里，x必须是list或者是tuple，因为svm_train函数第二个参数传入时限定了，如果不是的话，会有报错）<br>  y是特征向量对应的标记<br>  clf是分类器<br>  ‘-s 0 -t 0’是option,详情请见<a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="external">LIBSVM详细介绍和使用方法</a></li>
+<li>相关参数解释说明<br>  x是特征向量<br>  (在这里，x必须是list或者是tuple，因为svm_train函数第二个参数传入时限定了，如果不是的话，会有报错）<br>  y是特征向量对应的标记<br>  clf是分类器<br>  ‘-s 0 -t 0’是option,详情请见<a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="noopener">LIBSVM详细介绍和使用方法</a></li>
 <li>svm_predict函数<pre><code>from svutil import *
 x = [[1,1], [2,0], [2,3]]
 y = [0, 0, 1]
@@ -131,12 +131,12 @@ svm_predict(y1, x1, clf)
 </code></pre></li>
 </ul>
 <h2 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h2><hr>
-<p>   <a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="external">林智仁LIBSVM python包的安装与使用</a><br>   <a href="https://anaconda.org/conda-forge/repo" target="_blank" rel="external">Anaconda离线包</a><br>   <a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="external">LIBSVM详细介绍和使用方法</a><br>   <a href="https://pan.baidu.com/s/1hthwNis" target="_blank" rel="external">用vs2013运行过的libsvm.dll 密码:aiu7</a><br>   <a href="https://pan.baidu.com/s/1htfuUNE" target="_blank" rel="external">libsvm-3.22 离线包 密码：gbpl</a></p>
+<p>   <a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="noopener">林智仁LIBSVM python包的安装与使用</a><br>   <a href="https://anaconda.org/conda-forge/repo" target="_blank" rel="noopener">Anaconda离线包</a><br>   <a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="noopener">LIBSVM详细介绍和使用方法</a><br>   <a href="https://pan.baidu.com/s/1hthwNis" target="_blank" rel="noopener">用vs2013运行过的libsvm.dll 密码:aiu7</a><br>   <a href="https://pan.baidu.com/s/1htfuUNE" target="_blank" rel="noopener">libsvm-3.22 离线包 密码：gbpl</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/01/22/libsvm环境配置及使用方法/" data-id="ck1n7fi7o0001q8utzhihbahd" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/01/22/libsvm环境配置及使用方法/" data-id="ck2e1s7ty00015sutzapljp6v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/机器学习/">机器学习</a></li></ul>
