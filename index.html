@@ -61,6 +61,155 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-从OWASP-CrackMe学Android逆向-二" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/" class="article-date">
+  <time datetime="2019-11-05T08:42:48.000Z" itemprop="datePublished">2019-11-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/">从OWASP CrackMe学Android逆向(二)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从<a href="https://www.52pojie.cn/thread-1048786-1-1.html" target="_blank" rel="noopener">OWASP CrackMe学Android逆向(一)</a>感觉用题目来学习会比之前学得内容多很多, 然后这些题目有多种解法, 我也学到很多姿势, 下面就来分析<code>UnCrackable-Level2</code>。这个题目涉及.so动态调试的知识。</p>
+<h2 id="UnCrackable-Level2"><a href="#UnCrackable-Level2" class="headerlink" title="UnCrackable-Level2"></a>UnCrackable-Level2</h2><p>同样的, 先将<code>UnCrackable-Level2.apk</code>放到JEB中分析, 一进到MainActivity, 就发现了一个神奇的东西, 这个应用加载了<code>libfoo.so</code>文件。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920916/OWASP/OWASP-2/1.png" alt></p>
+<p>能感觉出来这个应用和之前level1不同的是, check输入的关键代码应该是在<code>libfoo.so</code>中, 所以不能使用Xposed去处理这个CrackMe了, 但是root和debug的检测还是Java层调用<code>System.exit(0)</code>退出。所以上次的cracker.js, 重载系统exit函数部分保留。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/2.png" alt></p>
+<p>将<code>UnCrackable-Level2.apk</code>解压之后在<code>UnCrackable-Level2\lib\arm64-v8a</code>目录下找到<code>ibfoo.so</code>, 把它拖到IDA里面分析一下。查看Export表导出的函数, 发现存在含有关键词CodeCheck的函数。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/3.png" alt></p>
+<p>按下F5查看其反编译的代码, 发现存在可疑的数据<code>xmmword_EA0</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/4.png" alt></p>
+<p> 双击<code>xmmword_EA0</code>, 发现了一个传入v7的是一个大数, 使用Hex-View查看其Ascii码, 发现了一句不完整的话<code>Thank for all t</code><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/5.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/6.png" alt></p>
+<p> CheckCode中还有v8参数, 虽然现在暂时不知道它有什么用, 还是先将它最后处理的过程写出来, 详情可以看注释, 最后我们知道v8的数据转换为ascii码之后为”eish”, 暂时不知道这个的用处, 所以先放着。根据下面的result获取, 我们也就知道了, 我们最终想要的字符串是存放在v6参数中的。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/7.png" alt></p>
+<p> 分析<code>libfoo.so</code>中的其他的函数, 发现应用限制了attach, 还是通过轮询的方法监视应用是否被调试。也就是说, 如果想使用IDA动态调试这个应用的话, 还需要我们绕过这种反调试的机制。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/8.png" alt></p>
+<p> 事先说明，上面静态分析的过程都是对<code>lib\arm64-v8a</code>文件夹下的<code>libfoo.so</code>文件进行分析的。在分析代码的过程中，存在一些函数调用的过程让我们看起来不是很舒服。实际上这些调用的函数都是JNI函数, 我们可以通过导入jni.h文件(File-&gt;Load File-&gt;Parse C header file…)——jni.h文件一般安装了Android Studio都有, 我的存放在<code>Android Studio\jre\include</code>目录下, 选中v4指针，选中后按一下”y”键，然后将类型声明为<code>JNIEnv*</code>即可。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572922697/OWASP/OWASP-2/re_8.png" alt></p>
+<p> 修改之后效果如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/9.png" alt></p>
+<p> 那什么时候我们可以使用上面的方法还原函数名呢？在文章<a href="https://wooyun.js.org/drops/%E5%AE%89%E5%8D%93%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95%E4%B8%83%E7%A7%8D%E6%AD%A6%E5%99%A8%E4%B9%8B%E5%AD%94%E9%9B%80%E7%BF%8E%20%E2%80%93%20Ida%20Pro.html" target="_blank" rel="noopener">安卓动态调试七种武器之孔雀翎 – Ida Pro</a>中有提及, 如果出现一个指针加上一个数字，比如v3+676。然后将这个地址作为一个方法指针进行方法调用，并且第一个参数就是指针自己，比如(v3+676)(v3…)。这实际上就是我们在JNI里经常用到的JNIEnv方法。</p>
+<p> 静态分析就分析到这里了。现在, 我们需要开始动手了。</p>
+<h3 id="静态分析代码"><a href="#静态分析代码" class="headerlink" title="静态分析代码"></a>静态分析代码</h3><p>因为我手机arm版本为<code>arm64-v8a</code>(使用命令<code>adb shell getprop ro.product.cpu.abi</code>可查看arm版本), 所以前面的分析都是基于<code>lib\armeabi-v7a\libfoo.so</code>。当我将<code>lib\armeabi-v7a\libfoo.so</code>拖到32位的IDA中分析代码的时候找到含有<code>CodeCheck</code>的函数, 发现密钥以明文字符串的形式出现了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/10.png" alt></p>
+<p> 这时候我们输入”Thanks for all the fish”, 发现我们成功找到密钥。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/11.png" alt></p>
+<p>即便如此简单, 我们还是需要学习通过动态调试的方法获取密钥。以防遇到加了密或者其他更难分析的情况，我们无从下手。</p>
+<h3 id="IDA动态调试代码"><a href="#IDA动态调试代码" class="headerlink" title="IDA动态调试代码"></a>IDA动态调试代码</h3><h4 id="绕过反调试机制"><a href="#绕过反调试机制" class="headerlink" title="绕过反调试机制"></a>绕过反调试机制</h4><p>通过上面的分析(不包含静态分析<code>arm64-v7a</code>目录的libfoo.so文件的内容), 静态分析到现在也没找到完整的23个字母长度的密钥, 我们要通过IDA调试的方法获得密钥,。尝试动态调试.so文件的时候会发现应用会闪退, 所以我们需要来过反调试机制才能让应用正常运行并且获得密钥。那我们怎么做才能成功绕过反调试机制呢？</p>
+<p>根据分析，我们要绕过的反调试机制分别处于Java层和Native层。</p>
+<p>我们下面先修改应用的smali源码, 不然我们设置完AndroidManifest.xml文件<code>debuggable=&quot;true&quot;</code>之后, 还要面对下面的弹窗。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/12.png" alt></p>
+<p>还记得我们最开始分析的Java层的代码不, 现在我们来回忆一下。发现应用在root环境或可调试的环境下运行之后, 会调用MainActivity类中的a函数。双击该函数, 分析代码逻辑。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/13.png" alt></p>
+<p>发现这个函数会在我们做了点击OK的操作之后调用系统的exit函数退出。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/14.png" alt></p>
+<p>反编译apk之后, 定位到刚刚的a函数。发现函数最后返回为return-void, 那我们直接把中间的代码删除就ok。接下来就是常规的反编译+重签名的操作, 这里就不赘述了。安装修改之后的应用, Java层的反调试就绕过了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/15.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/16.png" alt></p>
+<p>下面讲一下稍有难度的绕过Native层的代码, 用IDA反编译libfoo.so。从IDA左侧的Function窗口双击<code>Java_sg_vantagepoint_uncrackable2_MainActivity_init</code>, 发现会调用<code>sub_918</code>方法。双击<code>sub_918</code>函数分析代码。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/17.png" alt></p>
+<p>通过代码我们可以知道, <code>sub_918</code>是起反调试作用的关键函数。接下来我们分析一下这个函数是如何实现反调试的，该函数会先fork自身, 产生一个子进程, 父进程在运行的过程中使用了轮询机制, 通过<a href="https://refspecs.linuxbase.org/LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/baselib-ptrace-1.html" target="_blank" rel="noopener">ptrace函数</a>监视自身是否处于被调试的状态。子进程和fock失败的父进程, 会调用waitpid一般情况下, ptrace这种类型的函数是不会被混淆的, 所以我们直接将调用ptrace函数的部分nop掉就好了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/18.png" alt></p>
+<p>使用IDA View-A打开<code>sub_918</code>函数, 可以看到有两个<code>BL .ptrace</code>。选中其中的一个<code>.ptrace</code>, 然后打开Hex View-1页面。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/19.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/20.png" alt></p>
+<p>按下快捷键<code>F2</code>, 输入<code>1F 20 03 D5</code>(NOP), 将原本的<code>9C FF FF 97</code>替换掉, patch结束之后按<code>F2</code>完成修改(两个<code>BL .ptrace</code>都用这种方法修改)。发现网上有部分文章使用指令<code>00 00 00 00</code>和<code>00 00 A0 E1</code>(mov r0,r0)修改, 我按照那种方式修改之后, 发现代码结构被破坏掉了, 应用不能正常运行, 最后直接使用<code>NOP</code>指令才能让应用正常运行, 并绕过反调试的检测。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/21.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/22.png" alt></p>
+<p>最后按下图选中下图<code>Apply patches to input file....</code>, 就可以保存我们修改之后的结果。我们只需要patch我们设备使用到的<code>libfoo.so</code>文件, 比如我设备的arm版本是<code>arm64-v8a</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/23.png" alt></p>
+<p>这里只针对这个应用的反调试作了介绍, 如果想了解更多反调试和绕过反调试的内容, 可以看看文章<a href="https://bbs.pediy.com/thread-223460.htm" target="_blank" rel="noopener">【SO壳】17种安卓native反调试收集</a>。</p>
+<h4 id="IDA动态调试Native代码"><a href="#IDA动态调试Native代码" class="headerlink" title="IDA动态调试Native代码"></a>IDA动态调试Native代码</h4><p>在正式开始之前, 我们需要做点准备工作。 首先打开目录<code>&lt;你IDA安装的目录下&gt;\IDA\dbgsrv</code>, 将该目录下的<code>android_server</code>push进手机里面并添加权限。</p>
+<pre><code>$ adb push android_server64 #要按照你自己的使用的设备的内核进行选择, 查看arm版本就知道
+$ adb forward tcp:23946 tcp:23946 # 设置本地端口转发
+$ adb shell
+$ su
+$ cd /data/local/tmp
+$ chmod +x android_server64
+$ ./android_server
+</code></pre><p> 经过测试，发现应用不能进行调试。我们先解决AndroidManifest.xml上的反调试，有4种方法：</p>
+<ul>
+<li>反编译APK, 修改AndroidManifest.xml, 使<code>debuggable=&quot;true&quot;</code></li>
+<li>从手机内核中提取出boot.img并修改, 使<code>ro.debuggable=1</code>, 或者可以使用mprop, 但是有版本限制。</li>
+<li>在装有Xposed的手机上安装<a href="https://security.tencent.com/index.php/opensource/detail/17" target="_blank" rel="noopener">BDOpener</a>, 重启激活该模块即可。</li>
+<li><p>设置全局变量, 使<code>ro.debuggable=1</code>（每次开机重启后失效）</p>
+<p>使用上面的方法让应用处于可调试的状态, 用DDMS打开, 效果如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/24.png" alt></p>
+</li>
+</ul>
+<p>先输入命令<code>adb shell dumpsys activity top | findstr ACTIVITY</code>, 通过输出可知应用的包名及当前的Activity, 输入命令<code>adb shell am start -D -n owasp.mstg.uncrackable2/sg.vantagepoint.uncrackable2.MainActivity</code>可让Uncrackable2这个应用处于被调试状态。这时候查看DDMS, 我们可以看到应用的状态改变了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/25.png" alt></p>
+<p> 接下来要用IDA对<code>.so</code>文件进行动态调试, 打开64位的IDA，打开debug选项<code>Debugger-&gt;attach-&gt;Remoute Android debugger</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/26.png" alt></p>
+<p> 这时候会出现一个弹窗, 点击<code>Debug option</code>, 勾选上框出来的3项。点击OK之后, 在hostname里面填写127.0.0.1即可。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/27.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/28.png" alt></p>
+<p> 之后会出现手机加载的进程, 我们只需要选中我们想调试的<code>uncrackable2</code>, 就可以进入IDA的调试界面。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/29.png" alt></p>
+<p> 之后使用jdb使应用继续运行, 因为上面的DDMS几次重新打开, 所以端口映射部分会不一致。我们在使用jdb调试的时候, 最好还是先打开DDMS, 查看应用真正映射的端口, 否则会出现<code>无法附加到目标 VM</code>的错误, 按照下面的显示结果, 我们需要输入命令<code>jdb -connect com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=8605</code>(8700端口被DDMS进程占用, 改为8605端口, 不开DDMS就不用改)。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/30.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/31.png" alt></p>
+<p> 双开IDA计算进程动态运行时我们想要定位的函数的地址, 在动态调试的IDA按下<code>F9</code>快捷键让程序正常运行, 这时候我们就能在IDA右侧<code>Module</code>板块搜索到<code>libfoo.so</code>动态加载的地址<code>0x0000007B11291000</code>, 之后我们从分析静态<code>libfoo.so</code>的IDA中获取函数<code>CodeCheck</code>函数的偏移量为<code>0xDAC</code>, 所以最后我们能够计算出我们要跳转到<code>0x0000007B11291DAC</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/32.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/33.png" alt></p>
+<p>按下快捷键<code>G</code>, 跳转到我们计算的CodeCheck函数开始的地址(<code>0x0000007B11291DAC</code>), 发现代码不能解析出来, 选中部分代码, 用快捷键<code>C</code>解析代码(一次不行就先按<code>C</code>再按下<code>Force</code>)。然后在地址<code>0x0000007B11291DAC</code>下断点, 在手机应用界面上输入随便输入长度为23的字符串之后点击<code>Verify</code>, 就可以运行到如下位置。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/34.png" alt></p>
+<p>在动态调试汇编代码的过程中, 会发现我们很难根据变量名获取其中的值, 只能在调试的过程中看到寄存器中存储的内容, 将静态调试的IDA中的汇编代码和动态调试过程中的IDA的代码进行比对, 我们可以找出一些函数, 比如这里的<code>strncmp</code>的函数的位置, 也可以通过静态分析的IDA找到<code>strncmp</code>函数的位置(<code>0x0000007B11291000+0xE5C=0x0000007B11291E5C</code>), 选中<code>unk_7B11281820</code>, 使用快捷键<code>N</code>可将地址名重命名为<code>.strncmp</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/35.png" alt></p>
+<p>IDA右侧有<code>General Registers</code>窗口, 但是这个窗口只会出现地址, 而我们需要获取寄存器中的值, <code>View-&gt;Open subviews-&gt;Hex dump</code>可以查看内存中的数值。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/36.png" alt></p>
+<p><code>F8</code>单步调试到<code>BL .strncmp</code>处, 这时候我们就能看到传递的参数寄存器X1和X0存放的地址。鼠标移至X0存放的地址, 右键选中<code>Select All</code>, 复制地址。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/37.png" alt></p>
+<p>转到<code>Hex View-3</code>的窗口, 按下快捷键<code>G</code>, 跳转到刚刚我们复制的地址处。可以看到我们刚刚在应用中输入的数值, 想要获取X1的值可以用一样的方法, 最终我们得到要输入的密码为<code>Thanks for all the fish</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/38.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/39.png" alt></p>
+<p>IDA动态调试的过程就到这里结束了, 下面还有一种不patch apk的方法可以实现绕过反调试和各种检测的方法, 使用到了Radare2, 感觉重要的是学习思路而不是工具如何使用这句话, 还是很有道理的。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>实际上最近有很多事情要做, 配置Radare2及其插件上, 我花了很多时间, 现在还有一个小插件没安装好。为了推着自己完成这篇系列文章, 就把UnCrackable2完成的部分先发出来。希望我能尽快完成环境的配置还有之后的文章吧…..</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-二/" data-id="ck2lmac0y000bq0utztogi6fs" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-从OWASP-CrackMe学Android逆向-一" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/" class="article-date">
+  <time datetime="2019-11-05T08:40:47.000Z" itemprop="datePublished">2019-11-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/">从OWASP CrackMe学Android逆向(一)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="准备环境、工具"><a href="#准备环境、工具" class="headerlink" title="准备环境、工具"></a>准备环境、工具</h2><p>Pixel(Magisk+Xposed/EdXposed)<br>这里要安利一下Magisk，它现在有个超强的Magisk Hide功能，能隐藏root状态，不过我还没研究过它的原理，如果后面有机会的话会稍微整理一下的。</p>
+<h2 id="UnCrackable-Level1"><a href="#UnCrackable-Level1" class="headerlink" title="UnCrackable-Level1"></a>UnCrackable-Level1</h2><p>进入到存有UnCrackable的文件目录下，<code>adb install UnCrackable-Level1.apk</code>把APK安装到手机上。打开应用之后，发现应用存在root检测，一旦发现了root状态，点击OK之后应用就会被kill。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919408/OWASP/1.png" alt><br>可以反编译apk之后patch root检测部分的内容，重打包之后安装到手机里面绕过root检测，也可以用Magisk自带的Magisk Hide绕过。Magisk Hide设置方法如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919459/OWASP/2.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919460/OWASP/3.png" alt><br>当然第二张图里会不一样，我们需要选中UnCrackable-Level1.apk。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919460/OWASP/4.png" alt></p>
+<p>随便输个内容，按下VERIFY，发现出现了个弹窗，要我们再试一下。OK，可以看出我们应该从反编译apk开始入手，找找它这个验证的代码逻辑，看看能不能找到正确的字符串，或者看看有没有方法绕过这样的条件判断。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919461/OWASP/5.png" alt></p>
+<p>如果代码量过大的话，我们可以通过<code>adb shell dumpsys activity top | findstr ACTIVITY</code>定位要找的界面的代码。像下面这样，就能定位到界面<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919463/OWASP/6.png" alt></p>
+<p>不过用JEB看一下，发现这个代码量真的不是很大….用JEB打开MainActivity之后看到一个verify的函数没有经过混淆，看代码逻辑，判断的条件由a.a()函数传递，返回的是一个boolean类型的值。如果Level1真要让我们弹出Success的话，就没什么意思了，那就跟进a.a()函数里面看看。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919464/OWASP/7.png" alt></p>
+<p>发现a.a()中调用了加密的算法，之后将用户输入的值也就是arg5与加密后的结果进行比对，若比对成功的话，就说明我们输入的是正确的。明显这个crackme的意图不是要我们patch源代码然后得到弹窗Success, 而是获得flag, 也就是密文<code>5UJiFctbmgbDoLXmpL12mkno8HT4Lv8dlat8FxR2GOc=</code>解密后的结果。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919464/OWASP/8.png" alt></p>
+<h3 id="CTF解题法"><a href="#CTF解题法" class="headerlink" title="CTF解题法"></a>CTF解题法</h3><p>可以使用动态和静态两种方法获得明文, 静态的方法参照文章<a href="https://nankeen.me/posts/owasp-android-level1/" target="_blank" rel="noopener">OWASP Android Crackme Level 1</a>, 文章的作者使用了openssl和硬编码在源码中的密钥<code>8d127684cbc37c17616d806cf50473cc</code>解密<code>5UJiFctbmgbDoLXmpL12mkno8HT4Lv8dlat8FxR2GOc=</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919465/OWASP/9.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919466/OWASP/10.png" alt><br>通过代码我们可以知道AES算法使用了ECB加密模式, 且在CTF中AES-128加密算法的密钥一般为32位, 输入命令<code>echo 5UJiFctbmgbDoLXmpL12mkno8HT4Lv8dlat8FxR2GOc= | openssl enc -aes-128-ecb -base64 -d -nopad -K 8d127684cbc37c17616d806cf50473cc</code>可获取flag<code>I want to believe</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919467/OWASP/11.png" alt></p>
+<h3 id="Xposed解法"><a href="#Xposed解法" class="headerlink" title="Xposed解法"></a>Xposed解法</h3><p>感觉上面的方法太巧妙了, 下面会补充一个没那么巧妙且常用的方法——Xposed hook, 我一开始找到函数a.a(), 但是因为参数类型填写不正确的原因, 加上该函数实际上返回的是<code>byte []</code>类型的数据, 所以不能得到正确的flag, Xposed模块param.getResult()的返回值又是String类型的数据，所以在这里我们需要处理数据转换的问题。具体的Xposed模块代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">package com.example.unlock;</span><br><span class="line"></span><br><span class="line">import android.util.Log;</span><br><span class="line">import de.robv.android.xposed.IXposedHookLoadPackage;</span><br><span class="line">import de.robv.android.xposed.XC_MethodHook;</span><br><span class="line">import de.robv.android.xposed.XC_MethodReplacement;</span><br><span class="line">import de.robv.android.xposed.XposedBridge;</span><br><span class="line">import de.robv.android.xposed.XposedHelpers;</span><br><span class="line">import de.robv.android.xposed.callbacks.XC_LoadPackage;</span><br><span class="line">import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;</span><br><span class="line">public class HookMain implements IXposedHookLoadPackage &#123;    </span><br><span class="line">    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable &#123;               </span><br><span class="line">        if(!lpparam.packageName.equals(&quot;owasp.mstg.uncrackable1&quot;)) //过滤包名</span><br><span class="line">            return; </span><br><span class="line">        XposedBridge.log(&quot;Loaded app: &quot; + lpparam.packageName);        //Hook a方法        </span><br><span class="line">        try &#123;              </span><br><span class="line">            XposedHelpers.findAndHookMethod(&quot;sg.vantagepoint.a.a&quot;, lpparam.classLoader, &quot;a&quot;, byte [].class, byte [].class, new XC_MethodHook() &#123;                </span><br><span class="line">                @Override                </span><br><span class="line">                protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable &#123;                                 </span><br><span class="line">                &#125;                            </span><br><span class="line">                protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable &#123;                    </span><br><span class="line">                    // 转换数据类型</span><br><span class="line">                    String flag = new String((byte []) param.getResult()); </span><br><span class="line">                    // 在这里使用Log.i()可能会输出失败, 最好还是用XposedBridge.log</span><br><span class="line">                    XposedBridge.log(&quot;SECRET: &quot; + flag);               </span><br><span class="line">                &#125;            </span><br><span class="line">           &#125;);       </span><br><span class="line">        &#125; catch (Throwable e)&#123;            </span><br><span class="line">            XposedBridge.log(&quot;hook failed&quot;);            </span><br><span class="line">            XposedBridge.log(e);       </span><br><span class="line">        &#125;    </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>安装Xposed模块并重启之后，随便输入之后提交，得到flag<code>I want to believe</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919467/OWASP/12.png" alt></p>
+<h3 id="Frida解题法"><a href="#Frida解题法" class="headerlink" title="Frida解题法"></a>Frida解题法</h3><p>还可以按照wp <a href="https://enovella.github.io/android/reverse/2017/05/18/android-owasp-crackmes-level-1.html" target="_blank" rel="noopener">Level1 Writeup</a>使用Frida hook代码获取flag。</p>
+<p>Frida使用的过程中不能和Magisk Hide一起使用, 不然会出现<code>Failed to spawn: unable to access zygote64 while preparing for app launch; try disabling Magisk Hide in case it is active</code>的报错。所以我们需要先关掉Magisk Hide(Magisk Manager &gt; Settings &gt;Magisk &gt; Magisk Hide (关掉)), 并且还要在Frida脚本里面绕过root的检测。</p>
+<p>因为之前没有接触过Frida, 也算是用这个实例来学习Frida的使用, 如果跟我一样不是很熟悉Frida, 可以配合<a href="https://www.frida.re/docs/javascript-api/#java" target="_blank" rel="noopener">Frida的官方文档</a>一起食用, 文档中有Frida的js API使用说明, 下面的代码主要涉及的是调用Java函数的部分。作者在这里写的绕过root和debug的思路我觉得值得学习和思考, 有种听君一席话, 胜读十年书的感觉。当然, 这样讲还是有点夸张的, 不过真的很值得学习。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">Java.perform(function () &#123;</span><br><span class="line">  send(&quot;Starting hooks OWASP uncrackable1...&quot;);</span><br><span class="line">  /*</span><br><span class="line">    hook java.lang.System.exit, 使该函数只用来输出下面的字符串</span><br><span class="line">    避免了应用的检测机制导致应用退出, 使用该方法绕过Java层的root/debug检测 </span><br><span class="line">  */</span><br><span class="line">  var sysexit = Java.use(&quot;java.lang.System&quot;);</span><br><span class="line">  sysexit.exit.overload(&quot;int&quot;).implementation = function(var_0) &#123;</span><br><span class="line">    send(&quot;java.lang.System.exit(I)V  // We avoid exiting the application  :)&quot;);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  var aes_decrypt = Java.use(&quot;sg.vantagepoint.a.a&quot;);</span><br><span class="line">  aes_decrypt.a.overload(&quot;[B&quot;,&quot;[B&quot;).implementation = function(var_0,var_1) &#123;</span><br><span class="line">    send(&quot;sg.vantagepoint.a.a.a([B[B)[B   doFinal(enc)  // AES/ECB/PKCS7Padding&quot;);</span><br><span class="line">    send(&quot;Key       : &quot; + var_0);</span><br><span class="line">    send(&quot;Encrypted : &quot; + var_1);</span><br><span class="line">    /*</span><br><span class="line">      重载解密函数, 并获取其返回值, 因其类型为byte [], </span><br><span class="line">      js在调用Java方法之后只能返回一个对象, 而不是返回一个byte类型的数组</span><br><span class="line">    */</span><br><span class="line">    var ret = this.a.overload(&quot;[B&quot;,&quot;[B&quot;).call(this,var_0,var_1);</span><br><span class="line">    send(&quot;Decrypted : &quot; + ret);</span><br><span class="line"></span><br><span class="line">    var flag = &quot;&quot;;</span><br><span class="line">    //将char类型转换为String类型</span><br><span class="line">    for (var i=0; i &lt; ret.length; i++)&#123;</span><br><span class="line">      flag += String.fromCharCode(ret[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    send(&quot;Decrypted flag: &quot; + flag);</span><br><span class="line">    return ret; //[B</span><br><span class="line">  &#125;; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  var mainactivity = Java.use(&quot;sg.vantagepoint.uncrackable1.MainActivity&quot;);</span><br><span class="line">  mainactivity.onStart.overload().implementation = function() &#123;</span><br><span class="line">    send(&quot;MainActivity.onStart() HIT!!!&quot;);</span><br><span class="line">    var ret = this.onStart.overload().call(this);</span><br><span class="line">  &#125;;</span><br><span class="line">  //var mainactivity = Java.use(&quot;sg.vantagepoint.uncrackable1.MainActivity&quot;);</span><br><span class="line">  mainactivity.onCreate.overload(&quot;android.os.Bundle&quot;).implementation = function(var_0) &#123;</span><br><span class="line">    send(&quot;MainActivity.onCreate() HIT!!!&quot;);</span><br><span class="line">    var ret = this.onCreate.overload(&quot;android.os.Bundle&quot;).call(this,var_0);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  var activity = Java.use(&quot;android.app.Activity&quot;);</span><br><span class="line">  activity.onCreate.overload(&quot;android.os.Bundle&quot;).implementation = function(var_0) &#123;</span><br><span class="line">    send(&quot;Activity HIT!!!&quot;);</span><br><span class="line">    var ret = this.onCreate.overload(&quot;android.os.Bundle&quot;).call(this,var_0);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  send(&quot;Hooks installed.&quot;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>这里小小啰嗦一下Frida的使用方法, 安装的话直接<code>pip install frida-tools</code>, 还有下载适合自己设备的frida-server的版本, push进设备, 加上权限就行。下面是对frida-server进行的操作的操作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ adb shell</span><br><span class="line">$ su</span><br><span class="line"># cd /data/local/tmp # 进入frida-server的目录下</span><br><span class="line"># ./frida-server &amp;</span><br></pre></td></tr></table></figure></p>
+<p>之后重新开一个cmd窗口, 进入.js脚本, 也就是hook的脚本所在的目录下执行<code>frida -U owasp.mstg.uncrackable1 -l cracker.js</code>(我的hook文件名为cracker.js),  就能获取flag：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919470/OWASP/13.png" alt></p>
+<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>其实在使用Frida绕过应用检测的时候我想到一个问题, 我认为重载<code>java.lang.System.exit</code>的方法只能绕过Java层调用的exit函数, 而不能绕过native层的函数。Java层，测试后已知hook<code>java.lang.System.exit</code>是不能阻止应用被系统层强制退出的。而native层的, 还没遇到一个这样的demo可以用来测试, 但是我猜测native层的还是需要hook native层的exit函数。如果跳出了这两个层级, 直接对系统层的exit进行注入, 会导致系统崩溃吗？如我的思考或文章出现了错误，希望各位大佬不吝赐教。</p>
+<p>最后，附上<a href="https://github.com/OWASP/owasp-mstg/tree/master/Crackmes/Android" target="_blank" rel="noopener">CrackMe的下载链接</a>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-一/" data-id="ck2lmac14000dq0utdl3xhjm8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Android抓包总结" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/10/12/Android抓包总结/" class="article-date">
@@ -148,7 +297,7 @@
 <p>当时尝试tcpdump+wireshark效果不怎么样, 因为所有的数据都经过了加密, 而wireshark不能解密, 所以对于加密传输的数据包这种方法可能有点鸡肋, 听说有<a href="[https://docs.mitmproxy.org/stable/](https://docs.mitmproxy.org/stable/">mitmdump</a>抓包工具专门处理linux环境下http/https的数据包, 不过我自己没用过, 之后要是接触了会进一步补充。</p>
 <h2 id="SSL-pinning和双向认证的区别"><a href="#SSL-pinning和双向认证的区别" class="headerlink" title="SSL pinning和双向认证的区别"></a>SSL pinning和双向认证的区别</h2><p>SSL pinning实际上是客户端锁定服务器端的证书, 在要与服务器进行交互的时候, 服务器端会将CA证书发送给客户端, 客户端会调用函数对服务器端的证书进行校验, 与本地的服务器端证书(存放在<code>\&lt;app&gt;\asset</code>目录或<code>\res\raw</code>下)进行比对。</p>
 <p>而双向认证是添加了客户端向服务器发送CA证书, 服务器端对客户端的证书进行校验的部分, 具体详情可看文章<a href="[https://juejin.im/post/5c9cbf1df265da60f6731f0a](https://juejin.im/post/5c9cbf1df265da60f6731f0a">扯一扯HTTPS单向认证、双向认证、抓包原理、反抓包策略</a>的单向认证、双向认证部分的内容。</p>
-<h2 id="抓取HTTPS的数据包"><a href="#抓取HTTPS的数据包" class="headerlink" title="抓取HTTPS的数据包"></a>抓取HTTPS的数据包</h2><h3 id="Frida绕过SSL单向校验"><a href="#Frida绕过SSL单向校验" class="headerlink" title="Frida绕过SSL单向校验"></a>Frida绕过SSL单向校验</h3><p>昨天刚好遇到JustTrustMe无法绕过SSL单向校验的情况, 这几天接触了Frida, 就尝试用DBI的方法绕过SSL的单向校验, 这里就不详细地说明Frida的安装方法及使用方法了。</p>
+<h2 id="抓取HTTPS的数据包"><a href="#抓取HTTPS的数据包" class="headerlink" title="抓取HTTPS的数据包"></a>抓取HTTPS的数据包</h2><h3 id="Frida绕过SSL单向校验"><a href="#Frida绕过SSL单向校验" class="headerlink" title="Frida绕过SSL单向校验"></a>Frida绕过SSL单向校验</h3><p>昨天刚好遇到JustTrustMe无法绕过SSL单向校验的情况, 这几天接触了Frida, 就尝试用DBI的方法绕过SSL的单向校验, 参考文章<a href="https://techblog.mediaservice.net/2017/07/universal-android-ssl-pinning-bypass-with-frida/" target="_blank" rel="noopener">Universal Android SSL Pinning bypass with Frida</a>这里就不详细地说明Frida的安装方法及使用方法了。</p>
 <p>设置Fiddler代理, 在本地下载Fiddler的证书, 将证书直接重命名为<code>cert-der.crt</code>。之后将证书push到<code>/data/local/tmp</code>目录下, 在adb shell里输入<code>./frida-server &amp;</code>再在PC端进行操作。</p>
 <p>新建一个frida-android-repinning.js文件, 详细代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(function()&#123;</span><br><span class="line">    Java.perform(function ()&#123;</span><br><span class="line">    	console.log(&quot;&quot;);</span><br><span class="line">	    console.log(&quot;[.] Cert Pinning Bypass/Re-Pinning&quot;);</span><br><span class="line"></span><br><span class="line">	    var CertificateFactory = Java.use(&quot;java.security.cert.CertificateFactory&quot;);</span><br><span class="line">	    var FileInputStream = Java.use(&quot;java.io.FileInputStream&quot;);</span><br><span class="line">	    var BufferedInputStream = Java.use(&quot;java.io.BufferedInputStream&quot;);</span><br><span class="line">	    var X509Certificate = Java.use(&quot;java.security.cert.X509Certificate&quot;);</span><br><span class="line">	    var KeyStore = Java.use(&quot;java.security.KeyStore&quot;);</span><br><span class="line">	    var TrustManagerFactory = Java.use(&quot;javax.net.ssl.TrustManagerFactory&quot;);</span><br><span class="line">	    var SSLContext = Java.use(&quot;javax.net.ssl.SSLContext&quot;);</span><br><span class="line"></span><br><span class="line">	    // Load CAs from an InputStream</span><br><span class="line">	    console.log(&quot;[+] Loading our CA...&quot;)</span><br><span class="line">	    var cf = CertificateFactory.getInstance(&quot;X.509&quot;);</span><br><span class="line">	    </span><br><span class="line">	    try &#123;</span><br><span class="line">	    	var fileInputStream = FileInputStream.$new(&quot;/data/local/tmp/cert-der.crt&quot;);</span><br><span class="line">	    &#125;</span><br><span class="line">	    catch(err) &#123;</span><br><span class="line">	    	console.log(&quot;[o] &quot; + err);</span><br><span class="line">	    &#125;</span><br><span class="line">	    </span><br><span class="line">	    var bufferedInputStream = BufferedInputStream.$new(fileInputStream);</span><br><span class="line">	  	var ca = cf.generateCertificate(bufferedInputStream);</span><br><span class="line">	    bufferedInputStream.close();</span><br><span class="line"></span><br><span class="line">		var certInfo = Java.cast(ca, X509Certificate);</span><br><span class="line">	    console.log(&quot;[o] Our CA Info: &quot; + certInfo.getSubjectDN());</span><br><span class="line"></span><br><span class="line">	    // Create a KeyStore containing our trusted CAs</span><br><span class="line">	    console.log(&quot;[+] Creating a KeyStore for our CA...&quot;);</span><br><span class="line">	    var keyStoreType = KeyStore.getDefaultType();</span><br><span class="line">	    var keyStore = KeyStore.getInstance(keyStoreType);</span><br><span class="line">	    keyStore.load(null, null);</span><br><span class="line">	    keyStore.setCertificateEntry(&quot;ca&quot;, ca);</span><br><span class="line">	    </span><br><span class="line">	    // Create a TrustManager that trusts the CAs in our KeyStore</span><br><span class="line">	    console.log(&quot;[+] Creating a TrustManager that trusts the CA in our KeyStore...&quot;);</span><br><span class="line">	    var tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();</span><br><span class="line">	    var tmf = TrustManagerFactory.getInstance(tmfAlgorithm);</span><br><span class="line">	    tmf.init(keyStore);</span><br><span class="line">	    console.log(&quot;[+] Our TrustManager is ready...&quot;);</span><br><span class="line"></span><br><span class="line">	    console.log(&quot;[+] Hijacking SSLContext methods now...&quot;)</span><br><span class="line">	    console.log(&quot;[-] Waiting for the app to invoke SSLContext.init()...&quot;)</span><br><span class="line"></span><br><span class="line">	   	SSLContext.init.overload(&quot;[Ljavax.net.ssl.KeyManager;&quot;, &quot;[Ljavax.net.ssl.TrustManager;&quot;, &quot;java.security.SecureRandom&quot;).implementation = function(a,b,c) &#123;</span><br><span class="line">	   		console.log(&quot;[o] App invoked javax.net.ssl.SSLContext.init...&quot;);</span><br><span class="line">	   		SSLContext.init.overload(&quot;[Ljavax.net.ssl.KeyManager;&quot;, &quot;[Ljavax.net.ssl.TrustManager;&quot;, &quot;java.security.SecureRandom&quot;).call(this, a, tmf.getTrustManagers(), c);</span><br><span class="line">	   		console.log(&quot;[+] SSLContext initialized with our custom TrustManager!&quot;);</span><br><span class="line">	   	&#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;,0);</span><br></pre></td></tr></table></figure></p>
 <p>在cmd, 输入如下命令:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ adb push burpca-cert-der.crt /data/local/tmp/cert-der.crt</span><br><span class="line">$ frida -U -f it.app.mobile -l frida-android-repinning.js --no-pause</span><br></pre></td></tr></table></figure></p>
@@ -198,7 +347,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/10/12/Android抓包总结/" data-id="ck2e1zvui000hrgutm4je2bfx" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/10/12/Android抓包总结/" data-id="ck2lmac1n000jq0utlb9gn9ic" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-渗透/">Android 渗透</a></li></ul>
@@ -278,7 +427,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/05/19/SSRF-LABS指南/" data-id="ck2e1zvtq000brgut4sloikre" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/05/19/SSRF-LABS指南/" data-id="ck2lmac17000fq0ut7f6the0d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android安全-翻译/">Android安全 翻译</a></li></ul>
@@ -395,7 +544,7 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" data-id="ck2e1zvuk000jrgutqyrhes8b" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" data-id="ck2lmac1p000lq0utd0nw90jw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
@@ -463,7 +612,7 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/03/31/用Android通讯APP发消息发现的BUG/" data-id="ck2e1zvty000drgutj13pyd5q" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/03/31/用Android通讯APP发消息发现的BUG/" data-id="ck2lmac18000gq0utxsi351bf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android安全-翻译/">Android安全 翻译</a></li></ul>
@@ -546,7 +695,7 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/03/14/尝试绕过TracerPID反调试一/" data-id="ck2e1zvu2000ergut5pxi8caz" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/03/14/尝试绕过TracerPID反调试一/" data-id="ck2lmac15000eq0utq6czacpm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -603,7 +752,7 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/03/09/用Android-Studio调试Nexus-5/" data-id="ck2e1zvt00004rgut8vccpier" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2019/03/09/用Android-Studio调试Nexus-5/" data-id="ck2lmac080002q0uta3muu76w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
@@ -744,7 +893,7 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/09/11/HTTP系列(五)/" data-id="ck2e1zvtm0008rgutwwwriwhy" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/09/11/HTTP系列(五)/" data-id="ck2lmac0x000aq0uthdzrqz6r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
@@ -913,307 +1062,7 @@ alternativsjava.sh</code>, 给脚本添加权限, 否则脚本会不能运行。
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="ck2e1zvto000argutg8ty9nh7" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-HTTP系列(三)" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/24/HTTP系列(三)/" class="article-date">
-  <time datetime="2018-08-24T04:51:05.000Z" itemprop="datePublished">2018-08-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/24/HTTP系列(三)/">HTTP系列(三)：客户端标识</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。</p>
-<p>你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。</p>
-<p>这篇文章是<a href>HTTP系列</a>的第三部分。</p>
-<p>文章概要:</p>
-<ul>
-<li><a href>客户端识别及其重要性</a></li>
-<li><a href>客户端识别的多种方式</a></li>
-<li><a href>用于识别的HTTP请求首部字段</a></li>
-<li><a href>IP地址</a></li>
-<li><a href>长(胖)URL</a></li>
-<li><a href>Cookies</a></li>
-</ul>
-<p>首先, 让我们了解一下, 为什么网站要识别客户端?</p>
-<h2 id="客户端识别及其重要性"><a href="#客户端识别及其重要性" class="headerlink" title="客户端识别及其重要性"></a>客户端识别及其重要性</h2><p>正如你(可以)很清楚地意识到的一样, 每一个网站, 至少是那些关心你(客户端)和你的操作的网站, 都存在以某种形式呈现的内容个性化。</p>
-<p>然而, 我想通过网站的这个特性表达什么呢？</p>
-<p>所谓的内容个性化, 就是(在网页上添加)建议项, 建议项包括: 商务网站上或社交网站上推荐的视频、像蛔虫一般知晓你的需要的广告、与你有关联的新闻、社交网站上的好友推荐等等。</p>
-<p>这个特性看起来像是一把双刃剑。一方面, 这个特性做的非常好的一点是,提供给你个性化定制的内容。而另一方面, 该特性带来的<a href="https://zh.wikipedia.org/wiki/%E7%A2%BA%E8%AA%8D%E5%81%8F%E8%AA%A4" target="_blank" rel="noopener">确认偏误</a>会造成刻板印象和偏见。迪尔伯特有一套优秀的漫画涉及到了确认偏误。</p>
-<p><em>注：该漫画的地址<a href="http://dilbert.com/strip/2011-07-02" target="_blank" rel="noopener">http://dilbert.com/strip/2011-07-02</a></em></p>
-<p>然而, 我们怎么能不知道我们最喜欢的球队昨晚的得分? 怎么能不知道昨晚公众人物们干了些啥？</p>
-<p>无论从哪一方面考虑, 个性化的内容都已经成为了我们日常生活中的一部分了, 我们不能，甚至连想不可能想去限制内容个性化。</p>
-<p>接下来, 就让我们了解一下Web服务器是如何通过识别你的身份实现内容个性化的。</p>
-<h2 id="客户端识别的多种方式"><a href="#客户端识别的多种方式" class="headerlink" title="客户端识别的多种方式"></a>客户端识别的多种方式</h2><p>识别客户端具有多种方式:</p>
-<ul>
-<li><strong>HTTP请求首部</strong></li>
-<li><strong>IP地址</strong></li>
-<li><strong>长URLs</strong></li>
-<li><strong>Cookies</strong></li>
-<li><strong>登陆信息(认证)</strong></li>
-</ul>
-<p>下面, 我们将上面的每一种方法大致过一遍吧！HTTP认证会在<a href>HTTP系列</a>的<a href>第四部分</a>进行更加详细的介绍。</p>
-<h2 id="用于识别的HTTP请求首部字段"><a href="#用于识别的HTTP请求首部字段" class="headerlink" title="用于识别的HTTP请求首部字段"></a>用于识别的HTTP请求首部字段</h2><p>Web服务器可以通过一些方法, 直接从HTTP请求首部字段中提取客户端的相关信息。</p>
-<p>这些首部字段是:</p>
-<ul>
-<li><strong>From -</strong> 若客户端有提供, 则含有用户(客户端或代理)的电子邮件地址</li>
-<li><strong>User-Agent -</strong> 含有客户端的信息</li>
-<li><strong>Referer -</strong> 含有用户所请求的原始资源(的URI)</li>
-<li><strong>Authorization -</strong> 含有用户名及密码</li>
-<li><strong>Client-ip -</strong> 含有用户的IP地址</li>
-<li><strong>X-Forwared-For -</strong> 含有用户的IP地址(通过代理服务器时使用)</li>
-<li><strong>Cookie -</strong> 含有服务器端生成的ID</li>
-</ul>
-<p>理论上, <strong>From首部字段</strong>是用户理想的唯一标识, 但实际上, 由于会造成收集电子邮件地址这种安全性问题, 因此该首部字段很少用到。</p>
-<p><em>注: 国外有专门形容收集电子邮件地址的词组-<a href="https://attack.mitre.org/wiki/Technique/T1114" target="_blank" rel="noopener">email collection</a>, 词组原意应该是“收集电子邮件数据”, 但是因为From这个首部字段含有的是电子邮件的地址, 因此翻译为”收集电子邮件地址”。</em></p>
-<p><strong>User-agent首部字段</strong>含有浏览器版本、操作系统的信息。尽管这些信息对自定义内容来说很重要, 但它还是不能(帮服务器)用更恰当的方式去识别用户。</p>
-<p><strong>Referer首部字段</strong>告知服务器用户的请求是从哪个Web页面发起的。该信息有助于(服务器)分析用户行为, 但较少识别该首部字段内容。</p>
-<p><em>注: 我大概查了一下为什么作者会说很少识别该首部字段内容。看完《图解HTTP》，我是这样理解的, 当直接在浏览器的地址栏输入URI, 或其他安全性考虑时, 客户端可以不发送该首部字段, 因为URI的查询字符串中可能含有ID和密码等保密信息, 若写进去有可能导致信息泄露。所以服务器就很少识别该首部字段的内容。如果想更深入了解Referer首部字段, 可以看一下<a href="https://www.sojson.com/blog/58.html" target="_blank" rel="noopener">https://www.sojson.com/blog/58.html</a></em></p>
-<p>虽然这些首部字段(给服务器)提供了有用的客户端信息, 不过, 如果想有效地实现内容个性化, 这是远远不够的。</p>
-<p>剩余的首部字段(为服务器)提供了更准确的识别机制。</p>
-<h2 id="IP地址"><a href="#IP地址" class="headerlink" title="IP地址"></a>IP地址</h2><p>过去, IP地址不易被伪造或交换, 因此IP地址可用于识别客户端。但是(检查)IP地址可以被当作一个额外的安全检查, 毕竟只检查IP地址, 还是不够可靠。</p>
-<p>下面列出的, 是其不可靠的原因:</p>
-<ul>
-<li>IP地址<strong>描述机器</strong>, 而不是用户</li>
-<li><strong>NAT防火墙 -</strong> 许多ISP(Internet service provider, 互联网服务供应商)用NAT防火墙提高安全性和弥补IP地址的不足</li>
-<li><strong>动态IP地址 -</strong> 用户通常都是从ISP获取动态IP地址</li>
-<li><strong>HTTP代理和网关 -</strong> 代理和网关可用于隐藏真实IP地址。某些代理通过Client-ip请求首部字段或X-Forwarded-For请求首部字段来保留真实IP地址。</li>
-</ul>
-<h2 id="长-胖-URL"><a href="#长-胖-URL" class="headerlink" title="长(胖)URL"></a>长(胖)URL</h2><p>在用户浏览页面时, 网站会在URL中添加更多的信息, 直至URL看起来很复杂且难以读懂。</p>
-<p>下面举浏览亚马逊商店的例子能很好地告诉你, 胖URL长得啥样。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.amazon.com/gp/product/1942788002/ref=s9u_psimh_gw_i2?i</span><br></pre></td></tr></table></figure>
-<p>在使用胖URL的时候, 有以下缺点:</p>
-<ul>
-<li>看起来很丑</li>
-<li>不可共享</li>
-<li>破坏缓存</li>
-<li>会话(session)受限</li>
-<li>给服务器增加负载</li>
-</ul>
-<p><em>注: 这里大概解释一下这些缺点。首先, “不可共享”是因为共享的话可能会造成个人隐私泄露等安全问题。”破坏缓存”则是因为, 胖URL实际上是为每个用户生成特定版本的URL, 这就会造成没有可供公共访问的缓存了。之后, “会话受限”, 我们应该知道会话内容会在关闭浏览器之后消失, 除非用户收藏了特定的胖URL, 否则一旦用户退出登录, 所有会话期间的内容都会消失。而”增加负载”则是因为将URL重写会生成负荷。若想更进一步了解胖URL, 可参考：<a href="http://gcidea.info/2016/05/11/fat-url/" target="_blank" rel="noopener">http://gcidea.info/2016/05/11/fat-url/</a></em></p>
-<h2 id="Cookies"><a href="#Cookies" class="headerlink" title="Cookies"></a>Cookies</h2><p>Cookie是现在除了认证(authentication)之外最好的标识客户端方法, 它是由网景公司提出的, 现如今, 每一个浏览器都支持cookie。</p>
-<p>Cookie分为两类: 会话Cookie和持久性Cookie。会话Cookie在(用户)关闭浏览器时会被删除, 而持久性cookie则会(比会话Cookie)更长久地保存在硬盘中。若想将会话Cookie作为持久性Cookie来使用, 仅需设置Max-Age首部字段或Expiries属性。</p>
-<p>现代浏览器(例如Chrome、Firefox)在用户关闭浏览器后, 可以让后台进程一直运行， 以便用户从(进程)中断处恢复进程。这可能会导致(浏览器)会保留绘画cookie, 因此要小心一点。</p>
-<p>那cookie到底是怎么工作的呢？</p>
-<p>Cookie含有一个键值对列表, 该列表是服务器通过Set-Cookie或Set-Cookie2两种响应首部字段设置的。通常, Cookie存储的信息会是某种客户ID, 但是有些网站也会(在其中)存储其他信息。</p>
-<p>浏览器将Cookie信息储存在Cookie数据库中, 并在用户下次访问该页面或网站时返回Cookie。浏览器可以处理成千上万不同的cookie, 并且知道每一个cookie什么时候提供(给用户)。</p>
-<p>下面为(使用Cookie的)流程的示例。</p>
-<ol>
-<li><p>用户代理(User Agent) -&gt; 服务器 </p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/login HTTP/1.1</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
-<p> 用户(代理)通过表单输入的内容识别用户。</p>
-</li>
-<li><p>服务器 -&gt; 用户代理</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Customer=&quot;WILE_E_COYOTE&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
-<p> 服务器向用户代理(浏览器)发送Set-Cookie2响应首部字段, 指示用户代理在cookie中写入用户相关信息。</p>
-</li>
-<li><p>用户代理 -&gt; 服务器</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/pickitem HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
-<p> 用户将选择的物品添加到购物车中。</p>
-</li>
-<li><p>服务器 -&gt; 用户代理</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Part_Number=&quot;Rocket_Launcher_0001&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
-<p> 购物车中添加了所选出物品。</p>
-</li>
-<li><p>用户代理 -&gt; 服务器</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/shipping HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;; </span><br><span class="line">        Part_Number=&quot;Rocket_Launcher_0001&quot;;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
-<p> 用户选择送货方式。</p>
-</li>
-<li><p>服务器 -&gt; 用户代理</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Shipping=&quot;FedEx&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
-<p> 产生新的Coookie中映射出送货方式。</p>
-</li>
-<li><p>用户代理 -&gt; 服务器</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/process HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;;</span><br><span class="line">Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;;</span><br><span class="line">Part_Number=&quot;Rocket_Launcher_0001&quot;; $Path=&quot;/acme&quot;;</span><br><span class="line">Shipping=&quot;FedEx&quot;; $Path=&quot;/acme&quot;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>这就是完整的流程。</p>
-<p>有一点我必须要提醒你, Cookie并不是完美的。除开安全考虑, 还有一个问题, Cookie的使用会与REST架构风格发生冲突。</p>
-<p><em>注:发生冲突的原因可见文末的附加内容。若对<a href="https://www.infoq.com/articles/rest-anti-patterns" target="_blank" rel="noopener">英文版的完整解释</a>有兴趣的话, 可以点击打开。</em></p>
-<p>你可以在<a href="https://www.ietf.org/rfc/rfc2965.txt" target="_blank" rel="noopener">RFC 2965</a>了解更多关于cookie的信息。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文为HTTP系列的一部份。</p>
-<p>由本文, 你已经了解到了内容个性化的优缺点, 也知道了服务器标识客户端的多种方法。接下来, 在HTTP系列的第四部分中, 我们将会探讨到最重要的一类客户端标识: 认证(authentication)。</p>
-<p>如果你发现本文讲述的某些概念不是很清楚, 你可以参考[HTTP系列][]]的<a href="https://se8s0n.github.io/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/" target="_blank" rel="noopener">第一部分</a>和<a href="https://se8s0n.github.io/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C)/" target="_blank" rel="noopener">第二部分</a>。</p>
-<h2 id="附加内容"><a href="#附加内容" class="headerlink" title="附加内容"></a>附加内容</h2><ol>
-<li><p>漫画内容翻译<br> A：让我们开始会议吧, 但是你要知道, 我会(在会议过程中)记录下你所有的欺凌行为。<br> B :emmmm, 我根本不是一个欺凌者, 但是你现在的确认偏误搞得像我在欺凌你一样, 这让我很难受。<br> A:可以请你重复一下你暗示我我是个妄想的女巫之后的内容吗？</p>
-</li>
-<li><p>Cookie与REST架构产生冲突的原因</p>
-<blockquote>
-<p>One of the key ideas of REST is statelessness – not in the sense that a server can not store any data: it’s fine if there is resource state, or client state.</p>
-</blockquote>
-</li>
-</ol>
-<p>REST的主要思想是无状态, 无状态并不意味着服务器不能存储任何数据, 而是它<strong>只能用来存储资源状态、客户端状态</strong>。</p>
-<blockquote>
-<p>The most typical use of cookies is to store a key that links to some server-side data structure that is kept in memory. This means that the cookie, which the browser passes along with each request, is used to establish conversational, or session, state.</p>
-</blockquote>
-<p>通常, <strong>cookie都被用来存储一个由服务器端发来的值</strong>(即存储了服务器端的内容), 该值最后存储于用户硬盘中。这就意味着, 浏览器随每个请求一起发送的cookie, 都是用于设定通信的状态或传送会话的状态。</p>
-<blockquote>
-<p>If a cookie is used to store some information, such as an authentication token, that the server can validate without reliance on session state, cookies are perfectly RESTful </p>
-</blockquote>
-<p>假如cookie中存储了认证信息(例如会话令牌, 即session token), 那么服务器不用验证会话状态就可直接登陆(账户), 此时使用cookie就会完全符合REST原则——此时, cookie存储的session是客户端的。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/08/24/HTTP系列(三)/" data-id="ck2e1zvth0006rgutqwc98w6r" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-HTTP系列(二)" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/18/HTTP系列(二)/" class="article-date">
-  <time datetime="2018-08-18T03:09:21.000Z" itemprop="datePublished">2018-08-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/18/HTTP系列(二)/">HTTP系列(二):HTTP的结构体系</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在本系列的<a href="https://se8s0n.github.io/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/" target="_blank" rel="noopener">第一篇文章</a>中, 我们探讨了HTTP的基本概念。有了(前面的)基础, 我们就可以开始HTTP结构体系的学习。 HTTP协议不仅仅只是用来发送和接收数据的。</p>
-<p>实际上, HTTP协议本身是不能作为应用程序协议工作的, 但是因为它的基础结构是由硬件和软件组成, 软硬件协同工作提供了不同的服务, 这才能在万维网上实现有效的通信。</p>
-<p>本文是HTTP系列文章的第二部分。</p>
-<p>文章概要:</p>
-<ul>
-<li><a href>Web服务器(Web Severs)</a></li>
-<li><a href>代理服务器(Proxy Severs)</a></li>
-<li><a href>缓存(Caching)</a></li>
-<li><a href>网关(Gateways), 隧道(Tunnels), 中继代理(Relays)</a></li>
-<li><a href>网络爬虫(Web Crawlers)</a></li>
-</ul>
-<p>这些都是我们网络生活中不可分割的一部分, 接下来, 你可以(通过本文)全面地了解它们的用途及其工作形式。接下来学习的内容可以帮你把第一篇文章中的(知识)点串起来, 这样, 你就可以熟悉HTTP通信过程。</p>
-<p>那么, 让我们现在就开始学习吧！</p>
-<h2 id="Web服务器"><a href="#Web服务器" class="headerlink" title="Web服务器"></a>Web服务器</h2><p>正如第一篇文章所提到的, Web服务器的主要功能是存储资源并在接收请求后(按照请求)处理资源。通过Web客户端(又称为Web浏览器)用户可访问Web服务器, 并返回获取请求的资源或更改(资源的)现有的状态。访问Web服务器的操作, 通过网络爬虫, 也可以实现自动化, 相关内容我们会在文章后面进行深入的了解。<br><img src="https://code-maze.com/wp-content/uploads/2017/06/servers.jpg" alt><br>你所知道的最流行的服务器, 不外乎是Apache的HTTP 服务器、Nginx、<br>IIS、Glassfish…</p>
-<p>Web服务器可分为(使用)单种简单易用的软件或(使用)多种复杂的软件的服务器。 现代的Web服务器能够执行许多不同的任务, 其基本功能为:</p>
-<ul>
-<li><strong>建立连接</strong> —— 接受或关闭客户端连接</li>
-<li><strong>接收请求</strong> —— 读取HTTP请求报文</li>
-<li><strong>处理请求</strong> —— 解析请求报文并执行(相应请求)</li>
-<li><strong>访问资源</strong> —— 访问请求报文中(请求的)资源</li>
-<li><strong>构造响应</strong> —— 创建HTTP响应报文</li>
-<li><strong>发送响应</strong> —— 向客户端返回响应报文</li>
-<li><strong>事务日志</strong> —— 在日志文件中记录已完成的事务</li>
-</ul>
-<p>我将Web服务器基本(工作)流程分为不同的阶段, 所列出的阶段是Web服务器(工作)流程的一个极其简化的版本。</p>
-<h3 id="阶段-1：建立连接"><a href="#阶段-1：建立连接" class="headerlink" title="阶段 1：建立连接"></a>阶段 1：建立连接</h3><p>当Web客户端要访问Web服务器时, 客户端必须要重新打开一个TCP连接。与此同时, Web服务器在另一边向客户端确认IP地址。然后, 由服务器决定是否与该客户端建立TCP连接。</p>
-<p>如果服务器接受连接, 它会将客户端的IP地址添加到现有连接的列表中, 并监视该连接上的数据。</p>
-<p>如果客户端未被授权或是黑名单中的(视为恶意的), 服务器可以关闭TCP连接。</p>
-<p>服务器还可以使用”反向 DNS(Domain Name System, 域名服务器)”来识别客户端的主机名。客户端的主机名有利于事务日志的记录, 但主机名的查找需要时间, 所以会造成记录事务的速度减慢。</p>
-<h3 id="阶段-2：接收-处理请求"><a href="#阶段-2：接收-处理请求" class="headerlink" title="阶段 2：接收/处理请求"></a>阶段 2：接收/处理请求</h3><p>分析接收的请求时, Web服务器会分析报文的请求行、首部字段和主体(如果有提供的话) 中的信息。需要注意的一点是, TCP连接可以随时暂停, 因此在这种情况下, 服务器必须将(已传送)数据临时存储起来, 直到服务器接收到剩余(未传输的)数据。</p>
-<p>高端的Web服务器能够同时建立大量连接——包括同时与同一客户端有多个连接。因此, 典型Web页面可以向高端服务器请求大量不同的资源。</p>
-<h3 id="阶段-3：访问资源"><a href="#阶段-3：访问资源" class="headerlink" title="阶段 3：访问资源"></a>阶段 3：访问资源</h3><p>Web 服务器通过多种方法映射和操作资源, (为Web客户端)提供资源。</p>
-<p>映射资源最简单的方法, 就是根据请求(报文)中的URI在Web服务器的文件系统中查找所需的文件。通常, 资源都存放在服务器上一个被称为文件根目录(docroot)的特殊文件夹中。例如, Windows 服务器上的文件根目录就位于“F:\WebResources \”。假设有一个GET请求想要访问”/image/codemazeblog”上的文件, 服务器会将其转换为”F:\WebResources\images\codemazeblog.txt”, 并在响应报文中返回该文件。当一个Web 服务器承载多个网站时, 每个站点都会有其独立的的文件根目录。</p>
-<p>如果 Web 服务器接收到的是对(文件)路径的请求, 而不是对文件的请求, 服务器可以用以下几种方式处理请求:返回错误消息; 替代返回路径或遍历路径, 返回默认索引文件;返回带有(所请求)内容的HTML文件。</p>
-<p>服务器还可以将请求(报文)中的URI映射到动态资源上, 这些动态资源是由应用程序生成的。有一类服务器叫做应用程序服务器, 其功能就是管理动态资源, 它还能给Web服务器提供复杂的软件解决方案。</p>
-<h3 id="阶段-4：生成及发送响应"><a href="#阶段-4：生成及发送响应" class="headerlink" title="阶段 4：生成及发送响应"></a>阶段 4：生成及发送响应</h3><p>一旦服务器确定了需要所请求的资源, 它就会生成响应报文, 报文中包含状态码、响应首部字段, 若请求(报文)中需要的话还应有响应主体。</p>
-<p>如果存在响应主体, 那么该响应报文通常包含Content-Length和Content-Type两个首部字段——Content-Length描述主体大小, Content-Type描述返回资源的MIME类型。</p>
-<p>生成响应(报文)后, 服务器选择需要发送响应的客户端。对于非持久性(长期)连接, 服务器需要在发送整个响应消息后关闭连接。</p>
-<h3 id="阶段-5-记录事务"><a href="#阶段-5-记录事务" class="headerlink" title="阶段 5:记录事务"></a>阶段 5:记录事务</h3><p>服务器在事务完成后将记录文件中的所有事务信息, 大部分的服务器都采用自定义的方式记录日志。</p>
-<h2 id="代理服务器"><a href="#代理服务器" class="headerlink" title="代理服务器"></a>代理服务器</h2><p>代理服务器 (代理) 是的中间服务器, 通常位于Web服务器和Web客户端之间, 因其性质, 代理服务器需要兼并Web客户端和Web服务器的功能。</p>
-<p>不过, 为什么要用代理服务器呢？为什么不直接用Web客户端和Web服务器进行通信？这难道不是更加简单快速吗？</p>
-<p>当然, (直接利用Web客户端和Web服务器)操作起来是很简单, 不过说到速度快, 那就未必了。接下来, 我们会了解原因的。</p>
-<p>在解释什么是代理服务器之前, 我们先要搬开一块大石头, 那就是<strong>反向代理服务器(reverse proxy)</strong>的概念。 换句话来说就是知道 <strong>正向代理(forward proxy)</strong>和<strong>反向代理( reverse proxy)</strong>有什么区别。</p>
-<p>正向代理负责向Web服务器请求资源, 并将资源返回到客户端。除此之外, 正向代理还能通过防火墙过滤请求或隐藏客户端信息来维护客户端的安全。而反向代理的工作方式(与正向代理)完全相反, 它通常位于防火墙之后来保护 Web 服务器。所有客户端已知其通信对象是实际的Web服务器, 但却了解反向代理背后的(Web服务器所处的)网络。</p>
-<h3 id="代理服务器-1"><a href="#代理服务器-1" class="headerlink" title="代理服务器"></a>代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server.png" alt></p>
-<h3 id="反向代理服务器"><a href="#反向代理服务器" class="headerlink" title="反向代理服务器"></a>反向代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server-1.png" alt><br>代理(服务器)非常有用并且应用十分广泛。接下来, 让我们来了解一下代理服务器的功能。</p>
-<ul>
-<li><strong>压缩(Compression)</strong> —— 就是简单地利用压缩内容的方式加快通信速度。</li>
-<li><strong>监控(Monitoring)和过滤(filtering)</strong> —— 用代理服务器(进行监控和过滤)不失为一个阻止小学生访问成人网站好方法。🙂</li>
-<li><strong>安全(Security)</strong> —— 代理(服务器)可以作为整个网络的一个独立的入口点, 它们能够检测恶意软件和对应用层协议设限。</li>
-<li><strong>匿名性(Anonymity)</strong> —— 代理可以修改请求(报文)以提高匿名性, 它可以从请求中剥离敏感信息, 只留下重要的东西。尽管向服务器发送较少的信息会降低用户体验,<br>但是有时侯, 匿名性(比用户体验)更重要。</li>
-<li><strong>访问控制(Access control)</strong> —— 若要实现对多个服务器的访问控制, 集中管理单个代理服务器即可。</li>
-<li><strong>缓存(Caching)</strong> —— 使用代理服务器缓存常用的内容, 会大大降低加载速度。<em>注:这里的加载速度按照我自己的理解, 应该是如果存在缓存的话,<br>服务器需要先去加载缓存中的内容, 这会降低加载的速度</em></li>
-<li><strong>负载均衡(Load balancing)</strong> —— 如果服务达到性能的临界点, 你可以使用<a href="https://zhuanlan.zhihu.com/p/32854860" target="_blank" rel="noopener">负载均衡器</a>——负载均衡器是一种可均衡分配路由通信量的代理, 可避免在服务性能达到临界点时导致单个服务器超负荷——分配在资源或Web服务器中的负载。</li>
-<li><strong>转码(Transcoding)</strong> —— 代理服务器有修改报文主体的功能。</li>
-</ul>
-<p>综上所述, 代理(服务器)有功能多样且可灵活使用的特点。</p>
-<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>Web 缓存(系统)是一种可以自动复制请求报文数据并将其保存到本地存储中的设备。</p>
-<p>Web缓存的优点:</p>
-<ul>
-<li><strong>减少通信量</strong></li>
-<li><strong>消除网络瓶颈</strong></li>
-<li><strong>防止服务器草符合</strong></li>
-<li><strong>降低</strong>长距离造成的<strong>响应延迟</strong></li>
-</ul>
-<p>因此, 可以直白地说, Web缓存改善了用户体验和服务器性能。当然, 还有可能省了很多钱。</p>
-<p>命中率的范围由0至1, 其中0表示缓冲提供所请求的0%资源 ,而1表示缓冲提供所请求的100%资源。命中率最理想的状态当然是达到100%, 但是, 实际命中率通常只能接近40%。</p>
-<p>下面是基本的Web缓存的工作流程:<br><img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1534998705/HTTP/CacheFlow.png" alt></p>
-<h2 id="网关、隧道、中继代理"><a href="#网关、隧道、中继代理" class="headerlink" title="网关、隧道、中继代理"></a>网关、隧道、中继代理</h2><p>随着HTTP(越来越)成熟, 不同的HTTP协议使用方法不断涌现出来。这就促使, HTTP——连接不同应用程序和协议的框架——变得非常有用。</p>
-<p>接下来, 就让我们来看看HTTP是怎么做到如此有用的。</p>
-<h3 id="网关"><a href="#网关" class="headerlink" title="网关"></a>网关</h3><p>网关是一种(网络)硬件，它能够通过抽象方法使 HTTP协议与不同协议和不同应用程序进行通信, 从而获得资源。网关也被称为协议转换器, 由于(具有)多个协议的应用, 所以它比路由器或交换机复杂得多。</p>
-<p>下面是网关利用转换协议工作的实例:使用网关发送HTTP请求可以接收到FTP(File Transfer Protocol, 文件传输协议)文件; 使用客户端加速安全网关可以接收到SSL(Secure Sockets Layer, 安全套接层)加密后转换成HTTP协议的报文; 使用服务器端安全网关可以将HTTP报文转换成更安全的HTTPs报文(Hypertext Transfer Protocol Secure, 超文本传输安全协议);</p>
-<h3 id="隧道"><a href="#隧道" class="headerlink" title="隧道"></a>隧道</h3><p>隧道(协议)是利用CONNECT请求方法实现的, 该协议能够通过HTTP协议发送非HTTP的数据。CONNECT是一个(客户端)要求代理连接目标服务器的请求方法, 并且在客户端和服务器之间中转数据。</p>
-<p><em>注：上面这句话简单理解就是, 隧道协议不用HTTP解析数据, 对数据不做任何处理, 只将数据直接中转给目标服务器。</em></p>
-<p>CONNECT请求:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CONNECT api.github.com:443 HTTP/1.0</span><br><span class="line">User-Agent: Chrome/58.0.3029.110</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml</span><br></pre></td></tr></table></figure></p>
-<p>CONNECT响应:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 200 Connection Established</span><br><span class="line">Proxy-agent: Netscape-Proxy/1.1</span><br></pre></td></tr></table></figure></p>
-<p>与常规的HTTP响应(报文)不同, CONNECT响应不需要特别说明Content-Type字段。</p>
-<p>一旦(隧道)建立了连接,客户端和服务器就可以直接进行通信。</p>
-<h3 id="中继代理"><a href="#中继代理" class="headerlink" title="中继代理"></a>中继代理</h3><p>中继(服务器)在HTTP世界中充当着坏人的角色, 他们不受HTTP的律法束缚。实际上, 中继(服务器)是代理的简化版本, 只要它们能够建立连接——仅需请求报文中极少信息量——那么就可以中转所有接收到的信息。</p>
-<p>中继存在的唯一的理由就是, (在某些情况下)需要一个尽可能少惹麻烦的代理。不过, 使用中继也可能带来麻烦。因此中继是应用在特定场景下, 所以在添加中继(服务器)之前, 一定要先考虑添加之后的损益比。</p>
-<h2 id="网络爬虫"><a href="#网络爬虫" class="headerlink" title="网络爬虫"></a>网络爬虫</h2><p><img src="https://code-maze.com/wp-content/uploads/2017/06/Web-crawler.png" alt><br>当然, 通常都称呼它为网络蜘蛛(spiders), 它是一种网络机器人, 用于自动浏览万维网和编纂网络索引。因此,对于搜索引擎和大部分来说, 网络爬虫是必不可少的工具。</p>
-<p>网络爬虫是一个全自动化的软件, 不需要人机交互。网络爬虫的复杂度差异会很大, 一些网络爬虫就非常复杂(比如搜索引擎用的爬虫)。</p>
-<p>网络爬虫会消耗所访问的网站的资源。因此, 公开的网站有一个机制去告知爬虫：网站哪些内容可被抓取, 或禁止爬虫抓取任何数据。你可以通过<strong>robots.txt</strong>Robots Exclusion Protocol, 漫游器排除协议)去实现这个机制。</p>
-<p>毫无疑问, robots.txt不能阻止那些不请自来的网络爬虫抓取网站, 因为它只是一个标准。也就是说, robots.txt只能防君子不能防小人。</p>
-<p>下面是robots.txt书写方式的举例:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User-agent: *</span><br><span class="line">Disallow: /</span><br></pre></td></tr></table></figure></p>
-<p>含义:禁止所有爬虫访问网站的任何部分。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">User-agent: *</span><br><span class="line">Disallow: /somefolder/</span><br><span class="line">Disallow: /notinterestingstuff/</span><br><span class="line">Disallow: /directory/file.html</span><br></pre></td></tr></table></figure></p>
-<p>含义:仅禁止访问两个特定的目录和文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User-agent: Googlebot</span><br><span class="line">Disallow: /private/</span><br></pre></td></tr></table></figure></p>
-<p>含义:在特定情况下, 禁止指定的爬虫访问。</p>
-<p>不过, 鉴于万维网的庞大, 即使是有史以来最强大的爬虫, 也无法抓取整个网络的资源并编纂整个网络的索引。这就是爬虫使用<strong>选择策略(selection policy)</strong>抓取关联性最大的部分的原因。此外, 万维网经常发生动态变化, 因此爬虫必须用<strong>重新访问策略(freshness policy )</strong>去计算它们是否能再次访问网站。并且, 爬虫轻松覆盖整个服务器的资源时, 会采取发送过于快速和繁多的请求的举措, 因此爬虫会采取<strong>平衡礼貌策略(politeness policy)</strong>避免造成服务器不能正常使用。已知的大部分爬虫, 以低至20秒高至3-4分钟的时间间隔对服务器进行轮询, 避免使服务器上超载。</p>
-<p><em>注:重新访问策略其实就是为了避免资源过期, 爬虫进行确认的一个机制。</em></p>
-<p>你可能听说过神秘又邪恶的深网或暗网。但是, 深网(暗网)只是网络的一部分, 搜索引擎为了将(其中的)信息藏起来故意不把它们编入索引。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个链接是<a href>HTTP系列</a>的目录及简介。相信你现在脑海中对HTTP工作流程已经有了更加清晰的概念, 学到了比(原本的)请求、响应、状态码更多的知识正是不同的软硬件结合的整体架构, 才让作为应用层协议的HTTP能够发挥出它的潜能。</p>
-<p>我在这篇文章谈到的每个概念都很庞大, 大到足以用一篇文章甚至一本书来细细讲述。不过, 我只是想大概介绍一下概念, 这样你们就知道这些概念是如何搭配使用的, 方便你们之后查找相关内容。</p>
-<p>如果在阅读的过程中, 你发现有些内容解释得过于简短和不清晰并且没有看过我之前的文章, 你可以阅读这篇文章的<a href>第一部分</a>和<a href>HTTP指南</a>, 在这两篇文章中都有关于HTTP基本概念的概述。</p>
-<p>感谢你阅读本文, 敬请关注HTTP系列的<a href>第三部分</a>, 我在这篇文章中讲述了服务器是如何识别客户端的。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="ck2e1zvtw000crgut7cs8w8z3" class="article-share-link">Share</a>
+      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="ck2lmac12000cq0utqltqjwv5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
