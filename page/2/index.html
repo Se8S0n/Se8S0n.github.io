@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Se8S0n">
+<meta property="og:url" content="http://Se8S0n.github.io.git/page/2/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:locale" content="zh-cn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Se8S0n">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-HTTP系列(四)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/04/HTTP系列(四)/" class="article-date">
+  <time datetime="2018-09-04T22:21:21.000Z" itemprop="datePublished">2018-09-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/04/HTTP系列(四)/">HTTP系列(四)：HTTP的基础概念概述</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在上一篇文章中, 我们讨论了网站用多种方法去标识浏览网站的用户(身份)。</p>
+<p>标识本身仅仅表示一个声明, (用户通过声明)表明自己的身份, 然而除此之外, 并没有其他证据可以证明用户的身份。</p>
+<p>认证, 用另一种方式来说, 就是用户证明自身身份的证据, 展示个人ID和输入用户密码是两种证明自身身份常见的方法。</p>
+<p>通常情况下,只有通过认证, 网站才能为用户提供敏感资源。</p>
+<p>HTTP自身拥有认证机制, 该机制允许服务器(向用户)提出质询并获取其所需的认证信息。你将会在文章中了解到什么是认证和认证是如何进行的。文章中还会涵盖每一种认证方式的优缺点, 并且分析它们是否具有独当一面的能力。(偷偷剧透一下, 它们才没这个能力呢！)</p>
+<p>这篇文章是<a href>HTTP系列</a>的第四部分。</p>
+<p>文章概要:</p>
+<ul>
+<li>HTTP认证的工作方式</li>
+<li>Basic认证(基本认证)</li>
+<li>Digest认证(摘要认证)</li>
+</ul>
+<p>在进一步探索什么是HTTP认证机制之前, 我们一起来看看什么是HTTP认证吧！</p>
+<h2 id="HTTP认证的工作方式"><a href="#HTTP认证的工作方式" class="headerlink" title="HTTP认证的工作方式"></a>HTTP认证的工作方式</h2><p>认证是Web服务器标识用户的一种方式。用户需要摆出证据, 证明其有获得所请求资源的权限。通常, 证明的过程需要一组用户名和密码, 并且, 输入的用户名和密码必须经服务器(验证后)认同是有效的, 然后才由服务器判断该用户是否有获取该资源的权限。</p>
+<p>HTTP提供了两种认证协议: </p>
+<ul>
+<li><strong>Basic认证(基本认证)</strong></li>
+<li><strong>Digest认证(摘要认证)</strong></li>
+</ul>
+<p>在深入了解上述两个协议之前, 我们来大概过一遍基础概念。</p>
+<h3 id="质询-challenge-响应-response-认证框架"><a href="#质询-challenge-响应-response-认证框架" class="headerlink" title="质询(challenge)/响应(response)认证框架"></a>质询(challenge)/响应(response)认证框架</h3><p>质询/响应认证是什么意思?</p>
+<p>就是说, 在某个客户端发送请求的时候, 服务器不会立即响应, 而是(向客户端)返回<strong>认证要求</strong>。该认证要求要求用户通过输入私密信息(用户名及密码)来提供标识身份的证明。</p>
+<p>之后, 客户端会重复发送请求来提供(身份)凭证, 如果该身份凭证被服务器认证是有效的, 那么用户可以得到所请求的响应资源。如果(身份)凭证被认为无效, 那么服务器会重新发出质询, 或直接发送(认证信息)错误报文。</p>
+<p><em>注:加入用户名密码错误的话, 服务器会返回401</em></p>
+<h3 id="与认证相关的请求-响应首部字段"><a href="#与认证相关的请求-响应首部字段" class="headerlink" title="与认证相关的请求/响应首部字段"></a>与认证相关的请求/响应首部字段</h3><p><strong>WWW-Authenticate响应首部字段</strong>, 是服务器用来(向客户端)发出质询的, 该首包含了认证协议和认证域这两部分内容。</p>
+<p>在用户输入(身份)凭证之后, (客户端)会重新发送请求报文。然后, 客户端会发送附有<strong>Authorization首部字段</strong>的请求报文, 该首部字段包含了认证方式(Basic)和一组用户密码。</p>
+<p>如果(身份)凭证通过验证, 服务器会返回响应, 并在响应中选用Authentication-Info首部字段附上附加信息——该首部字段是非必需的, 所以可有可无。</p>
+<h3 id="安全认证域-Security-Realms"><a href="#安全认证域-Security-Realms" class="headerlink" title="安全认证域(Security Realms)"></a>安全认证域(Security Realms)</h3><p>认证域(又称防护域, protection space)在服务器上提供了<strong>不同访问权限关联不同资源组的方法</strong>。</p>
+<p>实际上, 认证域的存在就意味着, 用户访问(不同的)资源需要输入不同的身份凭证。</p>
+<p>服务器拥有多个认证域。</p>
+<p>/admin/statistics/financials.txt -&gt; Realm=”Admin Statistics”<br>比如, 上面的示例就是存放网站统计信息的认证域——只允许网站管理员访问(其中的资源)。</p>
+<p>/images/img1.jpg -&gt; Realm = “Images”<br>还有存放网站图片的认证域——即使不是管理员, 也能访问和上传图片。</p>
+<p>当你尝试访问”financials.txt”时, 服务器会向你发出质询, 并返回如下响应:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 401 Unauthorized</span><br><span class="line">WWW-Authenticate: Basic realm=&quot;Admin Statistics&quot;</span><br></pre></td></tr></table></figure></p>
+<p>点击<a href="https://tools.ietf.org/html/rfc7235#section-2.2" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc7235#section-2.2</a>可了解更多认证域。</p>
+<h3 id="简单的HTTP认证实例"><a href="#简单的HTTP认证实例" class="headerlink" title="简单的HTTP认证实例"></a>简单的HTTP认证实例</h3><p>现在, 让我们用简单的HTTP认证实例为这一小节内容画上一个完美的句号吧!(basic认证会在后文继续讲述)</p>
+<ol>
+<li><p>用户代理 -&gt; 服务器<br>用户请求访问服务器上的图片。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /gallery/personal/images/image1.jpg HTTP/1.1</span><br><span class="line">Host: www.somedomain.com</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>服务器 -&gt; 用户代理<br>服务器(向客户端)发送认证要求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 401 Access Denied</span><br><span class="line">WWW-Authenticate: Basic realm=&quot;gallery&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用户代理 -&gt; 服务器<br>用户通过表单输入标识自己。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /gallery/personal/images/image1.jpg HTTP/1.1</span><br><span class="line">Authorization: Basic Zm9vOmJhcg==</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>服务器 -&gt; 用户代理<br>服务器验证(身份)凭证成功后, 发送状态码”200 OK”及图片。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-type: image/jpeg</span><br><span class="line">...&lt;image data&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>看起来不是那么复杂, 对吗?</p>
+<p>现在, 我们来进入更深层次的学习, 学习basic认证。</p>
+<h2 id="basic认证"><a href="#basic认证" class="headerlink" title="basic认证"></a>basic认证</h2><p>basic认证是最常用且支持面最广的认证协议。从HTTP/1.0开始, basic认证就已经广泛应用了, 每一个客户端都可以使用该认证协议认证。</p>
+<p>上面的实例描述的是basic认证过程。basic认证实现和用起来都很简单, 不过, 它存在着安全问题。</p>
+<p>进入(basic认证)安全问题的学习之前, 不妨先了解一下basic认证是如何处理(认证过程中传输的)用户和密码的。</p>
+<p>basic认证将用户名及密码放在一串字符串中, 两者由符号”:”分割。然后, 用<a href="https://zh.wikipedia.org/wiki/Base64" target="_blank" rel="noopener">base64编码</a>字符串。不过, 无论字符串的表现形式是什么样, 混乱的字符顺序也不能保证(认证)安全, 因为它可以被轻易地解开。</p>
+<p>实际上, base64编码不是为了加密, 而是为了保证用户名及密码在通过HTTP协议传输之后具有可移植性。不过,在HTTP首部字段中不能使用通用字符, 才是编码的主要原因。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /gallery/personal/images/image1.jpg HTTP/1.1</span><br><span class="line">Authorization: Basic Zm9vOmJhcg==</span><br></pre></td></tr></table></figure>
+<p>例子中的字符串”Zm9vOmJhcg==”解码后只是”foo:bar”(这一小段字符串)。</p>
+<p>因此, 每个可以收到请求的(代理/服务器)都能轻易地解码和使用(传输的身份)凭证。</p>
+<p>更糟糕的是, 恶意的第三方<strong>仍然可以通过发送(编码后的)混乱字符序列达到同样的效果</strong>, 因此对用户名及密码进行编码不会有任何帮助。</p>
+<p>没有任何可以用来防止代理或其他形式的攻击篡改请求主体(数据), 同时还能保证请求主体完好无损的措施。</p>
+<p>因此, 如你所见, basic认证称不上是一个完美的认证机制。</p>
+<p>尽管如此, basic认证还是可以用来防止(无权限用户)意外访问受保护的资源, 并(为用户)提供一定程度的个性化内容。</p>
+<p>为了让(认证)更加安全实用, 可以用基于SSL的HTTPS协议对basic认证进行扩展, 相关内容我们会在本系列的第五部分详述。</p>
+<p>然而, 有些人认为, <a href="https://www.skorks.com/2009/08/is-basic-authentication-really-insecure/" target="_blank" rel="noopener">basic认证的安全与否取决于运输机制(的安全性)</a>。</p>
+<h2 id="digest-摘要-认证"><a href="#digest-摘要-认证" class="headerlink" title="digest(摘要)认证"></a>digest(摘要)认证</h2><p>与简单且不安全的basic认证相比, digest认证是一个更加安全可靠的选择。</p>
+<p>那么, 它是如何认证的呢？</p>
+<p>digest认证将多个<strong><a href="https://zh.wikipedia.org/wiki/Nonce" target="_blank" rel="noopener">nonce</a></strong>与<strong>MD5哈希加密算法</strong>结合使用, 以此来隐藏密码(使账号)免于遭受多种恶意攻击的侵害。</p>
+<p><em>注: nonce本身是用base64加密的。</em><br><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Nonce-cnonce-uml.svg/345px-Nonce-cnonce-uml.svg.png" alt></p>
+<p>这个(认证过程)听起来好像很复杂, 不过在你看完实例之后, 就会觉得清晰多了。</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ol>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /dir/index.html HTTP/1.0</span><br><span class="line">Host: localhost</span><br></pre></td></tr></table></figure>
+<p> 客户端发送不含认证(信息)的请求。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 401 Unauthorized</span><br><span class="line">WWW-Authenticate: Digest realm=&quot;shire@middleearth.com&quot;,</span><br><span class="line">                        qop=&quot;auth,auth-int&quot;,</span><br><span class="line">                        nonce=&quot;cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ&quot;,</span><br><span class="line">                        opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0cmluZw&quot;</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 153</span><br><span class="line">&lt;--空行--!&gt;</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">  &lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot; /&gt;</span><br><span class="line">    &lt;title&gt;Error&lt;/title&gt;</span><br><span class="line">  &lt;/head&gt;</span><br><span class="line">  &lt;body&gt;</span><br><span class="line">    &lt;h1&gt;401 Unauthorized.&lt;/h1&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<p> 服务器对客户端发出质询, 要求其用digest认证进行认证, 并向客户端发送(认证时)所需的信息。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /dir/index.html HTTP/1.0</span><br><span class="line">Host: localhost</span><br><span class="line">Authorization: Digest username=&quot;Gandalf&quot;,</span><br><span class="line">                     realm=&quot;shire@middleearth.com&quot;,</span><br><span class="line">                     nonce=&quot;cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ&quot;,</span><br><span class="line">                     uri=&quot;/dir/index.html&quot;,</span><br><span class="line">                     qop=auth,</span><br><span class="line">                     nc=00000001,</span><br><span class="line">                     cnonce=&quot;0a4f113b&quot;,</span><br><span class="line">                     response=&quot;5a1c3bb349cf6986abf985257d968d86&quot;,</span><br><span class="line">                     opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0c</span><br></pre></td></tr></table></figure>
+<p> 客户端将计算出响应码与用户名、认证域(real)、URI、nonce(随机数)、opaque、qop、nc和cnonce(客户端的随机数)这些属性一起发送出去, 这信息量真的很大。</p>
+</li>
+<li><p>服务器 -&gt; 客户端</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 200 OK</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 2345</span><br><span class="line">... &lt;content data&gt;</span><br></pre></td></tr></table></figure>
+<p> 服务器会自己计算(服务器产生的nonce)的哈希值并与从客户端收到的nonce哈希值进行比对。若两者相同, 服务器就会发送(客户端)所请求的数据。</p>
+</li>
+</ol>
+<h3 id="步骤3的-详细说明"><a href="#步骤3的-详细说明" class="headerlink" title="(步骤3的)详细说明"></a>(步骤3的)详细说明</h3><p>定义：</p>
+<ul>
+<li>nonce、opaque —— 服务器生成的字符串, 客户端会在返回的内容中附上该信息。</li>
+<li>qop(保护质量) —— 可设置一个或多个值(“auth” | “auth-in” | token)。这些值影响摘要(信息)的计算。</li>
+<li>cnonce - 客户端随机数, 若设置了qop的值, 一定要生成客户端随机数。它是用来防止<a href="https://zh.wikipedia.org/wiki/%E9%80%89%E6%8B%A9%E6%98%8E%E6%96%87%E6%94%BB%E5%87%BB" target="_blank" rel="noopener">选择明文攻击</a>和保证信息完整性的。</li>
+<li>nc —— 若qop设置了, 必须(给服务器)发送该属性。服务器可通过nc属性的值, 检测请求是否是重新发送过来的。若(两次请求)nc属性出现了相同值, 那么说明该请求重新发送了一次。</li>
+</ul>
+<p>response属性的值的计算方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">HA1 = MD5(&quot;Gandalf:shire@middleearth.com:Lord Of The Rings&quot;)</span><br><span class="line">       = 681028410e804a5b60f69e894701d4b4</span><br><span class="line"> </span><br><span class="line">HA2 = MD5(&quot;GET:/dir/index.html&quot;)</span><br><span class="line">       = 39aff3a2bab6126f332b942af96d3366</span><br><span class="line"> </span><br><span class="line">Response = MD5( &quot;681028410e804a5b60f69e894701d4b4:</span><br><span class="line">                 cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ:</span><br><span class="line">                 00000001:0a4f113b:auth:</span><br><span class="line">                 39aff3a2bab6126f332b942af96d3366&quot; )</span><br><span class="line">         = 5a1c3bb349cf6986abf985257d968d86</span><br></pre></td></tr></table></figure></p>
+<p>如果你对response属性是如何受qop属性影响这件事感兴趣的话, 你可以看看<a href="https://www.ietf.org/rfc/rfc2617.txt" target="_blank" rel="noopener">RFC 2617</a>。</p>
+<h3 id="简短的总结"><a href="#简短的总结" class="headerlink" title="简短的总结"></a>简短的总结</h3><p>如你所见, digest认证不管是理解起来还是实现起来都(比basic认证)复杂多了。</p>
+<p>尽管, digest认证比basic认证安全得多, 但还是存在遭受中间人攻击的可能。</p>
+<p>RFC 2617中提到, digest认证是用于取代basic认证的, 因为它可弥补basic认证的不足, 同时RFC 2617中没有将digest认证仍旧不符合现代密码标准的事实隐藏起来, 不过, 该认证安全与否, 还是取决于实际实施情况。</p>
+<p>digest认证的优点:</p>
+<ul>
+<li>不会在网络中发送明文密码</li>
+<li>防止重放攻击</li>
+<li>防止篡改报文</li>
+</ul>
+<p>digest认证的缺点:</p>
+<ul>
+<li>易遭受中间人攻击</li>
+<li>不用设置大量的安全选项, 导致digest认证方法不够安全</li>
+<li>存储密码时, 不能使用强密码哈希函数</li>
+</ul>
+<p><em>注: 缺点的最后一点, 是因为无论是密码、用户名、realm、密码的摘要都要求是可恢复的</em></p>
+<p>上述的种种缺点使得digest认证未能大力推广, 反观简单的basic认证, 结合SSL使用之后比(复杂的)digest认证安全得多——因此该认证方法得到大力推广。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文为HTTP系列的一部分。</p>
+<p>文章看到这里, 我们大致过了一遍HTTP默认提供的认证机制, 并且谈论了不同认证机制的优缺点。</p>
+<p>希望(对你来说)这些概念不再只是屏幕上的单词, 并且下次你提到这些名词的时候, 能准确地知道它们是什么和怎么运用它们。</p>
+<p>你应该察觉到了, 上述认证机制并不能规避(所有)安全风险, 这就是HTTPS、SSL/TLS(Transport Layer Security, 传输层安全性协定)这些概念存在的原因。下一篇文章, 我们将会更多地去讨论安全问题和如何去规避这些问题。</p>
+<p>如果你感觉有些概念不是很清晰, 你可以看看<a href>HTTP系列</a>的<a href>第一部分</a>、<a href>第二部分</a>和<a href>第三部分</a>。</p>
+<h2 id="安全小讲堂"><a href="#安全小讲堂" class="headerlink" title="安全小讲堂"></a>安全小讲堂</h2><p>  在找相关知识的时候, 发现有一个人用了一个很通俗易懂的方式来讲密码学里面的知识, 感觉很有趣。今天来尝试一波。</p>
+<p>  假设小明和小兰互相不认识, 在老师严抓早恋的背景下, 俩人都学习了写情书的新姿势, 将自己写的文字加密并发出, 然后通过情书培养感情。小草也喜欢小兰, 为了阻(heng)止(dao)他(duo)们(ai), 采取了以下攻击方式。</p>
+<ol>
+<li><p>选择明文攻击<br> 小草很了解小兰(但没有学习过上面的新姿势), 知道小兰最爱在信里表示自己很”开心”, 所以信加密后出现最高频率的词, hexo这就是知道”开心”加密之后的密文是啥了。<br> ————已知密文。</p>
+<p> 如果有一天, 小兰写”开心”的次数变少了, 小草就可以找机会雪(chen)中(xu)送(er)炭(ru)了。</p>
+</li>
+<li><p>中间人攻击<br> 小明和小兰协商好, 在书信里面放入自己的信物表明自己的身份, 为了防止第三者做些乱七八糟的事情, 这个方式也是很明智了。但是未曾想, 小草在一开始协商信物的时候, 就窃取了他们的信物——这个信物就是公钥——并且将自己事先准备好的两个信物与小明和小兰原本的信物进行对调。</p>
+<p> <img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1536501208/HTTP/mim.png" alt><br> 这时候小草甚至还能皮一下, 篡改小明的书信, 离间他们两者之间的感情。</p>
+</li>
+<li><p>重放攻击<br> 小明给小兰送情书之前, 都会在小兰的桌上放一瓶酸奶, 作为自己给小兰写信的信号。小兰回教室看到抽屉里有信, 在思考是谁写的(发出质询), 看到酸奶(收到响应), 小兰就知道是小明给自己写情书了(通过验证)。小草找到了这个规律, 同样给小兰桌上放了一瓶酸奶(重放攻击, 二次利用认证信息), 之后在抽屉里放着离间两人的信, 这就达成了小草想要的效果。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="ckrzo1bj60008dfrtm02o3zli" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-HTTP系列(三)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/24/HTTP系列(三)/" class="article-date">
+  <time datetime="2018-08-24T19:51:05.000Z" itemprop="datePublished">2018-08-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/24/HTTP系列(三)/">HTTP系列(三)：客户端标识</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>到现在, 你已经了解HTTP的基本概念及其体系结构, 那么, 就可以让进入下一个重要的部分——客户端标识。</p>
+<p>你知道为什么客户端识别那么重要吗? 你知道Web服务器是怎样识别你所用的客户端的吗?你知道怎样使用和存储这些身份信息吗?看完这篇文章, 你的这些问题都能迎刃而解。</p>
+<p>这篇文章是<a href>HTTP系列</a>的第三部分。</p>
+<p>文章概要:</p>
+<ul>
+<li><a href>客户端识别及其重要性</a></li>
+<li><a href>客户端识别的多种方式</a></li>
+<li><a href>用于识别的HTTP请求首部字段</a></li>
+<li><a href>IP地址</a></li>
+<li><a href>长(胖)URL</a></li>
+<li><a href>Cookies</a></li>
+</ul>
+<p>首先, 让我们了解一下, 为什么网站要识别客户端?</p>
+<h2 id="客户端识别及其重要性"><a href="#客户端识别及其重要性" class="headerlink" title="客户端识别及其重要性"></a>客户端识别及其重要性</h2><p>正如你(可以)很清楚地意识到的一样, 每一个网站, 至少是那些关心你(客户端)和你的操作的网站, 都存在以某种形式呈现的内容个性化。</p>
+<p>然而, 我想通过网站的这个特性表达什么呢？</p>
+<p>所谓的内容个性化, 就是(在网页上添加)建议项, 建议项包括: 商务网站上或社交网站上推荐的视频、像蛔虫一般知晓你的需要的广告、与你有关联的新闻、社交网站上的好友推荐等等。</p>
+<p>这个特性看起来像是一把双刃剑。一方面, 这个特性做的非常好的一点是,提供给你个性化定制的内容。而另一方面, 该特性带来的<a href="https://zh.wikipedia.org/wiki/%E7%A2%BA%E8%AA%8D%E5%81%8F%E8%AA%A4" target="_blank" rel="noopener">确认偏误</a>会造成刻板印象和偏见。迪尔伯特有一套优秀的漫画涉及到了确认偏误。</p>
+<p><em>注：该漫画的地址<a href="http://dilbert.com/strip/2011-07-02" target="_blank" rel="noopener">http://dilbert.com/strip/2011-07-02</a></em></p>
+<p>然而, 我们怎么能不知道我们最喜欢的球队昨晚的得分? 怎么能不知道昨晚公众人物们干了些啥？</p>
+<p>无论从哪一方面考虑, 个性化的内容都已经成为了我们日常生活中的一部分了, 我们不能，甚至连想不可能想去限制内容个性化。</p>
+<p>接下来, 就让我们了解一下Web服务器是如何通过识别你的身份实现内容个性化的。</p>
+<h2 id="客户端识别的多种方式"><a href="#客户端识别的多种方式" class="headerlink" title="客户端识别的多种方式"></a>客户端识别的多种方式</h2><p>识别客户端具有多种方式:</p>
+<ul>
+<li><strong>HTTP请求首部</strong></li>
+<li><strong>IP地址</strong></li>
+<li><strong>长URLs</strong></li>
+<li><strong>Cookies</strong></li>
+<li><strong>登陆信息(认证)</strong></li>
+</ul>
+<p>下面, 我们将上面的每一种方法大致过一遍吧！HTTP认证会在<a href>HTTP系列</a>的<a href>第四部分</a>进行更加详细的介绍。</p>
+<h2 id="用于识别的HTTP请求首部字段"><a href="#用于识别的HTTP请求首部字段" class="headerlink" title="用于识别的HTTP请求首部字段"></a>用于识别的HTTP请求首部字段</h2><p>Web服务器可以通过一些方法, 直接从HTTP请求首部字段中提取客户端的相关信息。</p>
+<p>这些首部字段是:</p>
+<ul>
+<li><strong>From -</strong> 若客户端有提供, 则含有用户(客户端或代理)的电子邮件地址</li>
+<li><strong>User-Agent -</strong> 含有客户端的信息</li>
+<li><strong>Referer -</strong> 含有用户所请求的原始资源(的URI)</li>
+<li><strong>Authorization -</strong> 含有用户名及密码</li>
+<li><strong>Client-ip -</strong> 含有用户的IP地址</li>
+<li><strong>X-Forwared-For -</strong> 含有用户的IP地址(通过代理服务器时使用)</li>
+<li><strong>Cookie -</strong> 含有服务器端生成的ID</li>
+</ul>
+<p>理论上, <strong>From首部字段</strong>是用户理想的唯一标识, 但实际上, 由于会造成收集电子邮件地址这种安全性问题, 因此该首部字段很少用到。</p>
+<p><em>注: 国外有专门形容收集电子邮件地址的词组-<a href="https://attack.mitre.org/wiki/Technique/T1114" target="_blank" rel="noopener">email collection</a>, 词组原意应该是“收集电子邮件数据”, 但是因为From这个首部字段含有的是电子邮件的地址, 因此翻译为”收集电子邮件地址”。</em></p>
+<p><strong>User-agent首部字段</strong>含有浏览器版本、操作系统的信息。尽管这些信息对自定义内容来说很重要, 但它还是不能(帮服务器)用更恰当的方式去识别用户。</p>
+<p><strong>Referer首部字段</strong>告知服务器用户的请求是从哪个Web页面发起的。该信息有助于(服务器)分析用户行为, 但较少识别该首部字段内容。</p>
+<p><em>注: 我大概查了一下为什么作者会说很少识别该首部字段内容。看完《图解HTTP》，我是这样理解的, 当直接在浏览器的地址栏输入URI, 或其他安全性考虑时, 客户端可以不发送该首部字段, 因为URI的查询字符串中可能含有ID和密码等保密信息, 若写进去有可能导致信息泄露。所以服务器就很少识别该首部字段的内容。如果想更深入了解Referer首部字段, 可以看一下<a href="https://www.sojson.com/blog/58.html" target="_blank" rel="noopener">https://www.sojson.com/blog/58.html</a></em></p>
+<p>虽然这些首部字段(给服务器)提供了有用的客户端信息, 不过, 如果想有效地实现内容个性化, 这是远远不够的。</p>
+<p>剩余的首部字段(为服务器)提供了更准确的识别机制。</p>
+<h2 id="IP地址"><a href="#IP地址" class="headerlink" title="IP地址"></a>IP地址</h2><p>过去, IP地址不易被伪造或交换, 因此IP地址可用于识别客户端。但是(检查)IP地址可以被当作一个额外的安全检查, 毕竟只检查IP地址, 还是不够可靠。</p>
+<p>下面列出的, 是其不可靠的原因:</p>
+<ul>
+<li>IP地址<strong>描述机器</strong>, 而不是用户</li>
+<li><strong>NAT防火墙 -</strong> 许多ISP(Internet service provider, 互联网服务供应商)用NAT防火墙提高安全性和弥补IP地址的不足</li>
+<li><strong>动态IP地址 -</strong> 用户通常都是从ISP获取动态IP地址</li>
+<li><strong>HTTP代理和网关 -</strong> 代理和网关可用于隐藏真实IP地址。某些代理通过Client-ip请求首部字段或X-Forwarded-For请求首部字段来保留真实IP地址。</li>
+</ul>
+<h2 id="长-胖-URL"><a href="#长-胖-URL" class="headerlink" title="长(胖)URL"></a>长(胖)URL</h2><p>在用户浏览页面时, 网站会在URL中添加更多的信息, 直至URL看起来很复杂且难以读懂。</p>
+<p>下面举浏览亚马逊商店的例子能很好地告诉你, 胖URL长得啥样。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.amazon.com/gp/product/1942788002/ref=s9u_psimh_gw_i2?i</span><br></pre></td></tr></table></figure>
+<p>在使用胖URL的时候, 有以下缺点:</p>
+<ul>
+<li>看起来很丑</li>
+<li>不可共享</li>
+<li>破坏缓存</li>
+<li>会话(session)受限</li>
+<li>给服务器增加负载</li>
+</ul>
+<p><em>注: 这里大概解释一下这些缺点。首先, “不可共享”是因为共享的话可能会造成个人隐私泄露等安全问题。”破坏缓存”则是因为, 胖URL实际上是为每个用户生成特定版本的URL, 这就会造成没有可供公共访问的缓存了。之后, “会话受限”, 我们应该知道会话内容会在关闭浏览器之后消失, 除非用户收藏了特定的胖URL, 否则一旦用户退出登录, 所有会话期间的内容都会消失。而”增加负载”则是因为将URL重写会生成负荷。若想更进一步了解胖URL, 可参考：<a href="http://gcidea.info/2016/05/11/fat-url/" target="_blank" rel="noopener">http://gcidea.info/2016/05/11/fat-url/</a></em></p>
+<h2 id="Cookies"><a href="#Cookies" class="headerlink" title="Cookies"></a>Cookies</h2><p>Cookie是现在除了认证(authentication)之外最好的标识客户端方法, 它是由网景公司提出的, 现如今, 每一个浏览器都支持cookie。</p>
+<p>Cookie分为两类: 会话Cookie和持久性Cookie。会话Cookie在(用户)关闭浏览器时会被删除, 而持久性cookie则会(比会话Cookie)更长久地保存在硬盘中。若想将会话Cookie作为持久性Cookie来使用, 仅需设置Max-Age首部字段或Expiries属性。</p>
+<p>现代浏览器(例如Chrome、Firefox)在用户关闭浏览器后, 可以让后台进程一直运行， 以便用户从(进程)中断处恢复进程。这可能会导致(浏览器)会保留绘画cookie, 因此要小心一点。</p>
+<p>那cookie到底是怎么工作的呢？</p>
+<p>Cookie含有一个键值对列表, 该列表是服务器通过Set-Cookie或Set-Cookie2两种响应首部字段设置的。通常, Cookie存储的信息会是某种客户ID, 但是有些网站也会(在其中)存储其他信息。</p>
+<p>浏览器将Cookie信息储存在Cookie数据库中, 并在用户下次访问该页面或网站时返回Cookie。浏览器可以处理成千上万不同的cookie, 并且知道每一个cookie什么时候提供(给用户)。</p>
+<p>下面为(使用Cookie的)流程的示例。</p>
+<ol>
+<li><p>用户代理(User Agent) -&gt; 服务器 </p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/login HTTP/1.1</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+<p> 用户(代理)通过表单输入的内容识别用户。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Customer=&quot;WILE_E_COYOTE&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
+<p> 服务器向用户代理(浏览器)发送Set-Cookie2响应首部字段, 指示用户代理在cookie中写入用户相关信息。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/pickitem HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+<p> 用户将选择的物品添加到购物车中。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Part_Number=&quot;Rocket_Launcher_0001&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
+<p> 购物车中添加了所选出物品。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/shipping HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;; Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;; </span><br><span class="line">        Part_Number=&quot;Rocket_Launcher_0001&quot;;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+<p> 用户选择送货方式。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Set-Cookie2: Shipping=&quot;FedEx&quot;; Version=&quot;1&quot;; Path=&quot;/acme&quot;</span><br></pre></td></tr></table></figure>
+<p> 产生新的Coookie中映射出送货方式。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">POST /acme/process HTTP/1.1</span><br><span class="line">Cookie: $Version=&quot;1&quot;;</span><br><span class="line">Customer=&quot;WILE_E_COYOTE&quot;; $Path=&quot;/acme&quot;;</span><br><span class="line">Part_Number=&quot;Rocket_Launcher_0001&quot;; $Path=&quot;/acme&quot;;</span><br><span class="line">Shipping=&quot;FedEx&quot;; $Path=&quot;/acme&quot;</span><br><span class="line">[form data]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这就是完整的流程。</p>
+<p>有一点我必须要提醒你, Cookie并不是完美的。除开安全考虑, 还有一个问题, Cookie的使用会与REST架构风格发生冲突。</p>
+<p><em>注:发生冲突的原因可见文末的附加内容。若对<a href="https://www.infoq.com/articles/rest-anti-patterns" target="_blank" rel="noopener">英文版的完整解释</a>有兴趣的话, 可以点击打开。</em></p>
+<p>你可以在<a href="https://www.ietf.org/rfc/rfc2965.txt" target="_blank" rel="noopener">RFC 2965</a>了解更多关于cookie的信息。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文为HTTP系列的一部份。</p>
+<p>由本文, 你已经了解到了内容个性化的优缺点, 也知道了服务器标识客户端的多种方法。接下来, 在HTTP系列的第四部分中, 我们将会探讨到最重要的一类客户端标识: 认证(authentication)。</p>
+<p>如果你发现本文讲述的某些概念不是很清楚, 你可以参考[HTTP系列][]]的<a href="https://se8s0n.github.io/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/" target="_blank" rel="noopener">第一部分</a>和<a href="https://se8s0n.github.io/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C)/" target="_blank" rel="noopener">第二部分</a>。</p>
+<h2 id="附加内容"><a href="#附加内容" class="headerlink" title="附加内容"></a>附加内容</h2><ol>
+<li><p>漫画内容翻译<br> A：让我们开始会议吧, 但是你要知道, 我会(在会议过程中)记录下你所有的欺凌行为。<br> B :emmmm, 我根本不是一个欺凌者, 但是你现在的确认偏误搞得像我在欺凌你一样, 这让我很难受。<br> A:可以请你重复一下你暗示我我是个妄想的女巫之后的内容吗？</p>
+</li>
+<li><p>Cookie与REST架构产生冲突的原因</p>
+<blockquote>
+<p>One of the key ideas of REST is statelessness – not in the sense that a server can not store any data: it’s fine if there is resource state, or client state.</p>
+</blockquote>
+</li>
+</ol>
+<p>REST的主要思想是无状态, 无状态并不意味着服务器不能存储任何数据, 而是它<strong>只能用来存储资源状态、客户端状态</strong>。</p>
+<blockquote>
+<p>The most typical use of cookies is to store a key that links to some server-side data structure that is kept in memory. This means that the cookie, which the browser passes along with each request, is used to establish conversational, or session, state.</p>
+</blockquote>
+<p>通常, <strong>cookie都被用来存储一个由服务器端发来的值</strong>(即存储了服务器端的内容), 该值最后存储于用户硬盘中。这就意味着, 浏览器随每个请求一起发送的cookie, 都是用于设定通信的状态或传送会话的状态。</p>
+<blockquote>
+<p>If a cookie is used to store some information, such as an authentication token, that the server can validate without reliance on session state, cookies are perfectly RESTful </p>
+</blockquote>
+<p>假如cookie中存储了认证信息(例如会话令牌, 即session token), 那么服务器不用验证会话状态就可直接登陆(账户), 此时使用cookie就会完全符合REST原则——此时, cookie存储的session是客户端的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/08/24/HTTP系列(三)/" data-id="ckrzo1bj50006dfrtkmpsin9r" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-HTTP系列(二)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/18/HTTP系列(二)/" class="article-date">
+  <time datetime="2018-08-18T18:09:21.000Z" itemprop="datePublished">2018-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/18/HTTP系列(二)/">HTTP系列(二):HTTP的结构体系</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在本系列的<a href="https://se8s0n.github.io/2018/06/19/HTTP%E7%B3%BB%E5%88%97(%E4%B8%80)/" target="_blank" rel="noopener">第一篇文章</a>中, 我们探讨了HTTP的基本概念。有了(前面的)基础, 我们就可以开始HTTP结构体系的学习。 HTTP协议不仅仅只是用来发送和接收数据的。</p>
+<p>实际上, HTTP协议本身是不能作为应用程序协议工作的, 但是因为它的基础结构是由硬件和软件组成, 软硬件协同工作提供了不同的服务, 这才能在万维网上实现有效的通信。</p>
+<p>本文是HTTP系列文章的第二部分。</p>
+<p>文章概要:</p>
+<ul>
+<li><a href>Web服务器(Web Severs)</a></li>
+<li><a href>代理服务器(Proxy Severs)</a></li>
+<li><a href>缓存(Caching)</a></li>
+<li><a href>网关(Gateways), 隧道(Tunnels), 中继代理(Relays)</a></li>
+<li><a href>网络爬虫(Web Crawlers)</a></li>
+</ul>
+<p>这些都是我们网络生活中不可分割的一部分, 接下来, 你可以(通过本文)全面地了解它们的用途及其工作形式。接下来学习的内容可以帮你把第一篇文章中的(知识)点串起来, 这样, 你就可以熟悉HTTP通信过程。</p>
+<p>那么, 让我们现在就开始学习吧！</p>
+<h2 id="Web服务器"><a href="#Web服务器" class="headerlink" title="Web服务器"></a>Web服务器</h2><p>正如第一篇文章所提到的, Web服务器的主要功能是存储资源并在接收请求后(按照请求)处理资源。通过Web客户端(又称为Web浏览器)用户可访问Web服务器, 并返回获取请求的资源或更改(资源的)现有的状态。访问Web服务器的操作, 通过网络爬虫, 也可以实现自动化, 相关内容我们会在文章后面进行深入的了解。<br><img src="https://code-maze.com/wp-content/uploads/2017/06/servers.jpg" alt><br>你所知道的最流行的服务器, 不外乎是Apache的HTTP 服务器、Nginx、<br>IIS、Glassfish…</p>
+<p>Web服务器可分为(使用)单种简单易用的软件或(使用)多种复杂的软件的服务器。 现代的Web服务器能够执行许多不同的任务, 其基本功能为:</p>
+<ul>
+<li><strong>建立连接</strong> —— 接受或关闭客户端连接</li>
+<li><strong>接收请求</strong> —— 读取HTTP请求报文</li>
+<li><strong>处理请求</strong> —— 解析请求报文并执行(相应请求)</li>
+<li><strong>访问资源</strong> —— 访问请求报文中(请求的)资源</li>
+<li><strong>构造响应</strong> —— 创建HTTP响应报文</li>
+<li><strong>发送响应</strong> —— 向客户端返回响应报文</li>
+<li><strong>事务日志</strong> —— 在日志文件中记录已完成的事务</li>
+</ul>
+<p>我将Web服务器基本(工作)流程分为不同的阶段, 所列出的阶段是Web服务器(工作)流程的一个极其简化的版本。</p>
+<h3 id="阶段-1：建立连接"><a href="#阶段-1：建立连接" class="headerlink" title="阶段 1：建立连接"></a>阶段 1：建立连接</h3><p>当Web客户端要访问Web服务器时, 客户端必须要重新打开一个TCP连接。与此同时, Web服务器在另一边向客户端确认IP地址。然后, 由服务器决定是否与该客户端建立TCP连接。</p>
+<p>如果服务器接受连接, 它会将客户端的IP地址添加到现有连接的列表中, 并监视该连接上的数据。</p>
+<p>如果客户端未被授权或是黑名单中的(视为恶意的), 服务器可以关闭TCP连接。</p>
+<p>服务器还可以使用”反向 DNS(Domain Name System, 域名服务器)”来识别客户端的主机名。客户端的主机名有利于事务日志的记录, 但主机名的查找需要时间, 所以会造成记录事务的速度减慢。</p>
+<h3 id="阶段-2：接收-处理请求"><a href="#阶段-2：接收-处理请求" class="headerlink" title="阶段 2：接收/处理请求"></a>阶段 2：接收/处理请求</h3><p>分析接收的请求时, Web服务器会分析报文的请求行、首部字段和主体(如果有提供的话) 中的信息。需要注意的一点是, TCP连接可以随时暂停, 因此在这种情况下, 服务器必须将(已传送)数据临时存储起来, 直到服务器接收到剩余(未传输的)数据。</p>
+<p>高端的Web服务器能够同时建立大量连接——包括同时与同一客户端有多个连接。因此, 典型Web页面可以向高端服务器请求大量不同的资源。</p>
+<h3 id="阶段-3：访问资源"><a href="#阶段-3：访问资源" class="headerlink" title="阶段 3：访问资源"></a>阶段 3：访问资源</h3><p>Web 服务器通过多种方法映射和操作资源, (为Web客户端)提供资源。</p>
+<p>映射资源最简单的方法, 就是根据请求(报文)中的URI在Web服务器的文件系统中查找所需的文件。通常, 资源都存放在服务器上一个被称为文件根目录(docroot)的特殊文件夹中。例如, Windows 服务器上的文件根目录就位于“F:\WebResources \”。假设有一个GET请求想要访问”/image/codemazeblog”上的文件, 服务器会将其转换为”F:\WebResources\images\codemazeblog.txt”, 并在响应报文中返回该文件。当一个Web 服务器承载多个网站时, 每个站点都会有其独立的的文件根目录。</p>
+<p>如果 Web 服务器接收到的是对(文件)路径的请求, 而不是对文件的请求, 服务器可以用以下几种方式处理请求:返回错误消息; 替代返回路径或遍历路径, 返回默认索引文件;返回带有(所请求)内容的HTML文件。</p>
+<p>服务器还可以将请求(报文)中的URI映射到动态资源上, 这些动态资源是由应用程序生成的。有一类服务器叫做应用程序服务器, 其功能就是管理动态资源, 它还能给Web服务器提供复杂的软件解决方案。</p>
+<h3 id="阶段-4：生成及发送响应"><a href="#阶段-4：生成及发送响应" class="headerlink" title="阶段 4：生成及发送响应"></a>阶段 4：生成及发送响应</h3><p>一旦服务器确定了需要所请求的资源, 它就会生成响应报文, 报文中包含状态码、响应首部字段, 若请求(报文)中需要的话还应有响应主体。</p>
+<p>如果存在响应主体, 那么该响应报文通常包含Content-Length和Content-Type两个首部字段——Content-Length描述主体大小, Content-Type描述返回资源的MIME类型。</p>
+<p>生成响应(报文)后, 服务器选择需要发送响应的客户端。对于非持久性(长期)连接, 服务器需要在发送整个响应消息后关闭连接。</p>
+<h3 id="阶段-5-记录事务"><a href="#阶段-5-记录事务" class="headerlink" title="阶段 5:记录事务"></a>阶段 5:记录事务</h3><p>服务器在事务完成后将记录文件中的所有事务信息, 大部分的服务器都采用自定义的方式记录日志。</p>
+<h2 id="代理服务器"><a href="#代理服务器" class="headerlink" title="代理服务器"></a>代理服务器</h2><p>代理服务器 (代理) 是的中间服务器, 通常位于Web服务器和Web客户端之间, 因其性质, 代理服务器需要兼并Web客户端和Web服务器的功能。</p>
+<p>不过, 为什么要用代理服务器呢？为什么不直接用Web客户端和Web服务器进行通信？这难道不是更加简单快速吗？</p>
+<p>当然, (直接利用Web客户端和Web服务器)操作起来是很简单, 不过说到速度快, 那就未必了。接下来, 我们会了解原因的。</p>
+<p>在解释什么是代理服务器之前, 我们先要搬开一块大石头, 那就是<strong>反向代理服务器(reverse proxy)</strong>的概念。 换句话来说就是知道 <strong>正向代理(forward proxy)</strong>和<strong>反向代理( reverse proxy)</strong>有什么区别。</p>
+<p>正向代理负责向Web服务器请求资源, 并将资源返回到客户端。除此之外, 正向代理还能通过防火墙过滤请求或隐藏客户端信息来维护客户端的安全。而反向代理的工作方式(与正向代理)完全相反, 它通常位于防火墙之后来保护 Web 服务器。所有客户端已知其通信对象是实际的Web服务器, 但却了解反向代理背后的(Web服务器所处的)网络。</p>
+<h3 id="代理服务器-1"><a href="#代理服务器-1" class="headerlink" title="代理服务器"></a>代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server.png" alt></p>
+<h3 id="反向代理服务器"><a href="#反向代理服务器" class="headerlink" title="反向代理服务器"></a>反向代理服务器</h3><p><img src="https://code-maze.com/wp-content/uploads/2017/06/proxy-server-1.png" alt><br>代理(服务器)非常有用并且应用十分广泛。接下来, 让我们来了解一下代理服务器的功能。</p>
+<ul>
+<li><strong>压缩(Compression)</strong> —— 就是简单地利用压缩内容的方式加快通信速度。</li>
+<li><strong>监控(Monitoring)和过滤(filtering)</strong> —— 用代理服务器(进行监控和过滤)不失为一个阻止小学生访问成人网站好方法。🙂</li>
+<li><strong>安全(Security)</strong> —— 代理(服务器)可以作为整个网络的一个独立的入口点, 它们能够检测恶意软件和对应用层协议设限。</li>
+<li><strong>匿名性(Anonymity)</strong> —— 代理可以修改请求(报文)以提高匿名性, 它可以从请求中剥离敏感信息, 只留下重要的东西。尽管向服务器发送较少的信息会降低用户体验,<br>但是有时侯, 匿名性(比用户体验)更重要。</li>
+<li><strong>访问控制(Access control)</strong> —— 若要实现对多个服务器的访问控制, 集中管理单个代理服务器即可。</li>
+<li><strong>缓存(Caching)</strong> —— 使用代理服务器缓存常用的内容, 会大大降低加载速度。<em>注:这里的加载速度按照我自己的理解, 应该是如果存在缓存的话,<br>服务器需要先去加载缓存中的内容, 这会降低加载的速度</em></li>
+<li><strong>负载均衡(Load balancing)</strong> —— 如果服务达到性能的临界点, 你可以使用<a href="https://zhuanlan.zhihu.com/p/32854860" target="_blank" rel="noopener">负载均衡器</a>——负载均衡器是一种可均衡分配路由通信量的代理, 可避免在服务性能达到临界点时导致单个服务器超负荷——分配在资源或Web服务器中的负载。</li>
+<li><strong>转码(Transcoding)</strong> —— 代理服务器有修改报文主体的功能。</li>
+</ul>
+<p>综上所述, 代理(服务器)有功能多样且可灵活使用的特点。</p>
+<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>Web 缓存(系统)是一种可以自动复制请求报文数据并将其保存到本地存储中的设备。</p>
+<p>Web缓存的优点:</p>
+<ul>
+<li><strong>减少通信量</strong></li>
+<li><strong>消除网络瓶颈</strong></li>
+<li><strong>防止服务器草符合</strong></li>
+<li><strong>降低</strong>长距离造成的<strong>响应延迟</strong></li>
+</ul>
+<p>因此, 可以直白地说, Web缓存改善了用户体验和服务器性能。当然, 还有可能省了很多钱。</p>
+<p>命中率的范围由0至1, 其中0表示缓冲提供所请求的0%资源 ,而1表示缓冲提供所请求的100%资源。命中率最理想的状态当然是达到100%, 但是, 实际命中率通常只能接近40%。</p>
+<p>下面是基本的Web缓存的工作流程:<br><img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1534998705/HTTP/CacheFlow.png" alt></p>
+<h2 id="网关、隧道、中继代理"><a href="#网关、隧道、中继代理" class="headerlink" title="网关、隧道、中继代理"></a>网关、隧道、中继代理</h2><p>随着HTTP(越来越)成熟, 不同的HTTP协议使用方法不断涌现出来。这就促使, HTTP——连接不同应用程序和协议的框架——变得非常有用。</p>
+<p>接下来, 就让我们来看看HTTP是怎么做到如此有用的。</p>
+<h3 id="网关"><a href="#网关" class="headerlink" title="网关"></a>网关</h3><p>网关是一种(网络)硬件，它能够通过抽象方法使 HTTP协议与不同协议和不同应用程序进行通信, 从而获得资源。网关也被称为协议转换器, 由于(具有)多个协议的应用, 所以它比路由器或交换机复杂得多。</p>
+<p>下面是网关利用转换协议工作的实例:使用网关发送HTTP请求可以接收到FTP(File Transfer Protocol, 文件传输协议)文件; 使用客户端加速安全网关可以接收到SSL(Secure Sockets Layer, 安全套接层)加密后转换成HTTP协议的报文; 使用服务器端安全网关可以将HTTP报文转换成更安全的HTTPs报文(Hypertext Transfer Protocol Secure, 超文本传输安全协议);</p>
+<h3 id="隧道"><a href="#隧道" class="headerlink" title="隧道"></a>隧道</h3><p>隧道(协议)是利用CONNECT请求方法实现的, 该协议能够通过HTTP协议发送非HTTP的数据。CONNECT是一个(客户端)要求代理连接目标服务器的请求方法, 并且在客户端和服务器之间中转数据。</p>
+<p><em>注：上面这句话简单理解就是, 隧道协议不用HTTP解析数据, 对数据不做任何处理, 只将数据直接中转给目标服务器。</em></p>
+<p>CONNECT请求:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CONNECT api.github.com:443 HTTP/1.0</span><br><span class="line">User-Agent: Chrome/58.0.3029.110</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml</span><br></pre></td></tr></table></figure></p>
+<p>CONNECT响应:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 200 Connection Established</span><br><span class="line">Proxy-agent: Netscape-Proxy/1.1</span><br></pre></td></tr></table></figure></p>
+<p>与常规的HTTP响应(报文)不同, CONNECT响应不需要特别说明Content-Type字段。</p>
+<p>一旦(隧道)建立了连接,客户端和服务器就可以直接进行通信。</p>
+<h3 id="中继代理"><a href="#中继代理" class="headerlink" title="中继代理"></a>中继代理</h3><p>中继(服务器)在HTTP世界中充当着坏人的角色, 他们不受HTTP的律法束缚。实际上, 中继(服务器)是代理的简化版本, 只要它们能够建立连接——仅需请求报文中极少信息量——那么就可以中转所有接收到的信息。</p>
+<p>中继存在的唯一的理由就是, (在某些情况下)需要一个尽可能少惹麻烦的代理。不过, 使用中继也可能带来麻烦。因此中继是应用在特定场景下, 所以在添加中继(服务器)之前, 一定要先考虑添加之后的损益比。</p>
+<h2 id="网络爬虫"><a href="#网络爬虫" class="headerlink" title="网络爬虫"></a>网络爬虫</h2><p><img src="https://code-maze.com/wp-content/uploads/2017/06/Web-crawler.png" alt><br>当然, 通常都称呼它为网络蜘蛛(spiders), 它是一种网络机器人, 用于自动浏览万维网和编纂网络索引。因此,对于搜索引擎和大部分来说, 网络爬虫是必不可少的工具。</p>
+<p>网络爬虫是一个全自动化的软件, 不需要人机交互。网络爬虫的复杂度差异会很大, 一些网络爬虫就非常复杂(比如搜索引擎用的爬虫)。</p>
+<p>网络爬虫会消耗所访问的网站的资源。因此, 公开的网站有一个机制去告知爬虫：网站哪些内容可被抓取, 或禁止爬虫抓取任何数据。你可以通过<strong>robots.txt</strong>Robots Exclusion Protocol, 漫游器排除协议)去实现这个机制。</p>
+<p>毫无疑问, robots.txt不能阻止那些不请自来的网络爬虫抓取网站, 因为它只是一个标准。也就是说, robots.txt只能防君子不能防小人。</p>
+<p>下面是robots.txt书写方式的举例:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User-agent: *</span><br><span class="line">Disallow: /</span><br></pre></td></tr></table></figure></p>
+<p>含义:禁止所有爬虫访问网站的任何部分。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">User-agent: *</span><br><span class="line">Disallow: /somefolder/</span><br><span class="line">Disallow: /notinterestingstuff/</span><br><span class="line">Disallow: /directory/file.html</span><br></pre></td></tr></table></figure></p>
+<p>含义:仅禁止访问两个特定的目录和文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User-agent: Googlebot</span><br><span class="line">Disallow: /private/</span><br></pre></td></tr></table></figure></p>
+<p>含义:在特定情况下, 禁止指定的爬虫访问。</p>
+<p>不过, 鉴于万维网的庞大, 即使是有史以来最强大的爬虫, 也无法抓取整个网络的资源并编纂整个网络的索引。这就是爬虫使用<strong>选择策略(selection policy)</strong>抓取关联性最大的部分的原因。此外, 万维网经常发生动态变化, 因此爬虫必须用<strong>重新访问策略(freshness policy )</strong>去计算它们是否能再次访问网站。并且, 爬虫轻松覆盖整个服务器的资源时, 会采取发送过于快速和繁多的请求的举措, 因此爬虫会采取<strong>平衡礼貌策略(politeness policy)</strong>避免造成服务器不能正常使用。已知的大部分爬虫, 以低至20秒高至3-4分钟的时间间隔对服务器进行轮询, 避免使服务器上超载。</p>
+<p><em>注:重新访问策略其实就是为了避免资源过期, 爬虫进行确认的一个机制。</em></p>
+<p>你可能听说过神秘又邪恶的深网或暗网。但是, 深网(暗网)只是网络的一部分, 搜索引擎为了将(其中的)信息藏起来故意不把它们编入索引。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这个链接是<a href>HTTP系列</a>的目录及简介。相信你现在脑海中对HTTP工作流程已经有了更加清晰的概念, 学到了比(原本的)请求、响应、状态码更多的知识正是不同的软硬件结合的整体架构, 才让作为应用层协议的HTTP能够发挥出它的潜能。</p>
+<p>我在这篇文章谈到的每个概念都很庞大, 大到足以用一篇文章甚至一本书来细细讲述。不过, 我只是想大概介绍一下概念, 这样你们就知道这些概念是如何搭配使用的, 方便你们之后查找相关内容。</p>
+<p>如果在阅读的过程中, 你发现有些内容解释得过于简短和不清晰并且没有看过我之前的文章, 你可以阅读这篇文章的<a href>第一部分</a>和<a href>HTTP指南</a>, 在这两篇文章中都有关于HTTP基本概念的概述。</p>
+<p>感谢你阅读本文, 敬请关注HTTP系列的<a href>第三部分</a>, 我在这篇文章中讲述了服务器是如何识别客户端的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/08/18/HTTP系列(二)/" data-id="ckrzo1bj30004dfrtnvi1e5km" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-HTTP系列(一)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/19/HTTP系列(一)/" class="article-date">
+  <time datetime="2018-06-19T19:15:45.000Z" itemprop="datePublished">2018-06-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/19/HTTP系列(一)/">HTTP系列(一)：HTTP的基础概念概述</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译<a href="https://code-maze.com/http-series/" target="_blank" rel="noopener">HTTP系列</a>这篇文章。<br>如果想阅读原文, 你可以访问这个网站: <a href="https://code-maze.com/" target="_blank" rel="noopener">https://code-maze.com/</a></p>
+<p>原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>本文会对HTTP的基础概念进行介绍。</p>
+<h2 id="为什么要学HTTP"><a href="#为什么要学HTTP" class="headerlink" title="为什么要学HTTP?"></a>为什么要学HTTP?</h2><p>你可能会问：为什么要了解HTTP协议? </p>
+<p>如果你是软件开发人员, 学习HTTP协议通信过程, 能让你知道怎么样才能写出更好的应用程序。<br>如果你是系统架构师或者是网络管理员, 学习HTTP通信过程, 能让你进一步学习如何设计复杂的网络体系结构。</p>
+<p><a href="http://www.ruanyifeng.com/blog/2011/09/restful.html" target="_blank" rel="noopener">表现层状态转换</a>(REST, Representational State Transfer)是现在一种很重要的架构风格, 使用这个架构时我们需要先了解HTTP协议的特性, 因此, 学习HTTP协议就变得尤为重要了。如果你想做好RESTful架构的产品, 你就必须先学习HTTP协议。</p>
+<p>我必须提醒你, REST架构并不是只能使用HTTP协议的, 它也能用其他的协议来实现。但是, 由于HTTP应用的广泛性, 它在那场战役(选择实现REST架构的协议的那场战争)中获得了胜利, 因此给予找不到用其他协议来实现的REST架构。</p>
+<p>难道, 你想错过这个了解、学习万维网和网络通信的基本概念的机会吗？</p>
+<p>我觉得你不会想错过的🙂</p>
+<p>本文会尽可能简单地介绍HTTP重要的部分。这篇文章整合了HTTP中有用的信息, 省去你们花费在书籍和RFC文档上寻找需要信息的时间。</p>
+<p>本文是HTTP系列的第一篇文章, 它简要地介绍HTTP的基础概念。</p>
+<p>文章概要：</p>
+<ul>
+<li>HTTP的定义</li>
+<li>资源</li>
+<li>如何在WEB客户端和服务器之间交换信息?</li>
+<li>报文实例</li>
+<li>MIME类型</li>
+<li>请求方法</li>
+<li>报文首部</li>
+<li>状态码</li>
+</ul>
+<p>闲话少说, 直接进入下面的学习吧！</p>
+<h2 id="HTTP的定义"><a href="#HTTP的定义" class="headerlink" title="HTTP的定义"></a>HTTP的定义</h2><p>纵观HTTP的发展史,有两个重要人物，一个是发明万维网和HTTP协议的Tim Berners-Lee, 另一个是REST架构风格的发明者Roy Fielding。</p>
+<p><strong>超文本传输协议(The Hypertext Transerfer Protocol)</strong>是应用程序之间的通信协议。本质上, HTTP协议是负责委派互联网中客户端和服务器端之间的媒体文件(包括HTML、图片、文本文件、电影等客户端和服务器端之间传输的所有文件), 通过HTTP协议媒体文件能够快速、可靠地传输。HTTP被用于应用层通信, 因此HTTP协议是应用层协议而不是传输层协议。为了让你们记起相关知识, 我在下面放出了网络栈的构成图。<br><img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png" alt><br>在上图中, 你可以清晰地看到, HTTP是应用层协议, 而TCP才是传输层协议。</p>
+<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><p><img src="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg" alt><br>因特网上所有的内容都是资源(Resource), HTTP正是处理这些资源的协议——包括文件、(数据)流、 服务和其他所有的东西。HTML页面、youtube上的视频、WEB应用程序上日常任务电子表格…这些都是资源。(相信通过上面的举例)你已经知道了什么是资源了。</p>
+<p>接下来就要思考另一个问题了, 如何区分不同的资源?</p>
+<p>通过给资源标识URLs(Uniform resource locators, 统一资源定位符)——这里URL和URI(统一资源标识符)在大部分时候都可以混用。</p>
+<p>URL指向唯一的(资源存放)位置。</p>
+<h2 id="如何在Web客户端和服务器端之间交换信息"><a href="#如何在Web客户端和服务器端之间交换信息" class="headerlink" title="如何在Web客户端和服务器端之间交换信息?"></a>如何在Web客户端和服务器端之间交换信息?</h2><p>所有的内容、资源都是存放在一些WEB服务器(HTTP服务器)上的。想要获取资源, 那么需要你发送HTTP请求给这些(HTTP)服务器。</p>
+<p>但是, 怎么样才能从WEB服务器请求(得到)资源?</p>
+<p>当然, 你必须先有一个支持HTTP协议的客户端🙂。</p>
+<p>你现在阅读文章时所使用的Web浏览器, 就是HTTP客户端。</p>
+<p>Web浏览器与HTTP服务器进行通信,之后, 将从服务器上获取的资源传送到你的电脑中。</p>
+<p>(市面上)最流行的客户端有:Google的Chrome浏览器、Mozilla的火狐浏览器、Apple的Safari浏览器、(居然还有)臭名昭著的Internet Explorer浏览器。<br><em>注：作者原本写的是unfortunately,我感觉这种“哀其不幸, 怒其不争”的语气去吐槽还有人用着Internet Explorer这件事, 用“居然”会稍微合适一点</em></p>
+<h2 id="报文实例"><a href="#报文实例" class="headerlink" title="报文实例"></a>报文实例</h2><p>那, HTTP报文到底长什么样?</p>
+<p>多说无益, 下面列出HTTP报文的示例:</p>
+<h4 id="GET请求"><a href="#GET请求" class="headerlink" title="GET请求"></a>GET请求</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GET /repos/CodeMazeBlog/ConsumeRestfulApisExamples HTTP/1.1</span><br><span class="line">Host: api.github.com</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Authorization: Basic dGhhbmtzIEhhcmFsZCBSb21iYXV0LCBtdWNoIGFwcHJlY2lhdGVk</span><br><span class="line">Cache-Control: no-cache</span><br></pre></td></tr></table></figure>
+<h4 id="POST请求"><a href="#POST请求" class="headerlink" title="POST请求"></a>POST请求</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">POST /repos/CodeMazeBlog/ConsumeRestfulApisExamples/hooks?access_token=5643f4128a9cf974517346b2158d04c8aa7ad45f HTTP/1.1</span><br><span class="line">Host: api.github.com</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Cache-Control: no-cache</span><br><span class="line"> </span><br><span class="line">&#123;</span><br><span class="line">  &quot;url&quot;: &quot;http://www.example.com/example&quot;,</span><br><span class="line">  &quot;events&quot;: [</span><br><span class="line">    &quot;push&quot;</span><br><span class="line">  ],</span><br><span class="line">  &quot;name&quot;: &quot;web&quot;,</span><br><span class="line">  &quot;active&quot;: true,</span><br><span class="line">  &quot;config&quot;: &#123;</span><br><span class="line">    &quot;url&quot;: &quot;http://www.example.com/example&quot;,</span><br><span class="line">    &quot;content_type&quot;: &quot;json&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过上面的例子, 我们来快速地比较一下GET请求报文和POST请求报文。</p>
+<p>请求报文的第一行是<strong>请求行</strong>。请求行包括<strong>请求方法</strong>、请求URI和HTTP版本。</p>
+<p>接下来几行是<strong>请求首部字段</strong>。请求首部字段提供请求报文的附加信息, 如请求响应的内容类型、授权信息等。</p>
+<p>对于GET请求来说, HTTP报文到这里结束了。而POST请求还可以传输(实体)主体, 并且可以以报文主体的形式携带附加信息。在创建GitHub webhook(网络回调)时, 会产生有附加信息的JSON数据——关于如何为有URI标识的特定项目创建webhook——这个数据在创建webhook时是必不可少的, 通过POST请求向GitHub API 提供该数据。</p>
+<p><em>注：《图解HTTP》一书中提到实体主体和报文实体的区别, 一般来说实体主体和报文主体是相同的, 只有在编码时会改变实体主体,也就是说如果我分别用deflate(zlib)和identity(不进行编码)对内容进行编码, 只会影响实体主体而不会影响报文实体。</em></p>
+<p>HTTP报文的请求行和各种首部字段——即报文首部——后面必须有 <cr> <lf> (回车符\r和换行符\n), 并且报文首部与的报文主体之间存在一个空行, 该空行仅包含 CRLF。</lf></cr></p>
+<p>HTTP 请求协议相关内容参照: <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html" target="_blank" rel="noopener">https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html</a></p>
+<p>之后, 服务器端会如何响应这些请求呢? </p>
+<h4 id="响应报文"><a href="#响应报文" class="headerlink" title="响应报文"></a>响应报文</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Server: GitHub.com</span><br><span class="line">Date: Sun, 18 Jun 2017 13:10:41 GMT</span><br><span class="line">Content-Type: application/json; charset=utf-8</span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line">Status: 200 OK</span><br><span class="line">X-RateLimit-Limit: 5000</span><br><span class="line">X-RateLimit-Remaining: 4996</span><br><span class="line">X-RateLimit-Reset: 1497792723</span><br><span class="line">Cache-Control: private, max-age=60, s-maxage=60</span><br><span class="line"> </span><br><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    &quot;type&quot;: &quot;Repository&quot;,</span><br><span class="line">    &quot;id&quot;: 14437404,</span><br><span class="line">    &quot;name&quot;: &quot;web&quot;,</span><br><span class="line">    &quot;active&quot;: true,</span><br><span class="line">    &quot;events&quot;: [</span><br><span class="line">      &quot;push&quot;</span><br><span class="line">    ],</span><br><span class="line">    &quot;config&quot;: &#123;</span><br><span class="line">      &quot;content_type&quot;: &quot;json&quot;,</span><br><span class="line">      &quot;insecure_ssl&quot;: &quot;0&quot;,</span><br><span class="line">      &quot;url&quot;: &quot;http://www.example.com/example&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;updated_at&quot;: &quot;2017-06-18T12:17:15Z&quot;,</span><br><span class="line">    &quot;created_at&quot;: &quot;2017-06-18T12:03:15Z&quot;,</span><br><span class="line">    &quot;url&quot;: &quot;https://api.github.com/repos/CodeMazeBlog/ConsumeRestfulApisExamples/hooks/14437404&quot;,</span><br><span class="line">    &quot;test_url&quot;: &quot;https://api.github.com/repos/CodeMazeBlog/ConsumeRestfulApisExamples/hooks/14437404/test&quot;,</span><br><span class="line">    &quot;ping_url&quot;: &quot;https://api.github.com/repos/CodeMazeBlog/ConsumeRestfulApisExamples/hooks/14437404/pings&quot;,</span><br><span class="line">    &quot;last_response&quot;: &#123;</span><br><span class="line">      &quot;code&quot;: 422,</span><br><span class="line">      &quot;status&quot;: &quot;misconfigured&quot;,</span><br><span class="line">      &quot;message&quot;: &quot;Invalid HTTP Response: 404&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>除了第一行(<strong>状态行</strong>), 响应报文与请求报文的结构几乎相同, 惊奇地发现响应报文的状态行(实际上)是响应状态的相关信息。</p>
+<p>在状态行之后, 是响应报文的各种首部字段和响应报文主体。</p>
+<p><em>注：响应状态包括相应结果的状态码, 原因短语和HTTP版本</em></p>
+<p>HTTP响应报文参照: <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html" target="_blank" rel="noopener">https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html</a></p>
+<h2 id="MIME类型"><a href="#MIME类型" class="headerlink" title="MIME类型"></a>MIME类型</h2><p>MIME类型是互联网中用于描述文件类型的一种标准化方法。 (我们使用的)浏览器上就有一个MIME类型的列表,同样的, WEB服务器端也有一个MIME类型的列表, 通过这种方法, 我们就可以在不同的操作系统间传输常见类型的文件。</p>
+<p>有趣的是, 实际上MIME是多用途因特网邮件扩展的意思,它们一开始是邮件用来处理不同类型的数据的。但是从那之后, MIME(就)被改造成为HTTP协议和其他协议使用的机制了。</p>
+<p>MIME类型由类型(type)、子类型(subtype)、可选参数(optional parameters)构成, 格式为:类型/子类型;可选参数。</p>
+<p>例子如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Content-Type: application/json</span><br><span class="line">Content-Type: text/xml; charset=utf-8</span><br><span class="line">Accept: image/gif</span><br></pre></td></tr></table></figure>
+<p>你可以在<a href>HTTP指南</a>中查看常见的MIME类型和子类型列表。</p>
+<h2 id="请求方法"><a href="#请求方法" class="headerlink" title="请求方法"></a>请求方法</h2><p>HTTP请求方法(也被称为HTTP动词)定义了将在资源上执行的操作。HTTP中有多种请求方法, 最常用的是GET方法和POST方法。</p>
+<p>请求方法有幂等性和非幂等性之分。“幂等性”与“非幂等性”只是花里胡哨的术语, (实际上)它是用来反映某一请求方法多次调用同一资源的操作安全与否的。这意味着, 为了安全, GET方法—用于获取资源的方法—默认情况下应该是幂等性的方法。在用GET方法调用同一资源时, 不应该产生不同的响应结果。与之相对, POST方法就不应该是幂等性方法。</p>
+<p><em>注:关于幂等性, 可以看看<a href="https://zhuanlan.zhihu.com/p/20081828" target="_blank" rel="noopener">理解HTTP幂等性</a>这篇文章, 里面的解释还是比较容易理解的。</em></p>
+<p>HTTP/1.1版本之前,只有GET、POST、HEAD三种请求方法。在HTTP/1.1规范中, 引进了许多新的方法:OPTIONS、PUT、DELETE、TRACE、CONNECT。</p>
+<p>如果想要进一步了解请求方法, 可以参考<a href>HTTP指南</a></p>
+<h2 id="报文首部"><a href="#报文首部" class="headerlink" title="报文首部"></a>报文首部</h2><p>报文首部域是由冒号分割的首部字段名和字段值组成的, 反映了服务器端或客户端请求或响应的内容及属性, 位于请求报文或响应报文第一行之后。</p>
+<p>这里有五种报文首部类型：</p>
+<ul>
+<li><p><strong>通用首部字段(General headers)</strong>:该首部字段被应用于客户端和服务器端双方。举一个常见的例子,日期首部字段(Date headers)就指明了创建报文的日期时间。</p>
+</li>
+<li><p><strong>请求首部字段(Request headers)</strong>：该首部字段仅在请求报文中出现, 向服务器端提供附加信息。例如, “Accept:<em>/</em>“告知了服务器客户端可处理任何媒体类型。</p>
+</li>
+<li><p><strong>响应首部字段(Response headers)</strong><br>：该首部字段仅在响应报文中出现,想客户端提供附加信息。例如, “Allow：GET, HEAD, PUT”告知了客户端服务器能接受的请求资源方法。</p>
+</li>
+<li><p><strong>实体首部字段(Entity headers)</strong>：该首部字段用于实体主体。例如”Content-Type: text/html”告知应用程序(传输)的数据是HTML文件。</p>
+</li>
+<li><p><strong>扩展首部字段(Extension headers)</strong>：这些非标准首部字段可由应用程序开发人员创建, 尽管该首部字段不在HTTP规范中, 但仍可使用。<br>你可以在<a href>HTTP指南</a>中查看常用请求首部和响应首部字段。</p>
+</li>
+</ul>
+<h2 id="状态码"><a href="#状态码" class="headerlink" title="状态码"></a>状态码</h2><p><strong>状态码(Statue code)</strong>是一个三位数字, 表示请求的结果。<strong>原因短语(Reason phrase)</strong>是用自然语言表示的状态代码解释, 跟随在状态码之后。</p>
+<p>例子如下：</p>
+<ul>
+<li>200 OK —— 表示从客户端发来的请求在服务器端正常处理了</li>
+<li>404 Not Found —— 服务器上无法找到请求资源</li>
+<li>500 Internal Server Error —— 服务器端在执行请求时发生错误</li>
+</ul>
+<p>状态码根据不同的范围分为五种不同的类型。</p>
+<p>如果想查看状态码的分类和完整的状态码列表及其含义, 可以看<a href>HTTP指南</a>。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>emmm, 这个信息量挺大的。</p>
+<p>学习HTTP协议的基础概念, 虽然不能帮助你直接解决问题, 但是从中学习到的互联网通信的基本原则, 几乎适用于所有比HTTP协议更高级别的问题。不管是 REST、APIs、WEB应用程序开发还是网络方面出现的问题, 现在, 在解决这些问题时, 你至少可以更加自信一点。</p>
+<p>不可否认, HTTP讲起来是一个相当大的话题, 之后的内容, 与HTTP协议的基本概念比起来多多了。 </p>
+<p>HTTP体系结构方面会在<a href="https://se8s0n.github.io/2018/08/18/HTTP%E7%B3%BB%E5%88%97(%E4%BA%8C" target="_blank" rel="noopener">HTTP系列(二)</a>/)中介绍。</p>
+<h1 id="名词解释与概述："><a href="#名词解释与概述：" class="headerlink" title="名词解释与概述："></a>名词解释与概述：</h1><h2 id="REST"><a href="#REST" class="headerlink" title="REST"></a>REST</h2><p><strong>REST(Representational State Transfer)</strong>——表现层状态转换, 是一种用来描述网络中Client和Server的交互形式的协议。<br>下面对名词进行解释：</p>
+<ol>
+<li><p>表现层(Representation), 直白地说就是<strong>资源(信息实体)具体呈现出来的形式</strong>, 例如:文本表现为TXT格式、HTML格式或者是XML格式。</p>
+</li>
+<li><p>状态转换(State Transfer), 这个状态转换实际上是发生在Client访问Server的过程中。为什么会选择无状态HTTP作为实现REST架构的协议? 因为HTTP可发送四种状态:GET、POST、PUT、DELETE。这四个HTTP协议的动词可以用来进行不同的操作：GET用来获取资源, POST用来新建更新资源,PUT用来更新资源,DELETE用来删除资源。在写的时候我自己有点小迷糊, 什么是有状态的? 什么是无状态的呢? 无状态, 其实就是所有的状态都保存在Server。因此, 状态转换, 是在信息由Client传送到Server的中间过程实现的。<br><img src="https://cdn.crunchify.com/wp-content/uploads/2012/10/Crunchify.com-RESTful-Introduction.png" alt="RESTful"></p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/" data-id="ckrzo1bj00002dfrtf6zan4hi" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-libsvm环境配置及使用方法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/22/libsvm环境配置及使用方法/" class="article-date">
+  <time datetime="2018-01-22T20:39:39.000Z" itemprop="datePublished">2018-01-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/22/libsvm环境配置及使用方法/">libsvm环境配置及使用方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在刚刚学习机器学习内容的时候，就给了自己很清晰的定位“未想有所成，只想有所用”。因为机缘巧合接触的机器学习，假期想学习的内容里面需要安装libsvm包，在翔翔的远程帮助和及其懈怠的状态下，我按照以下步骤在五分钟之内解决了安装libsvm包的时候出现的问题。（前提是你在Anaconda找不到libsvm的包）</p>
+<h2 id="环境、所用到的软件及其版本"><a href="#环境、所用到的软件及其版本" class="headerlink" title="环境、所用到的软件及其版本"></a>环境、所用到的软件及其版本</h2><pre><code>win 10
+Anaconda3_5.5.0
+python 3.6
+Visual Studio 2013
+（当然这个不在我电脑上=v=，感兴趣地可以按照我之后给的链接在本机运行一下）
+PyCharm 2017.2.3
+</code></pre><h2 id="libsvm环境配置"><a href="#libsvm环境配置" class="headerlink" title="libsvm环境配置"></a>libsvm环境配置</h2><p>以下文件路径仅仅是我电脑中的，如果存放的位置不一样，请自行调整</p>
+<ol>
+<li>因为电脑装VS之后出现了点问题，所以不能按照<a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="noopener">林智仁LIBSVM     python包的安装与使用</a>这个链接中64位机的解决方法。就直接用了翔翔发给我的libsvm.dll。将相关链接中的“用vs2013运行过的libsvm.dll”下载好直接放在C:\Windows\System32下即可。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631573/dll%E5%AD%98%E6%94%BE%E4%BD%8D%E7%BD%AE_iapklk.png" alt><br>  <strong>Tips</strong>：或者在Anaconda离线包的链接中下载，按照“林智仁LIBSVM python包的安装与使用”进行操作。当时在页面不能直接找到VS的Prompt快捷方式，打开D:\develop\Visual Studio\Common7\Tools\Shortcuts中的VS2013 x64 本机工具命令提示进行nmake操作。<img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1516631572/TIM%E5%9B%BE%E7%89%8720180122141218_qko6gg.png" alt></li>
+<li><p>直接将libsvm文件夹中python下的 svmutil.py和svm.py两个文件复制粘贴到D:\develop\Anaconda\Lib下</p>
+</li>
+<li><p>在python环境下测试是否安装成功<br>(1) 输入测试代码</p>
+<pre><code>from svmutil import *
+y, x = svm_read_problem(&apos;../heart_scale&apos;)
+m = svm_train(y[:200], x[:200], &apos;-c 4&apos;)
+p_label, p_acc, p_val = svm_predict(y[200:], x[200:], m)
+</code></pre><p>(2) 测试代码结果输出：</p>
+<pre><code>optimization finished, #iter = 257
+nu = 0.351161
+obj = -225.628984, rho = 0.636110
+nSV = 91, nBSV = 49
+Total nSV = 91
+Accuracy = 84.2857% (59/70) (classification)
+</code></pre></li>
+</ol>
+<h2 id="libsvm使用方法-非常简易版本"><a href="#libsvm使用方法-非常简易版本" class="headerlink" title="libsvm使用方法-非常简易版本"></a>libsvm使用方法-非常简易版本</h2><ul>
+<li>svm_train函数<br>这里用的是彭亮视频中的例子<pre><code>from svmutil import *
+x = [[1,1], [2,0], [2,3]]
+y = [0, 0, 1]
+clf = svm_train(y, x, &apos;-s 0 -t 0&apos;)
+</code></pre></li>
+<li>相关参数解释说明<br>  x是特征向量<br>  (在这里，x必须是list或者是tuple，因为svm_train函数第二个参数传入时限定了，如果不是的话，会有报错）<br>  y是特征向量对应的标记<br>  clf是分类器<br>  ‘-s 0 -t 0’是option,详情请见<a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="noopener">LIBSVM详细介绍和使用方法</a></li>
+<li>svm_predict函数<pre><code>from svutil import *
+x = [[1,1], [2,0], [2,3]]
+y = [0, 0, 1]
+x1 = [[1,1], [2,0]]
+y1 = [0, 1]
+svm_predict(y1, x1, clf)
+</code></pre></li>
+</ul>
+<h2 id="相关链接"><a href="#相关链接" class="headerlink" title="相关链接"></a>相关链接</h2><hr>
+<p>   <a href="http://blog.csdn.net/m624197265/article/details/41894311" target="_blank" rel="noopener">林智仁LIBSVM python包的安装与使用</a><br>   <a href="https://anaconda.org/conda-forge/repo" target="_blank" rel="noopener">Anaconda离线包</a><br>   <a href="http://www.hankcs.com/wp-content/uploads/2015/10/LIBSVM%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95.pdf" target="_blank" rel="noopener">LIBSVM详细介绍和使用方法</a><br>   <a href="https://pan.baidu.com/s/1hthwNis" target="_blank" rel="noopener">用vs2013运行过的libsvm.dll 密码:aiu7</a><br>   <a href="https://pan.baidu.com/s/1htfuUNE" target="_blank" rel="noopener">libsvm-3.22 离线包 密码：gbpl</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/01/22/libsvm环境配置及使用方法/" data-id="ckrzo1bj70009dfrtnvzc0s58" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/机器学习/">机器学习</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+  
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    </nav>
+  
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>

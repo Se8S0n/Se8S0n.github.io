@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>从OWASP CrackMe学Android逆向(一) | Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="准备环境、工具Pixel(Magisk+Xposed/EdXposed)这里要安利一下Magisk，它现在有个超强的Magisk Hide功能，能隐藏root状态，不过我还没研究过它的原理，如果后面有机会的话会稍微整理一下的。 UnCrackable-Level1进入到存有UnCrackable的文件目录下，adb install UnCrackable-Level1.apk把APK安装到手机上。">
+<meta name="keywords" content="Android逆向">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从OWASP CrackMe学Android逆向(一)">
+<meta property="og:url" content="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-一/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:description" content="准备环境、工具Pixel(Magisk+Xposed/EdXposed)这里要安利一下Magisk，它现在有个超强的Magisk Hide功能，能隐藏root状态，不过我还没研究过它的原理，如果后面有机会的话会稍微整理一下的。 UnCrackable-Level1进入到存有UnCrackable的文件目录下，adb install UnCrackable-Level1.apk把APK安装到手机上。">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919408/OWASP/1.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919459/OWASP/2.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919460/OWASP/3.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919460/OWASP/4.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919461/OWASP/5.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919463/OWASP/6.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919464/OWASP/7.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919464/OWASP/8.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919465/OWASP/9.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919466/OWASP/10.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919467/OWASP/11.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919467/OWASP/12.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919470/OWASP/13.png">
+<meta property="og:updated_time" content="2021-08-05T06:51:27.399Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从OWASP CrackMe学Android逆向(一)">
+<meta name="twitter:description" content="准备环境、工具Pixel(Magisk+Xposed/EdXposed)这里要安利一下Magisk，它现在有个超强的Magisk Hide功能，能隐藏root状态，不过我还没研究过它的原理，如果后面有机会的话会稍微整理一下的。 UnCrackable-Level1进入到存有UnCrackable的文件目录下，adb install UnCrackable-Level1.apk把APK安装到手机上。">
+<meta name="twitter:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919408/OWASP/1.png">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-从OWASP-CrackMe学Android逆向-一" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/" class="article-date">
+  <time datetime="2019-11-06T00:40:47.000Z" itemprop="datePublished">2019-11-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      从OWASP CrackMe学Android逆向(一)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="准备环境、工具"><a href="#准备环境、工具" class="headerlink" title="准备环境、工具"></a>准备环境、工具</h2><p>Pixel(Magisk+Xposed/EdXposed)<br>这里要安利一下Magisk，它现在有个超强的Magisk Hide功能，能隐藏root状态，不过我还没研究过它的原理，如果后面有机会的话会稍微整理一下的。</p>
+<h2 id="UnCrackable-Level1"><a href="#UnCrackable-Level1" class="headerlink" title="UnCrackable-Level1"></a>UnCrackable-Level1</h2><p>进入到存有UnCrackable的文件目录下，<code>adb install UnCrackable-Level1.apk</code>把APK安装到手机上。打开应用之后，发现应用存在root检测，一旦发现了root状态，点击OK之后应用就会被kill。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919408/OWASP/1.png" alt><br>可以反编译apk之后patch root检测部分的内容，重打包之后安装到手机里面绕过root检测，也可以用Magisk自带的Magisk Hide绕过。Magisk Hide设置方法如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919459/OWASP/2.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919460/OWASP/3.png" alt><br>当然第二张图里会不一样，我们需要选中UnCrackable-Level1.apk。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919460/OWASP/4.png" alt></p>
+<p>随便输个内容，按下VERIFY，发现出现了个弹窗，要我们再试一下。OK，可以看出我们应该从反编译apk开始入手，找找它这个验证的代码逻辑，看看能不能找到正确的字符串，或者看看有没有方法绕过这样的条件判断。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919461/OWASP/5.png" alt></p>
+<p>如果代码量过大的话，我们可以通过<code>adb shell dumpsys activity top | findstr ACTIVITY</code>定位要找的界面的代码。像下面这样，就能定位到界面<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919463/OWASP/6.png" alt></p>
+<p>不过用JEB看一下，发现这个代码量真的不是很大….用JEB打开MainActivity之后看到一个verify的函数没有经过混淆，看代码逻辑，判断的条件由a.a()函数传递，返回的是一个boolean类型的值。如果Level1真要让我们弹出Success的话，就没什么意思了，那就跟进a.a()函数里面看看。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919464/OWASP/7.png" alt></p>
+<p>发现a.a()中调用了加密的算法，之后将用户输入的值也就是arg5与加密后的结果进行比对，若比对成功的话，就说明我们输入的是正确的。明显这个crackme的意图不是要我们patch源代码然后得到弹窗Success, 而是获得flag, 也就是密文<code>5UJiFctbmgbDoLXmpL12mkno8HT4Lv8dlat8FxR2GOc=</code>解密后的结果。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919464/OWASP/8.png" alt></p>
+<h3 id="CTF解题法"><a href="#CTF解题法" class="headerlink" title="CTF解题法"></a>CTF解题法</h3><p>可以使用动态和静态两种方法获得明文, 静态的方法参照文章<a href="https://nankeen.me/posts/owasp-android-level1/" target="_blank" rel="noopener">OWASP Android Crackme Level 1</a>, 文章的作者使用了openssl和硬编码在源码中的密钥<code>8d127684cbc37c17616d806cf50473cc</code>解密<code>5UJiFctbmgbDoLXmpL12mkno8HT4Lv8dlat8FxR2GOc=</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919465/OWASP/9.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919466/OWASP/10.png" alt><br>通过代码我们可以知道AES算法使用了ECB加密模式, 且在CTF中AES-128加密算法的密钥一般为32位, 输入命令<code>echo 5UJiFctbmgbDoLXmpL12mkno8HT4Lv8dlat8FxR2GOc= | openssl enc -aes-128-ecb -base64 -d -nopad -K 8d127684cbc37c17616d806cf50473cc</code>可获取flag<code>I want to believe</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919467/OWASP/11.png" alt></p>
+<h3 id="Xposed解法"><a href="#Xposed解法" class="headerlink" title="Xposed解法"></a>Xposed解法</h3><p>感觉上面的方法太巧妙了, 下面会补充一个没那么巧妙且常用的方法——Xposed hook, 我一开始找到函数a.a(), 但是因为参数类型填写不正确的原因, 加上该函数实际上返回的是<code>byte []</code>类型的数据, 所以不能得到正确的flag, Xposed模块param.getResult()的返回值又是String类型的数据，所以在这里我们需要处理数据转换的问题。具体的Xposed模块代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">package com.example.unlock;</span><br><span class="line"></span><br><span class="line">import android.util.Log;</span><br><span class="line">import de.robv.android.xposed.IXposedHookLoadPackage;</span><br><span class="line">import de.robv.android.xposed.XC_MethodHook;</span><br><span class="line">import de.robv.android.xposed.XC_MethodReplacement;</span><br><span class="line">import de.robv.android.xposed.XposedBridge;</span><br><span class="line">import de.robv.android.xposed.XposedHelpers;</span><br><span class="line">import de.robv.android.xposed.callbacks.XC_LoadPackage;</span><br><span class="line">import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;</span><br><span class="line">public class HookMain implements IXposedHookLoadPackage &#123;    </span><br><span class="line">    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable &#123;               </span><br><span class="line">        if(!lpparam.packageName.equals(&quot;owasp.mstg.uncrackable1&quot;)) //过滤包名</span><br><span class="line">            return; </span><br><span class="line">        XposedBridge.log(&quot;Loaded app: &quot; + lpparam.packageName);        //Hook a方法        </span><br><span class="line">        try &#123;              </span><br><span class="line">            XposedHelpers.findAndHookMethod(&quot;sg.vantagepoint.a.a&quot;, lpparam.classLoader, &quot;a&quot;, byte [].class, byte [].class, new XC_MethodHook() &#123;                </span><br><span class="line">                @Override                </span><br><span class="line">                protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable &#123;                                 </span><br><span class="line">                &#125;                            </span><br><span class="line">                protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable &#123;                    </span><br><span class="line">                    // 转换数据类型</span><br><span class="line">                    String flag = new String((byte []) param.getResult()); </span><br><span class="line">                    // 在这里使用Log.i()可能会输出失败, 最好还是用XposedBridge.log</span><br><span class="line">                    XposedBridge.log(&quot;SECRET: &quot; + flag);               </span><br><span class="line">                &#125;            </span><br><span class="line">           &#125;);       </span><br><span class="line">        &#125; catch (Throwable e)&#123;            </span><br><span class="line">            XposedBridge.log(&quot;hook failed&quot;);            </span><br><span class="line">            XposedBridge.log(e);       </span><br><span class="line">        &#125;    </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>安装Xposed模块并重启之后，随便输入之后提交，得到flag<code>I want to believe</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919467/OWASP/12.png" alt></p>
+<h3 id="Frida解题法"><a href="#Frida解题法" class="headerlink" title="Frida解题法"></a>Frida解题法</h3><p>还可以按照wp <a href="https://enovella.github.io/android/reverse/2017/05/18/android-owasp-crackmes-level-1.html" target="_blank" rel="noopener">Level1 Writeup</a>使用Frida hook代码获取flag。</p>
+<p>Frida使用的过程中不能和Magisk Hide一起使用, 不然会出现<code>Failed to spawn: unable to access zygote64 while preparing for app launch; try disabling Magisk Hide in case it is active</code>的报错。所以我们需要先关掉Magisk Hide(Magisk Manager &gt; Settings &gt;Magisk &gt; Magisk Hide (关掉)), 并且还要在Frida脚本里面绕过root的检测。</p>
+<p>因为之前没有接触过Frida, 也算是用这个实例来学习Frida的使用, 如果跟我一样不是很熟悉Frida, 可以配合<a href="https://www.frida.re/docs/javascript-api/#java" target="_blank" rel="noopener">Frida的官方文档</a>一起食用, 文档中有Frida的js API使用说明, 下面的代码主要涉及的是调用Java函数的部分。作者在这里写的绕过root和debug的思路我觉得值得学习和思考, 有种听君一席话, 胜读十年书的感觉。当然, 这样讲还是有点夸张的, 不过真的很值得学习。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">Java.perform(function () &#123;</span><br><span class="line">  send(&quot;Starting hooks OWASP uncrackable1...&quot;);</span><br><span class="line">  /*</span><br><span class="line">    hook java.lang.System.exit, 使该函数只用来输出下面的字符串</span><br><span class="line">    避免了应用的检测机制导致应用退出, 使用该方法绕过Java层的root/debug检测 </span><br><span class="line">  */</span><br><span class="line">  var sysexit = Java.use(&quot;java.lang.System&quot;);</span><br><span class="line">  sysexit.exit.overload(&quot;int&quot;).implementation = function(var_0) &#123;</span><br><span class="line">    send(&quot;java.lang.System.exit(I)V  // We avoid exiting the application  :)&quot;);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  var aes_decrypt = Java.use(&quot;sg.vantagepoint.a.a&quot;);</span><br><span class="line">  aes_decrypt.a.overload(&quot;[B&quot;,&quot;[B&quot;).implementation = function(var_0,var_1) &#123;</span><br><span class="line">    send(&quot;sg.vantagepoint.a.a.a([B[B)[B   doFinal(enc)  // AES/ECB/PKCS7Padding&quot;);</span><br><span class="line">    send(&quot;Key       : &quot; + var_0);</span><br><span class="line">    send(&quot;Encrypted : &quot; + var_1);</span><br><span class="line">    /*</span><br><span class="line">      重载解密函数, 并获取其返回值, 因其类型为byte [], </span><br><span class="line">      js在调用Java方法之后只能返回一个对象, 而不是返回一个byte类型的数组</span><br><span class="line">    */</span><br><span class="line">    var ret = this.a.overload(&quot;[B&quot;,&quot;[B&quot;).call(this,var_0,var_1);</span><br><span class="line">    send(&quot;Decrypted : &quot; + ret);</span><br><span class="line"></span><br><span class="line">    var flag = &quot;&quot;;</span><br><span class="line">    //将char类型转换为String类型</span><br><span class="line">    for (var i=0; i &lt; ret.length; i++)&#123;</span><br><span class="line">      flag += String.fromCharCode(ret[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    send(&quot;Decrypted flag: &quot; + flag);</span><br><span class="line">    return ret; //[B</span><br><span class="line">  &#125;; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  var mainactivity = Java.use(&quot;sg.vantagepoint.uncrackable1.MainActivity&quot;);</span><br><span class="line">  mainactivity.onStart.overload().implementation = function() &#123;</span><br><span class="line">    send(&quot;MainActivity.onStart() HIT!!!&quot;);</span><br><span class="line">    var ret = this.onStart.overload().call(this);</span><br><span class="line">  &#125;;</span><br><span class="line">  //var mainactivity = Java.use(&quot;sg.vantagepoint.uncrackable1.MainActivity&quot;);</span><br><span class="line">  mainactivity.onCreate.overload(&quot;android.os.Bundle&quot;).implementation = function(var_0) &#123;</span><br><span class="line">    send(&quot;MainActivity.onCreate() HIT!!!&quot;);</span><br><span class="line">    var ret = this.onCreate.overload(&quot;android.os.Bundle&quot;).call(this,var_0);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  var activity = Java.use(&quot;android.app.Activity&quot;);</span><br><span class="line">  activity.onCreate.overload(&quot;android.os.Bundle&quot;).implementation = function(var_0) &#123;</span><br><span class="line">    send(&quot;Activity HIT!!!&quot;);</span><br><span class="line">    var ret = this.onCreate.overload(&quot;android.os.Bundle&quot;).call(this,var_0);</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  send(&quot;Hooks installed.&quot;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>这里小小啰嗦一下Frida的使用方法, 安装的话直接<code>pip install frida-tools</code>, 还有下载适合自己设备的frida-server的版本, push进设备, 加上权限就行。下面是对frida-server进行的操作的操作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ adb shell</span><br><span class="line">$ su</span><br><span class="line"># cd /data/local/tmp # 进入frida-server的目录下</span><br><span class="line"># ./frida-server &amp;</span><br></pre></td></tr></table></figure></p>
+<p>之后重新开一个cmd窗口, 进入.js脚本, 也就是hook的脚本所在的目录下执行<code>frida -U owasp.mstg.uncrackable1 -l cracker.js</code>(我的hook文件名为cracker.js),  就能获取flag：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572919470/OWASP/13.png" alt></p>
+<h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>其实在使用Frida绕过应用检测的时候我想到一个问题, 我认为重载<code>java.lang.System.exit</code>的方法只能绕过Java层调用的exit函数, 而不能绕过native层的函数。Java层，测试后已知hook<code>java.lang.System.exit</code>是不能阻止应用被系统层强制退出的。而native层的, 还没遇到一个这样的demo可以用来测试, 但是我猜测native层的还是需要hook native层的exit函数。如果跳出了这两个层级, 直接对系统层的exit进行注入, 会导致系统崩溃吗？如我的思考或文章出现了错误，希望各位大佬不吝赐教。</p>
+<p>最后，附上<a href="https://github.com/OWASP/owasp-mstg/tree/master/Crackmes/Android" target="_blank" rel="noopener">CrackMe的下载链接</a>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-一/" data-id="ckrzo1bj8000bdfrt1nb0tdal" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          从OWASP CrackMe学Android逆向(二)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/10/12/Android抓包总结/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Android抓包总结</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>

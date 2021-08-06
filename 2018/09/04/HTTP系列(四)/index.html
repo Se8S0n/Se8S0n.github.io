@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>HTTP系列(四)：HTTP的基础概念概述 | Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在上一篇文章中, 我们讨论了网站用多种方法去标识浏览网站的用户(身份)。 标识本身仅仅表示一个声明, (用户通过声明)表明自己的身份, 然而除此之外, 并没有其他证据可以证明用户的身份。 认证, 用另一种方式来说, 就是用户证明自身身份的证据, 展示个人ID和输入用户密码是两种证明自身身份常见的方法。 通常情况下,只有通过认证, 网站才能为用户提供敏感资源。 HTTP自身拥有认证机制, 该机制允许">
+<meta name="keywords" content="HTTP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP系列(四)：HTTP的基础概念概述">
+<meta property="og:url" content="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:description" content="在上一篇文章中, 我们讨论了网站用多种方法去标识浏览网站的用户(身份)。 标识本身仅仅表示一个声明, (用户通过声明)表明自己的身份, 然而除此之外, 并没有其他证据可以证明用户的身份。 认证, 用另一种方式来说, 就是用户证明自身身份的证据, 展示个人ID和输入用户密码是两种证明自身身份常见的方法。 通常情况下,只有通过认证, 网站才能为用户提供敏感资源。 HTTP自身拥有认证机制, 该机制允许">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Nonce-cnonce-uml.svg/345px-Nonce-cnonce-uml.svg.png">
+<meta property="og:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1536501208/HTTP/mim.png">
+<meta property="og:updated_time" content="2021-08-05T06:51:27.303Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HTTP系列(四)：HTTP的基础概念概述">
+<meta name="twitter:description" content="在上一篇文章中, 我们讨论了网站用多种方法去标识浏览网站的用户(身份)。 标识本身仅仅表示一个声明, (用户通过声明)表明自己的身份, 然而除此之外, 并没有其他证据可以证明用户的身份。 认证, 用另一种方式来说, 就是用户证明自身身份的证据, 展示个人ID和输入用户密码是两种证明自身身份常见的方法。 通常情况下,只有通过认证, 网站才能为用户提供敏感资源。 HTTP自身拥有认证机制, 该机制允许">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Nonce-cnonce-uml.svg/345px-Nonce-cnonce-uml.svg.png">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-HTTP系列(四)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/04/HTTP系列(四)/" class="article-date">
+  <time datetime="2018-09-04T22:21:21.000Z" itemprop="datePublished">2018-09-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HTTP系列(四)：HTTP的基础概念概述
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在上一篇文章中, 我们讨论了网站用多种方法去标识浏览网站的用户(身份)。</p>
+<p>标识本身仅仅表示一个声明, (用户通过声明)表明自己的身份, 然而除此之外, 并没有其他证据可以证明用户的身份。</p>
+<p>认证, 用另一种方式来说, 就是用户证明自身身份的证据, 展示个人ID和输入用户密码是两种证明自身身份常见的方法。</p>
+<p>通常情况下,只有通过认证, 网站才能为用户提供敏感资源。</p>
+<p>HTTP自身拥有认证机制, 该机制允许服务器(向用户)提出质询并获取其所需的认证信息。你将会在文章中了解到什么是认证和认证是如何进行的。文章中还会涵盖每一种认证方式的优缺点, 并且分析它们是否具有独当一面的能力。(偷偷剧透一下, 它们才没这个能力呢！)</p>
+<p>这篇文章是<a href>HTTP系列</a>的第四部分。</p>
+<p>文章概要:</p>
+<ul>
+<li>HTTP认证的工作方式</li>
+<li>Basic认证(基本认证)</li>
+<li>Digest认证(摘要认证)</li>
+</ul>
+<p>在进一步探索什么是HTTP认证机制之前, 我们一起来看看什么是HTTP认证吧！</p>
+<h2 id="HTTP认证的工作方式"><a href="#HTTP认证的工作方式" class="headerlink" title="HTTP认证的工作方式"></a>HTTP认证的工作方式</h2><p>认证是Web服务器标识用户的一种方式。用户需要摆出证据, 证明其有获得所请求资源的权限。通常, 证明的过程需要一组用户名和密码, 并且, 输入的用户名和密码必须经服务器(验证后)认同是有效的, 然后才由服务器判断该用户是否有获取该资源的权限。</p>
+<p>HTTP提供了两种认证协议: </p>
+<ul>
+<li><strong>Basic认证(基本认证)</strong></li>
+<li><strong>Digest认证(摘要认证)</strong></li>
+</ul>
+<p>在深入了解上述两个协议之前, 我们来大概过一遍基础概念。</p>
+<h3 id="质询-challenge-响应-response-认证框架"><a href="#质询-challenge-响应-response-认证框架" class="headerlink" title="质询(challenge)/响应(response)认证框架"></a>质询(challenge)/响应(response)认证框架</h3><p>质询/响应认证是什么意思?</p>
+<p>就是说, 在某个客户端发送请求的时候, 服务器不会立即响应, 而是(向客户端)返回<strong>认证要求</strong>。该认证要求要求用户通过输入私密信息(用户名及密码)来提供标识身份的证明。</p>
+<p>之后, 客户端会重复发送请求来提供(身份)凭证, 如果该身份凭证被服务器认证是有效的, 那么用户可以得到所请求的响应资源。如果(身份)凭证被认为无效, 那么服务器会重新发出质询, 或直接发送(认证信息)错误报文。</p>
+<p><em>注:加入用户名密码错误的话, 服务器会返回401</em></p>
+<h3 id="与认证相关的请求-响应首部字段"><a href="#与认证相关的请求-响应首部字段" class="headerlink" title="与认证相关的请求/响应首部字段"></a>与认证相关的请求/响应首部字段</h3><p><strong>WWW-Authenticate响应首部字段</strong>, 是服务器用来(向客户端)发出质询的, 该首包含了认证协议和认证域这两部分内容。</p>
+<p>在用户输入(身份)凭证之后, (客户端)会重新发送请求报文。然后, 客户端会发送附有<strong>Authorization首部字段</strong>的请求报文, 该首部字段包含了认证方式(Basic)和一组用户密码。</p>
+<p>如果(身份)凭证通过验证, 服务器会返回响应, 并在响应中选用Authentication-Info首部字段附上附加信息——该首部字段是非必需的, 所以可有可无。</p>
+<h3 id="安全认证域-Security-Realms"><a href="#安全认证域-Security-Realms" class="headerlink" title="安全认证域(Security Realms)"></a>安全认证域(Security Realms)</h3><p>认证域(又称防护域, protection space)在服务器上提供了<strong>不同访问权限关联不同资源组的方法</strong>。</p>
+<p>实际上, 认证域的存在就意味着, 用户访问(不同的)资源需要输入不同的身份凭证。</p>
+<p>服务器拥有多个认证域。</p>
+<p>/admin/statistics/financials.txt -&gt; Realm=”Admin Statistics”<br>比如, 上面的示例就是存放网站统计信息的认证域——只允许网站管理员访问(其中的资源)。</p>
+<p>/images/img1.jpg -&gt; Realm = “Images”<br>还有存放网站图片的认证域——即使不是管理员, 也能访问和上传图片。</p>
+<p>当你尝试访问”financials.txt”时, 服务器会向你发出质询, 并返回如下响应:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 401 Unauthorized</span><br><span class="line">WWW-Authenticate: Basic realm=&quot;Admin Statistics&quot;</span><br></pre></td></tr></table></figure></p>
+<p>点击<a href="https://tools.ietf.org/html/rfc7235#section-2.2" target="_blank" rel="noopener">https://tools.ietf.org/html/rfc7235#section-2.2</a>可了解更多认证域。</p>
+<h3 id="简单的HTTP认证实例"><a href="#简单的HTTP认证实例" class="headerlink" title="简单的HTTP认证实例"></a>简单的HTTP认证实例</h3><p>现在, 让我们用简单的HTTP认证实例为这一小节内容画上一个完美的句号吧!(basic认证会在后文继续讲述)</p>
+<ol>
+<li><p>用户代理 -&gt; 服务器<br>用户请求访问服务器上的图片。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /gallery/personal/images/image1.jpg HTTP/1.1</span><br><span class="line">Host: www.somedomain.com</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>服务器 -&gt; 用户代理<br>服务器(向客户端)发送认证要求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 401 Access Denied</span><br><span class="line">WWW-Authenticate: Basic realm=&quot;gallery&quot;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用户代理 -&gt; 服务器<br>用户通过表单输入标识自己。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /gallery/personal/images/image1.jpg HTTP/1.1</span><br><span class="line">Authorization: Basic Zm9vOmJhcg==</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>服务器 -&gt; 用户代理<br>服务器验证(身份)凭证成功后, 发送状态码”200 OK”及图片。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-type: image/jpeg</span><br><span class="line">...&lt;image data&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>看起来不是那么复杂, 对吗?</p>
+<p>现在, 我们来进入更深层次的学习, 学习basic认证。</p>
+<h2 id="basic认证"><a href="#basic认证" class="headerlink" title="basic认证"></a>basic认证</h2><p>basic认证是最常用且支持面最广的认证协议。从HTTP/1.0开始, basic认证就已经广泛应用了, 每一个客户端都可以使用该认证协议认证。</p>
+<p>上面的实例描述的是basic认证过程。basic认证实现和用起来都很简单, 不过, 它存在着安全问题。</p>
+<p>进入(basic认证)安全问题的学习之前, 不妨先了解一下basic认证是如何处理(认证过程中传输的)用户和密码的。</p>
+<p>basic认证将用户名及密码放在一串字符串中, 两者由符号”:”分割。然后, 用<a href="https://zh.wikipedia.org/wiki/Base64" target="_blank" rel="noopener">base64编码</a>字符串。不过, 无论字符串的表现形式是什么样, 混乱的字符顺序也不能保证(认证)安全, 因为它可以被轻易地解开。</p>
+<p>实际上, base64编码不是为了加密, 而是为了保证用户名及密码在通过HTTP协议传输之后具有可移植性。不过,在HTTP首部字段中不能使用通用字符, 才是编码的主要原因。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /gallery/personal/images/image1.jpg HTTP/1.1</span><br><span class="line">Authorization: Basic Zm9vOmJhcg==</span><br></pre></td></tr></table></figure>
+<p>例子中的字符串”Zm9vOmJhcg==”解码后只是”foo:bar”(这一小段字符串)。</p>
+<p>因此, 每个可以收到请求的(代理/服务器)都能轻易地解码和使用(传输的身份)凭证。</p>
+<p>更糟糕的是, 恶意的第三方<strong>仍然可以通过发送(编码后的)混乱字符序列达到同样的效果</strong>, 因此对用户名及密码进行编码不会有任何帮助。</p>
+<p>没有任何可以用来防止代理或其他形式的攻击篡改请求主体(数据), 同时还能保证请求主体完好无损的措施。</p>
+<p>因此, 如你所见, basic认证称不上是一个完美的认证机制。</p>
+<p>尽管如此, basic认证还是可以用来防止(无权限用户)意外访问受保护的资源, 并(为用户)提供一定程度的个性化内容。</p>
+<p>为了让(认证)更加安全实用, 可以用基于SSL的HTTPS协议对basic认证进行扩展, 相关内容我们会在本系列的第五部分详述。</p>
+<p>然而, 有些人认为, <a href="https://www.skorks.com/2009/08/is-basic-authentication-really-insecure/" target="_blank" rel="noopener">basic认证的安全与否取决于运输机制(的安全性)</a>。</p>
+<h2 id="digest-摘要-认证"><a href="#digest-摘要-认证" class="headerlink" title="digest(摘要)认证"></a>digest(摘要)认证</h2><p>与简单且不安全的basic认证相比, digest认证是一个更加安全可靠的选择。</p>
+<p>那么, 它是如何认证的呢？</p>
+<p>digest认证将多个<strong><a href="https://zh.wikipedia.org/wiki/Nonce" target="_blank" rel="noopener">nonce</a></strong>与<strong>MD5哈希加密算法</strong>结合使用, 以此来隐藏密码(使账号)免于遭受多种恶意攻击的侵害。</p>
+<p><em>注: nonce本身是用base64加密的。</em><br><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Nonce-cnonce-uml.svg/345px-Nonce-cnonce-uml.svg.png" alt></p>
+<p>这个(认证过程)听起来好像很复杂, 不过在你看完实例之后, 就会觉得清晰多了。</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><ol>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /dir/index.html HTTP/1.0</span><br><span class="line">Host: localhost</span><br></pre></td></tr></table></figure>
+<p> 客户端发送不含认证(信息)的请求。</p>
+</li>
+<li><p>服务器 -&gt; 用户代理</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 401 Unauthorized</span><br><span class="line">WWW-Authenticate: Digest realm=&quot;shire@middleearth.com&quot;,</span><br><span class="line">                        qop=&quot;auth,auth-int&quot;,</span><br><span class="line">                        nonce=&quot;cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ&quot;,</span><br><span class="line">                        opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0cmluZw&quot;</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 153</span><br><span class="line">&lt;--空行--!&gt;</span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">  &lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot; /&gt;</span><br><span class="line">    &lt;title&gt;Error&lt;/title&gt;</span><br><span class="line">  &lt;/head&gt;</span><br><span class="line">  &lt;body&gt;</span><br><span class="line">    &lt;h1&gt;401 Unauthorized.&lt;/h1&gt;</span><br><span class="line">  &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<p> 服务器对客户端发出质询, 要求其用digest认证进行认证, 并向客户端发送(认证时)所需的信息。</p>
+</li>
+<li><p>用户代理 -&gt; 服务器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">GET /dir/index.html HTTP/1.0</span><br><span class="line">Host: localhost</span><br><span class="line">Authorization: Digest username=&quot;Gandalf&quot;,</span><br><span class="line">                     realm=&quot;shire@middleearth.com&quot;,</span><br><span class="line">                     nonce=&quot;cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ&quot;,</span><br><span class="line">                     uri=&quot;/dir/index.html&quot;,</span><br><span class="line">                     qop=auth,</span><br><span class="line">                     nc=00000001,</span><br><span class="line">                     cnonce=&quot;0a4f113b&quot;,</span><br><span class="line">                     response=&quot;5a1c3bb349cf6986abf985257d968d86&quot;,</span><br><span class="line">                     opaque=&quot;c29tZXJhbmRvbW9wYXF1ZXN0c</span><br></pre></td></tr></table></figure>
+<p> 客户端将计算出响应码与用户名、认证域(real)、URI、nonce(随机数)、opaque、qop、nc和cnonce(客户端的随机数)这些属性一起发送出去, 这信息量真的很大。</p>
+</li>
+<li><p>服务器 -&gt; 客户端</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.0 200 OK</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 2345</span><br><span class="line">... &lt;content data&gt;</span><br></pre></td></tr></table></figure>
+<p> 服务器会自己计算(服务器产生的nonce)的哈希值并与从客户端收到的nonce哈希值进行比对。若两者相同, 服务器就会发送(客户端)所请求的数据。</p>
+</li>
+</ol>
+<h3 id="步骤3的-详细说明"><a href="#步骤3的-详细说明" class="headerlink" title="(步骤3的)详细说明"></a>(步骤3的)详细说明</h3><p>定义：</p>
+<ul>
+<li>nonce、opaque —— 服务器生成的字符串, 客户端会在返回的内容中附上该信息。</li>
+<li>qop(保护质量) —— 可设置一个或多个值(“auth” | “auth-in” | token)。这些值影响摘要(信息)的计算。</li>
+<li>cnonce - 客户端随机数, 若设置了qop的值, 一定要生成客户端随机数。它是用来防止<a href="https://zh.wikipedia.org/wiki/%E9%80%89%E6%8B%A9%E6%98%8E%E6%96%87%E6%94%BB%E5%87%BB" target="_blank" rel="noopener">选择明文攻击</a>和保证信息完整性的。</li>
+<li>nc —— 若qop设置了, 必须(给服务器)发送该属性。服务器可通过nc属性的值, 检测请求是否是重新发送过来的。若(两次请求)nc属性出现了相同值, 那么说明该请求重新发送了一次。</li>
+</ul>
+<p>response属性的值的计算方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">HA1 = MD5(&quot;Gandalf:shire@middleearth.com:Lord Of The Rings&quot;)</span><br><span class="line">       = 681028410e804a5b60f69e894701d4b4</span><br><span class="line"> </span><br><span class="line">HA2 = MD5(&quot;GET:/dir/index.html&quot;)</span><br><span class="line">       = 39aff3a2bab6126f332b942af96d3366</span><br><span class="line"> </span><br><span class="line">Response = MD5( &quot;681028410e804a5b60f69e894701d4b4:</span><br><span class="line">                 cmFuZG9tbHlnZW5lcmF0ZWRub25jZQ:</span><br><span class="line">                 00000001:0a4f113b:auth:</span><br><span class="line">                 39aff3a2bab6126f332b942af96d3366&quot; )</span><br><span class="line">         = 5a1c3bb349cf6986abf985257d968d86</span><br></pre></td></tr></table></figure></p>
+<p>如果你对response属性是如何受qop属性影响这件事感兴趣的话, 你可以看看<a href="https://www.ietf.org/rfc/rfc2617.txt" target="_blank" rel="noopener">RFC 2617</a>。</p>
+<h3 id="简短的总结"><a href="#简短的总结" class="headerlink" title="简短的总结"></a>简短的总结</h3><p>如你所见, digest认证不管是理解起来还是实现起来都(比basic认证)复杂多了。</p>
+<p>尽管, digest认证比basic认证安全得多, 但还是存在遭受中间人攻击的可能。</p>
+<p>RFC 2617中提到, digest认证是用于取代basic认证的, 因为它可弥补basic认证的不足, 同时RFC 2617中没有将digest认证仍旧不符合现代密码标准的事实隐藏起来, 不过, 该认证安全与否, 还是取决于实际实施情况。</p>
+<p>digest认证的优点:</p>
+<ul>
+<li>不会在网络中发送明文密码</li>
+<li>防止重放攻击</li>
+<li>防止篡改报文</li>
+</ul>
+<p>digest认证的缺点:</p>
+<ul>
+<li>易遭受中间人攻击</li>
+<li>不用设置大量的安全选项, 导致digest认证方法不够安全</li>
+<li>存储密码时, 不能使用强密码哈希函数</li>
+</ul>
+<p><em>注: 缺点的最后一点, 是因为无论是密码、用户名、realm、密码的摘要都要求是可恢复的</em></p>
+<p>上述的种种缺点使得digest认证未能大力推广, 反观简单的basic认证, 结合SSL使用之后比(复杂的)digest认证安全得多——因此该认证方法得到大力推广。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文为HTTP系列的一部分。</p>
+<p>文章看到这里, 我们大致过了一遍HTTP默认提供的认证机制, 并且谈论了不同认证机制的优缺点。</p>
+<p>希望(对你来说)这些概念不再只是屏幕上的单词, 并且下次你提到这些名词的时候, 能准确地知道它们是什么和怎么运用它们。</p>
+<p>你应该察觉到了, 上述认证机制并不能规避(所有)安全风险, 这就是HTTPS、SSL/TLS(Transport Layer Security, 传输层安全性协定)这些概念存在的原因。下一篇文章, 我们将会更多地去讨论安全问题和如何去规避这些问题。</p>
+<p>如果你感觉有些概念不是很清晰, 你可以看看<a href>HTTP系列</a>的<a href>第一部分</a>、<a href>第二部分</a>和<a href>第三部分</a>。</p>
+<h2 id="安全小讲堂"><a href="#安全小讲堂" class="headerlink" title="安全小讲堂"></a>安全小讲堂</h2><p>  在找相关知识的时候, 发现有一个人用了一个很通俗易懂的方式来讲密码学里面的知识, 感觉很有趣。今天来尝试一波。</p>
+<p>  假设小明和小兰互相不认识, 在老师严抓早恋的背景下, 俩人都学习了写情书的新姿势, 将自己写的文字加密并发出, 然后通过情书培养感情。小草也喜欢小兰, 为了阻(heng)止(dao)他(duo)们(ai), 采取了以下攻击方式。</p>
+<ol>
+<li><p>选择明文攻击<br> 小草很了解小兰(但没有学习过上面的新姿势), 知道小兰最爱在信里表示自己很”开心”, 所以信加密后出现最高频率的词, hexo这就是知道”开心”加密之后的密文是啥了。<br> ————已知密文。</p>
+<p> 如果有一天, 小兰写”开心”的次数变少了, 小草就可以找机会雪(chen)中(xu)送(er)炭(ru)了。</p>
+</li>
+<li><p>中间人攻击<br> 小明和小兰协商好, 在书信里面放入自己的信物表明自己的身份, 为了防止第三者做些乱七八糟的事情, 这个方式也是很明智了。但是未曾想, 小草在一开始协商信物的时候, 就窃取了他们的信物——这个信物就是公钥——并且将自己事先准备好的两个信物与小明和小兰原本的信物进行对调。</p>
+<p> <img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1536501208/HTTP/mim.png" alt><br> 这时候小草甚至还能皮一下, 篡改小明的书信, 离间他们两者之间的感情。</p>
+</li>
+<li><p>重放攻击<br> 小明给小兰送情书之前, 都会在小兰的桌上放一瓶酸奶, 作为自己给小兰写信的信号。小兰回教室看到抽屉里有信, 在思考是谁写的(发出质询), 看到酸奶(收到响应), 小兰就知道是小明给自己写情书了(通过验证)。小草找到了这个规律, 同样给小兰桌上放了一瓶酸奶(重放攻击, 二次利用认证信息), 之后在抽屉里放着离间两人的信, 这就达成了小草想要的效果。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2018/09/04/HTTP系列(四)/" data-id="ckrzo1bj60008dfrtm02o3zli" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/09/11/HTTP系列(五)/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          HTTP系列(五)：安全
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/08/24/HTTP系列(三)/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">HTTP系列(三)：客户端标识</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>

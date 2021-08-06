@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>Android抓包总结 | Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言这篇文章算是总结一下我之前抓包遇到的一些问题, 个人属性里带bug, 所以遇到的问题会比较多, 算是给大家提供一个抓包抓不到应该如何解决的思路。 工具介绍Android中可用的抓包软件有fiddler、burpsuite、Charls、HttpCanary、Packet Capture、tcpdump、wireshark等等。tcpdump和wireshark可以解决部分不是使用HTTP/HT">
+<meta name="keywords" content="Android 渗透">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android抓包总结">
+<meta property="og:url" content="http://Se8S0n.github.io.git/2019/10/12/Android抓包总结/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:description" content="前言这篇文章算是总结一下我之前抓包遇到的一些问题, 个人属性里带bug, 所以遇到的问题会比较多, 算是给大家提供一个抓包抓不到应该如何解决的思路。 工具介绍Android中可用的抓包软件有fiddler、burpsuite、Charls、HttpCanary、Packet Capture、tcpdump、wireshark等等。tcpdump和wireshark可以解决部分不是使用HTTP/HT">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="https://uploader.shimo.im/f/YoRSSTOAm40HjvOk.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/8Hrm7NrNnUkCGojo.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/K2U52kjjZ0Aafipf.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/oTd5nyZ8J5AF3cax.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/WaBtKFdDBtkvIwGE.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/iezwWVp7kjMiC2tJ.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/YagZMTHURpYeFDV1.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/hRhy1vVAJy8uhCf5.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/yYfWjk6WnhEpv2u2.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/Qfnh75TSPSUEqjvl.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/M3xHMTeMagI3ZsVX.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/YUZrOUhhlz0L29of.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/avX8JsfgDlctG0ed.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/5QTxCTgXqtk6iuP8.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/V8pmRZPj8NgmQ6TQ.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/hUaCWIzHHXkbF39z.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/kk50Syi8sFoxSPXQ.jpg!thumbnail">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572486642/M_1_EUWZ_6_CO2SM09_3DTP_ue6fyd.png">
+<meta property="og:image" content="https://uploader.shimo.im/f/T4lkr2dfT64GsoGS.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/UPkqz9e37SE4Xaru.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/KwSgy60dfJcbQMM1.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/nwwxTjE5olYSkSwi.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/CtqP7d0fS4wjbr9I.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/cDmjJ9Saj7QOuMPj.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/W1FO2Ksc7o0iQLav.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/xgSd7HinNxEFom6X.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/br5qyHIOEE0K1VTV.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/Z0FUAIiTgggcHRh6.png!thumbnail">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1570862584/ND0HGHRQSXYF0_4_ZGOVH_S_xsuhlc.png">
+<meta property="og:image" content="https://uploader.shimo.im/f/BA9URi7xMhU1YpJZ.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/bnnR07VNGrkkYp8e.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/zxLh4rfh1QgxsjpV.jpg!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/yRSl5MMwMaslgxiK.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/RMgh5cCQ5NY8JmI4.png!thumbnail">
+<meta property="og:image" content="https://uploader.shimo.im/f/WKtrjYYS5l0TTp0D.png!thumbnail">
+<meta property="og:updated_time" content="2021-08-05T06:51:27.271Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android抓包总结">
+<meta name="twitter:description" content="前言这篇文章算是总结一下我之前抓包遇到的一些问题, 个人属性里带bug, 所以遇到的问题会比较多, 算是给大家提供一个抓包抓不到应该如何解决的思路。 工具介绍Android中可用的抓包软件有fiddler、burpsuite、Charls、HttpCanary、Packet Capture、tcpdump、wireshark等等。tcpdump和wireshark可以解决部分不是使用HTTP/HT">
+<meta name="twitter:image" content="https://uploader.shimo.im/f/YoRSSTOAm40HjvOk.png!thumbnail">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Android抓包总结" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/10/12/Android抓包总结/" class="article-date">
+  <time datetime="2019-10-12T21:16:47.000Z" itemprop="datePublished">2019-10-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android抓包总结
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这篇文章算是总结一下我之前抓包遇到的一些问题, 个人属性里带bug, 所以遇到的问题会比较多, 算是给大家提供一个抓包抓不到应该如何解决的思路。</p>
+<h1 id="工具介绍"><a href="#工具介绍" class="headerlink" title="工具介绍"></a>工具介绍</h1><p>Android中可用的抓包软件有fiddler、burpsuite、Charls、HttpCanary、Packet Capture、tcpdump、wireshark等等。tcpdump和wireshark可以解决部分不是使用HTTP/HTTPS协议传输数据的app, 用tcpdump抓包, 用wireshark分析数据包。</p>
+<p>如果想抓取三大运营商传输的数据包并分析, 因其路由规则的限制, 可能还是需要在android系统中利用iptables设置反向代理, 用Fiddler解密数据包之后分析, 不过好像Fiddler好像有自己的反向代理设置方法, 这部分了解不多。</p>
+<p>Charls是Mac上常见的抓包工具, 我没用过, 不过网上蛮多教程的。HttpCanary和Packet Capture这两个工具与常规的电脑上的代理抓包不同的是, 能保证一定能抓取到数据包, 我一般都用Packet Capture来验证应用是否发送请求。HttpCanary被称为移动端的Fiddler, 能够改包和劫持双向认证的应用传输的数据包, 感觉还是蛮强大的。</p>
+<h2 id="Fiddler抓取Android数据包"><a href="#Fiddler抓取Android数据包" class="headerlink" title="Fiddler抓取Android数据包"></a>Fiddler抓取Android数据包</h2><h3 id="基础设置"><a href="#基础设置" class="headerlink" title="基础设置"></a>基础设置</h3><ol>
+<li>下载好Fiddler之后, 打开该软件, 生成证书。</li>
+</ol>
+<p><img src="https://uploader.shimo.im/f/YoRSSTOAm40HjvOk.png!thumbnail" alt></p>
+<p>设置连接</p>
+<p><img src="https://uploader.shimo.im/f/8Hrm7NrNnUkCGojo.png!thumbnail" alt></p>
+<p>设置HTTPS</p>
+<p><img src="https://uploader.shimo.im/f/K2U52kjjZ0Aafipf.png!thumbnail" alt></p>
+<p>用ipconfig查看当前主机的ip</p>
+<p><img src="https://uploader.shimo.im/f/oTd5nyZ8J5AF3cax.png!thumbnail" alt></p>
+<p>手机和电脑在同一局域网中即可, 手机端设置WLAN种给网络设置代理, 选择对应的WLAN, 选中修改网络, 手动设置代理, 主机名填上面电脑ip地址, 端口写fiddler默认端口8888。</p>
+<p><img src="https://uploader.shimo.im/f/WaBtKFdDBtkvIwGE.png!thumbnail" alt></p>
+<p>手机端用浏览器访问<a href="http://电脑IP:端口" target="_blank" rel="noopener">http://电脑IP:8</a>888, 观察网络是否访问成功, 成功之后, 点击”FiddlerRoot.certificate”下载Fiddler的证书并安装。</p>
+<p><img src="https://uploader.shimo.im/f/iezwWVp7kjMiC2tJ.png!thumbnail" alt></p>
+<p>如果上述步骤都原原本本做完了, 还是不能出现上图的效果, 可以换个路由或者直接手机开热点。我当时遇到不能访问的问题, ping了一下, 一直显示destination unreachable, 应该是路由器安全规则的限制, 换成了手机开热点就ok了。</p>
+<p>继续进行测试的时候, 发现不管是修改密码还是用验证码进行登录, 我都抓不到那些包。想不出是哪里出了问题…..大概找了一下, 发现是SSL Pinning的机制阻止了我抓包。使用了Xposed+JustTrustMe, 就抓取到数据包了, 数据包如下：</p>
+<p><img src="https://uploader.shimo.im/f/YagZMTHURpYeFDV1.png!thumbnail" alt></p>
+<p>如果知道Fiddler怎么抓包了, 不知道怎么改包, 可以用Fiddler左下角的黑框框中断请求, 修改之后再发出, 比如输入<code>bpu baidu.com</code>就可以中断所有发向baidu.com的请求。</p>
+<p><img src="https://uploader.shimo.im/f/hRhy1vVAJy8uhCf5.png!thumbnail" alt></p>
+<p>之后查看中断的数据包会出现如下效果, 修改完点击Run to Completion就可以把请求发出去了。</p>
+<p><img src="https://uploader.shimo.im/f/yYfWjk6WnhEpv2u2.png!thumbnail" alt></p>
+<h3 id="Fiddler设置之后手机无法连接上代理"><a href="#Fiddler设置之后手机无法连接上代理" class="headerlink" title="Fiddler设置之后手机无法连接上代理"></a>Fiddler设置之后手机无法连接上代理</h3><ol>
+<li><p>关闭电脑防火墙</p>
+</li>
+<li><p>打开注册表（cmd-regedit）, 在HKEY_CURRENT_USER\Software\Microsoft\Fiddler2下创建一个DWORD, 值置为80（十进制）[在空白处右键即可创建]。</p>
+</li>
+</ol>
+<p><img src="https://uploader.shimo.im/f/Qfnh75TSPSUEqjvl.png!thumbnail" alt></p>
+<ol start="3">
+<li>编写fiddlerScript rule：在Fiddler上点击Rules-&gt;Customize Rules, 用Ctrl+F查找OnBeforeRequest方法添加一行代码。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">if (oSession.host.toLowerCase() == &quot;webserver:8888&quot;) </span><br><span class="line">&#123;</span><br><span class="line">        oSession.host = &quot;webserver:80&quot;; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Burpsuite抓取Android数据包"><a href="#Burpsuite抓取Android数据包" class="headerlink" title="Burpsuite抓取Android数据包"></a>Burpsuite抓取Android数据包</h2><h3 id="基础设置-1"><a href="#基础设置-1" class="headerlink" title="基础设置"></a>基础设置</h3><p>Burpsuite改包的步骤就不在这里赘述了, 网上有很多教程, 接下来我们要设置burpsuite, 以求抓取到数据包, 设置如下：</p>
+<p><img src="https://uploader.shimo.im/f/M3xHMTeMagI3ZsVX.png!thumbnail" alt></p>
+<p>提示, 监听的端口号、电脑内网ip要和手机上的代理设置一致, 电脑内网ip可以用ipconfig查看。用burpsuite一直抓取不到https的证书, 怀疑是我burpsuite证书没有安装到手机上, 所以我现在先将它装到系统证书中, 再看看能不能先抓取到https的证书。</p>
+<h3 id="安装证书至系统中"><a href="#安装证书至系统中" class="headerlink" title="安装证书至系统中"></a>安装证书至系统中</h3><p>1、下载.der格式的证书, 将下载的cacert.der转换格式, 并获取证书hash值, 生成&lt;证书hash&gt;.0文件, 例如：7bf17d07.0</p>
+<p>2、把&lt;证书hash&gt;.0证书push到/data/local/tmp目录下后移动至/system/etc/security/cacerts/<br>(mv操作出错之后, 先试一下“mount -o rw,remount /system”如果出现了报错“mount: ‘/system’ not in /proc/mounts”, 再尝试“mount -o rw,remount /”, 就可以操作system目录了)</p>
+<p>3、重启手机</p>
+<p>只有root环境才能将proxy证书安装至android系统证书中, 这种方法好像能绕过应用本地证书校验, 其实burp和Fiddler还有其他的代理证书的安装方法都差不多, 最后将&lt;hash证书&gt;.0的文件mv至/system/etc/security/cacerts/目录下即可, 不建议直接将用户证书直接mv, 可能会导致环境出错也不好排查证书错误, 甚至可能导致android网络环境出错。</p>
+<p>下面是具体步骤, 先在设置本地代理, 将burpsuite证书下载下来</p>
+<p><img src="https://uploader.shimo.im/f/YUZrOUhhlz0L29of.png!thumbnail" alt></p>
+<p>打开浏览器输入本地地址, 下载.der格式的证书</p>
+<p><img src="https://uploader.shimo.im/f/avX8JsfgDlctG0ed.png!thumbnail" alt></p>
+<p>此处参照文章<a href="[https://blog.chenjia.me/articles/171029-223953.html](https://blog.chenjia.me/articles/171029-223953.html">BrupSuit证书导入Android7.0以上手机</a>, 因为我windows本地安装了ubuntu的子系统, 所以直接用ubuntu1604子系统对证书进行操作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 转换证书的格式</span><br><span class="line">$ openssl x509 -in cacert.der -inform DER -out cacert.pem -outform PEM</span><br><span class="line">// 提取证书的hash</span><br><span class="line">$ openssl x509 -inform PEM -subject_hash -in cacert.pem</span><br></pre></td></tr></table></figure>
+<p><img src="https://uploader.shimo.im/f/5QTxCTgXqtk6iuP8.png!thumbnail" alt></p>
+<p>上图中的<code>7bf17d07</code>就为证书的hash值, 将该目录下生成的<code>7bf17d07.0</code>文件push到手机中, 最后移动到/system/etc/security/cacerts/目录下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ adb push 7bf17d07.0 /data/local/tmp</span><br><span class="line">$ adb shell </span><br><span class="line">sailfish:/ $ su</span><br><span class="line">sailfish:/ # mount -o rw,remount / # 拥有操作/目录的权限, 本意是要操作/system目录</span><br><span class="line">sailfish:/ # mv /data/local/tmp/7bf17d07.0 /system/etc/security/cacerts/7bf17d07.0</span><br></pre></td></tr></table></figure>
+<p>按照原本的文章应该给<code>7bf17d07.0</code>文件添加644权限, 但是我具体操作的时候没有添加权限也成功了, 如果按照我上面的步骤出错了, 可以尝试给文件添加权限。重启之后可以看到证书安装成功。</p>
+<p> <img src="https://uploader.shimo.im/f/V8pmRZPj8NgmQ6TQ.png!thumbnail" alt></p>
+<p>第一次安装证书的时候出现了不能访问使用https协议的网站, 应该是我测试的手机环境出现了问题, 我重新刷机再按照上面的步骤走一遍就成功了, 如果你们也遇到访问https网站失败的问题, 可以尝试一下使用这个方法。</p>
+<h1 id="Android抓包介绍"><a href="#Android抓包介绍" class="headerlink" title="Android抓包介绍"></a>Android抓包介绍</h1><p>抓包最重要的是看能不能抓取到数据包, 想要抓到包就要看app使用什么传输协议了, 一般情况下使用HTTP都是能抓到包的, 这也就不难理解, 为什么google坚持推广HTTPS了。为什么说使用HTTPS会抓不到包？现在的HTTPS都是基于TLS协议的, 它的特点就是需要确认传输双方的身份。确认了身份之后再传输数据, 这样就能避免中间人攻击了。下面来看看HTTPS, 是怎么进行数据传输的, 发现HTTPS需要先建立连接才能传输数据。</p>
+<p><img src="https://uploader.shimo.im/f/hUaCWIzHHXkbF39z.png!thumbnail" alt></p>
+<p>讲到要认证对方的身份, 我就想起了之前翻译的一篇<a href="https://se8s0n.github.io/2018/09/11/HTTP%E7%B3%BB%E5%88%97(%E4%BA%94" target="_blank" rel="noopener">HTTP安全</a>), 里面就有提及到在使用HTTPS协议的过程中, 客户端和服务器通过证书来判断对方的身份。之前没有怎么理解, 现在才对证书的作用有比较深刻的理解。</p>
+<p>文章中举了个例子, Chrome浏览器通过判断是否有证书来判断你访问的网站是否安全的, 并不是你访问的网站真的是安全的。提及这个是因为app使用HTTPS传输也是看证书的, 只不过有的app限制的比较严格只信任自带的证书, 有的app安全要求没那么高, 直接信任系统证书。</p>
+<h2 id="抓包出错排查思路"><a href="#抓包出错排查思路" class="headerlink" title="抓包出错排查思路"></a>抓包出错排查思路</h2><p><img src="https://uploader.shimo.im/f/kk50Syi8sFoxSPXQ.jpg!thumbnail" alt></p>
+<p>上面是大概的排查思路, 具体的细节可能有些差异。如果proxy带有证书校验, 且JustTrustMe绕不过去, 可能要自己重新根据该应用定制hook模块, 去绕过其本地证书校验, 但是大部分应用都能通过将证书安装为系统证书绕过, 如果无法在root环境下运行, 文章<a href="https://blog.nviso.be/2019/08/13/intercepting-traffic-from-android-flutter-applications/" target="_blank" rel="noopener">《Intercepting traffic from Android Flutter applications》</a>和JustTrustMe的源码应该能给你提供一点hook模块绕过证书校验的思路, 《Intercepting traffic from Android Flutter applications》讲的是如何绕过google开源框架Flutter中的证书校验进行抓包。</p>
+<p>最后说抓不到包还有一种可能性, 就是要求一定要用SIM卡发出传输请求的数据包….不过这个应该应该只有使用了三大运营商的SDK或他们的应用才会出现这种情况, 这部分应该只能用反向代理才有可能抓取到传输的数据包了, 具体情况就要具体分析了。</p>
+<p>当时尝试tcpdump+wireshark效果不怎么样, 因为所有的数据都经过了加密, 而wireshark不能解密, 所以对于加密传输的数据包这种方法可能有点鸡肋, 听说有<a href="[https://docs.mitmproxy.org/stable/](https://docs.mitmproxy.org/stable/">mitmdump</a>抓包工具专门处理linux环境下http/https的数据包, 不过我自己没用过, 之后要是接触了会进一步补充。</p>
+<h2 id="SSL-pinning和双向认证的区别"><a href="#SSL-pinning和双向认证的区别" class="headerlink" title="SSL pinning和双向认证的区别"></a>SSL pinning和双向认证的区别</h2><p>SSL pinning实际上是客户端锁定服务器端的证书, 在要与服务器进行交互的时候, 服务器端会将CA证书发送给客户端, 客户端会调用函数对服务器端的证书进行校验, 与本地的服务器端证书(存放在<code>\&lt;app&gt;\asset</code>目录或<code>\res\raw</code>下)进行比对。</p>
+<p>而双向认证是添加了客户端向服务器发送CA证书, 服务器端对客户端的证书进行校验的部分, 具体详情可看文章<a href="[https://juejin.im/post/5c9cbf1df265da60f6731f0a](https://juejin.im/post/5c9cbf1df265da60f6731f0a">扯一扯HTTPS单向认证、双向认证、抓包原理、反抓包策略</a>的单向认证、双向认证部分的内容。</p>
+<h2 id="抓取HTTPS的数据包"><a href="#抓取HTTPS的数据包" class="headerlink" title="抓取HTTPS的数据包"></a>抓取HTTPS的数据包</h2><h3 id="Frida绕过SSL单向校验"><a href="#Frida绕过SSL单向校验" class="headerlink" title="Frida绕过SSL单向校验"></a>Frida绕过SSL单向校验</h3><p>昨天刚好遇到JustTrustMe无法绕过SSL单向校验的情况, 这几天接触了Frida, 就尝试用DBI的方法绕过SSL的单向校验, 参考文章<a href="https://techblog.mediaservice.net/2017/07/universal-android-ssl-pinning-bypass-with-frida/" target="_blank" rel="noopener">Universal Android SSL Pinning bypass with Frida</a>这里就不详细地说明Frida的安装方法及使用方法了。</p>
+<p>设置Fiddler代理, 在本地下载Fiddler的证书, 将证书直接重命名为<code>cert-der.crt</code>。之后将证书push到<code>/data/local/tmp</code>目录下, 在adb shell里输入<code>./frida-server &amp;</code>再在PC端进行操作。</p>
+<p>新建一个frida-android-repinning.js文件, 详细代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(function()&#123;</span><br><span class="line">    Java.perform(function ()&#123;</span><br><span class="line">    	console.log(&quot;&quot;);</span><br><span class="line">	    console.log(&quot;[.] Cert Pinning Bypass/Re-Pinning&quot;);</span><br><span class="line"></span><br><span class="line">	    var CertificateFactory = Java.use(&quot;java.security.cert.CertificateFactory&quot;);</span><br><span class="line">	    var FileInputStream = Java.use(&quot;java.io.FileInputStream&quot;);</span><br><span class="line">	    var BufferedInputStream = Java.use(&quot;java.io.BufferedInputStream&quot;);</span><br><span class="line">	    var X509Certificate = Java.use(&quot;java.security.cert.X509Certificate&quot;);</span><br><span class="line">	    var KeyStore = Java.use(&quot;java.security.KeyStore&quot;);</span><br><span class="line">	    var TrustManagerFactory = Java.use(&quot;javax.net.ssl.TrustManagerFactory&quot;);</span><br><span class="line">	    var SSLContext = Java.use(&quot;javax.net.ssl.SSLContext&quot;);</span><br><span class="line"></span><br><span class="line">	    // Load CAs from an InputStream</span><br><span class="line">	    console.log(&quot;[+] Loading our CA...&quot;)</span><br><span class="line">	    var cf = CertificateFactory.getInstance(&quot;X.509&quot;);</span><br><span class="line">	    </span><br><span class="line">	    try &#123;</span><br><span class="line">	    	var fileInputStream = FileInputStream.$new(&quot;/data/local/tmp/cert-der.crt&quot;);</span><br><span class="line">	    &#125;</span><br><span class="line">	    catch(err) &#123;</span><br><span class="line">	    	console.log(&quot;[o] &quot; + err);</span><br><span class="line">	    &#125;</span><br><span class="line">	    </span><br><span class="line">	    var bufferedInputStream = BufferedInputStream.$new(fileInputStream);</span><br><span class="line">	  	var ca = cf.generateCertificate(bufferedInputStream);</span><br><span class="line">	    bufferedInputStream.close();</span><br><span class="line"></span><br><span class="line">		var certInfo = Java.cast(ca, X509Certificate);</span><br><span class="line">	    console.log(&quot;[o] Our CA Info: &quot; + certInfo.getSubjectDN());</span><br><span class="line"></span><br><span class="line">	    // Create a KeyStore containing our trusted CAs</span><br><span class="line">	    console.log(&quot;[+] Creating a KeyStore for our CA...&quot;);</span><br><span class="line">	    var keyStoreType = KeyStore.getDefaultType();</span><br><span class="line">	    var keyStore = KeyStore.getInstance(keyStoreType);</span><br><span class="line">	    keyStore.load(null, null);</span><br><span class="line">	    keyStore.setCertificateEntry(&quot;ca&quot;, ca);</span><br><span class="line">	    </span><br><span class="line">	    // Create a TrustManager that trusts the CAs in our KeyStore</span><br><span class="line">	    console.log(&quot;[+] Creating a TrustManager that trusts the CA in our KeyStore...&quot;);</span><br><span class="line">	    var tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();</span><br><span class="line">	    var tmf = TrustManagerFactory.getInstance(tmfAlgorithm);</span><br><span class="line">	    tmf.init(keyStore);</span><br><span class="line">	    console.log(&quot;[+] Our TrustManager is ready...&quot;);</span><br><span class="line"></span><br><span class="line">	    console.log(&quot;[+] Hijacking SSLContext methods now...&quot;)</span><br><span class="line">	    console.log(&quot;[-] Waiting for the app to invoke SSLContext.init()...&quot;)</span><br><span class="line"></span><br><span class="line">	   	SSLContext.init.overload(&quot;[Ljavax.net.ssl.KeyManager;&quot;, &quot;[Ljavax.net.ssl.TrustManager;&quot;, &quot;java.security.SecureRandom&quot;).implementation = function(a,b,c) &#123;</span><br><span class="line">	   		console.log(&quot;[o] App invoked javax.net.ssl.SSLContext.init...&quot;);</span><br><span class="line">	   		SSLContext.init.overload(&quot;[Ljavax.net.ssl.KeyManager;&quot;, &quot;[Ljavax.net.ssl.TrustManager;&quot;, &quot;java.security.SecureRandom&quot;).call(this, a, tmf.getTrustManagers(), c);</span><br><span class="line">	   		console.log(&quot;[+] SSLContext initialized with our custom TrustManager!&quot;);</span><br><span class="line">	   	&#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;,0);</span><br></pre></td></tr></table></figure></p>
+<p>在cmd, 输入如下命令:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ adb push burpca-cert-der.crt /data/local/tmp/cert-der.crt</span><br><span class="line">$ frida -U -f it.app.mobile -l frida-android-repinning.js --no-pause</span><br></pre></td></tr></table></figure></p>
+<p>在关闭应用的情况下(避免Magisk Hide处于开启状态), 可得到回显并绕过SSL pinning。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572486642/M_1_EUWZ_6_CO2SM09_3DTP_ue6fyd.png" alt></p>
+<h3 id="绕过SSL双向校验"><a href="#绕过SSL双向校验" class="headerlink" title="绕过SSL双向校验"></a>绕过SSL双向校验</h3><p>其实SSL双向校验是在SSL单向校验的基础上, 在说明这部分内容的时候同时也会有绕过SSL单向校验详细的步骤。参考文章<a href="https://juejin.im/post/5cc313755188252d6f11b463#heading-14" target="_blank" rel="noopener">Android平台HTTPS抓包解决方案及问题分析</a>, 我们可以先用sxxl.app来练练手。</p>
+<p>在手机上设置完代理之后, 点击完确认, 发现app出现如下弹窗：</p>
+<p><img src="https://uploader.shimo.im/f/T4lkr2dfT64GsoGS.png!thumbnail" alt></p>
+<p>在这个时候查看Fiddler会发现应用没有发出任何请求, 这是因为app会对服务器端的证书进行校验, 这时候我们前面安装的Fiddler证书就不起作用了, 应用在发现证书是伪造的情况下拒绝发送请求。根据这个报错+抓不到包, 我们可以确定应用是存在单向校验的, 也就是SSL pinning, 让我们先来解决SSL pinning的问题。使用JustTrustMe可以绕过客户端的证书校验, 下面勾选上JustTrustMe, 在Xposed框架下使用JustTrustMe绕过SSL pinning。</p>
+<p><img src="https://uploader.shimo.im/f/UPkqz9e37SE4Xaru.png!thumbnail" alt></p>
+<p>绕过SSL pinning之后, 就能使用Fiddler抓取到HTTPS的数据包了。</p>
+<p><img src="https://uploader.shimo.im/f/KwSgy60dfJcbQMM1.png!thumbnail" alt></p>
+<p>我随便输入了一个手机号码, 按下确定之后, 服务器回传了400的状态码过来, 说需要发送证书以确认客户端的身份。到这一步基本能确定是存在双向校验的了, 接下来的工作就是绕过SSL服务器端的校验了。</p>
+<p><img src="https://uploader.shimo.im/f/nwwxTjE5olYSkSwi.png!thumbnail" alt></p>
+<p>如果服务器端会对客户端证书进行校验, 证书应该就直接存放在apk里, 网上与SSL双向校验相关的文章都将证书放到<code>&lt;app&gt;/asset</code>目录下, 也就是app的资源目录下, 也有可能放在<code>/res/raw</code>目录下。直接将app解压之后, 发现证书的位置如下：</p>
+<p><img src="https://uploader.shimo.im/f/CtqP7d0fS4wjbr9I.png!thumbnail" alt></p>
+<p>如果找半天没找到就用关键词<code>.p12/.pfx</code>搜索证书文件。</p>
+<p>在我们要使用该证书的时候, 需要输入安装证书的密码。这时候就需要从源码中获取安装证书的密码了。可能是因为多个dex文件的原因, 直接用JEB反编译的时候出错了, 所以我用GDA反编译来分析应用的源代码</p>
+<h3 id="获取安装证书的密码"><a href="#获取安装证书的密码" class="headerlink" title="获取安装证书的密码"></a>获取安装证书的密码</h3><p>发现通过关键词”PKCS12”能够定位到加载证书的位置。</p>
+<p><img src="https://uploader.shimo.im/f/cDmjJ9Saj7QOuMPj.png!thumbnail" alt></p>
+<p>上图第二个红框中的load函数的第二个参数其实就是证书的密钥, 追根溯源, 我们可以知道v1参数是下图中调用的函数的返回值。</p>
+<p><img src="https://uploader.shimo.im/f/W1FO2Ksc7o0iQLav.png!thumbnail" alt></p>
+<p><img src="https://uploader.shimo.im/f/xgSd7HinNxEFom6X.png!thumbnail" alt></p>
+<p>上图的函数的功能就是传递p0参数, 也就是说p0参数就是证书安装密码。想获取这个密码, 关键在于Auto_getValue函数。到这一步, 只要跟进Null_getStorePassword函数看看就好了。</p>
+<p><img src="https://uploader.shimo.im/f/br5qyHIOEE0K1VTV.png!thumbnail" alt></p>
+<p>跟进去发现调用了native层的函数, 查看init函数中具体加载的是哪个so文件：</p>
+<p><img src="https://uploader.shimo.im/f/Z0FUAIiTgggcHRh6.png!thumbnail" alt></p>
+<p>用IDA反编译soul-netsdk之后, 搜索字符串”getStorePassword”, 就定位到函数getStorePassword上了, F5之后, 获得伪代码和密钥：</p>
+<p><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1570862584/ND0HGHRQSXYF0_4_ZGOVH_S_xsuhlc.png" alt></p>
+<h3 id="代理添加客户端证书"><a href="#代理添加客户端证书" class="headerlink" title="代理添加客户端证书"></a>代理添加客户端证书</h3><p>HttpCanary添加客户端证书进行抓包的过程可以参照文章<a href="https://juejin.im/post/5cc313755188252d6f11b463" target="_blank" rel="noopener">Android平台HTTPS抓包解决方案及问题分析</a>, 在自己头昏的时候也感谢这篇文章的作者MegatronKing点醒我。下面主要讲解Fiddler和burpsuite添加客户端证书的方法。</p>
+<h4 id="fiddler操作过程"><a href="#fiddler操作过程" class="headerlink" title="fiddler操作过程"></a>fiddler操作过程</h4><p>尝试一下用Fiddler处理这部分的内容来安装客户端的证书, 用来绕过双向认证。</p>
+<p><img src="https://uploader.shimo.im/f/BA9URi7xMhU1YpJZ.png!thumbnail" alt></p>
+<p>用Fiddler抓取该应用的数据包的时候, 发现Fiddler出现了上面的弹窗, 提示要添加ClientCertificate.cer, 才能抓取到传输的数据包, 不然只会出现400的状态码。而我们文件目录下只能找到<code>client.p12</code>和<code>client.crt</code>两种格式的证书文件, 所以我们需要将已有的client证书转换成<code>.cer</code>格式的证书。</p>
+<p><img src="https://uploader.shimo.im/f/bnnR07VNGrkkYp8e.png!thumbnail" alt></p>
+<p>好像应用中只出现<code>.p12</code>格式的证书的情况比较常见, 所以下面只会提及如何使用openssl将<code>.p12</code>格式的证书转换成<code>.cer/.der</code>格式的证书。(.der和.cer格式的证书仅有文件头和文件尾不同)</p>
+<p>下面的命令实现了证书的格式转换, <code>.p12</code>-&gt;<code>.pem</code>-&gt;<code>.cer</code>, 在生成<code>.pem</code>格式的证书之后, 需要输入证书的密码, 也就是我们上面逆向获取的证书密码。最后将<code>ClientCertificate.cer</code>移动到之前Fiddler弹窗出现的目录下, 也就是<code>&lt;Fiddler安装路径&gt;\Fiddler2</code>下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 将.p12证书转换成.pem格式</span><br><span class="line">$ openssl pkcs12 -in client.p12 -out ClientCertificate.pem -nodes</span><br><span class="line">Enter Import Password:</span><br><span class="line"># 将.pem证书转换成.cer格式</span><br><span class="line">$ x509 -outform der -in ClientCertificate.pem -out ClientCertificate.cer</span><br></pre></td></tr></table></figure>
+<p>现在打开Fiddler尝试抓包, 发现原本显示400的数据包现在能够正常抓取到了, 如果还是不能正常抓取到, 双击<code>client.p12</code>将证书安装到本地试试看。<br><img src="https://uploader.shimo.im/f/zxLh4rfh1QgxsjpV.jpg!thumbnail" alt></p>
+<h4 id="burp操作过程"><a href="#burp操作过程" class="headerlink" title="burp操作过程"></a>burp操作过程</h4><p>手机的burpsuite证书安装成功之后, 我们会发现只能抓取到400的状态码。</p>
+<p><img src="https://uploader.shimo.im/f/yRSl5MMwMaslgxiK.png!thumbnail" alt></p>
+<p>因为要绕过服务器端对证书的验证, 我们还需要在这里添加上面我们在asset目录下找到的证书。</p>
+<p><img src="https://uploader.shimo.im/f/RMgh5cCQ5NY8JmI4.png!thumbnail" alt></p>
+<p><img src="https://uploader.shimo.im/f/WKtrjYYS5l0TTp0D.png!thumbnail" alt></p>
+<p>安装完就能正常抓取数据包了。</p>
+<h2 id="抓取TCP的数据包"><a href="#抓取TCP的数据包" class="headerlink" title="抓取TCP的数据包"></a>抓取TCP的数据包</h2><p>现在还不知道怎么能够获取TCP的数据包并对其中的内容进行解密, 不过之前在看雪上看到一篇分析使用TCP传输协议的文章<a href="https://bbs.pediy.com/thread-251063.htm" target="_blank" rel="noopener">某直播APP逆向TCP协议分析</a>, 我大概看了一下, 文章是从逆向的角度分析的, 具体怎么从渗透的角度发现是TCP协议传输的数据包还没有分析过, 看作者使用了wireshark抓取应用的数据包并进行分析, 这个还是要重新分析一下的。</p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>文章最后, 还要感谢华华师傅, 其实实习的时候接触android的时间也不长, 但是之后真的让我接触到很多和学到很多, 也谢谢师傅能耐心地帮我解答问题, 感恩。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2019/10/12/Android抓包总结/" data-id="ckrzo1bj40005dfrt3a6tnfvh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android-渗透/">Android 渗透</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          从OWASP CrackMe学Android逆向(一)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/05/19/SSRF-LABS指南/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">SSRF-LABS指南</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>

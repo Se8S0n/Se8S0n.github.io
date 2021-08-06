@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>获取APK中第三方库信息的工具 | Se8S0n</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="获取APK中第三方库信息的工具前言最近想尝试开发一个Android安全性检测平台，在尝试获取APK第三方SDK的信息的时候出现了一些问题，直接使用androguard是不能获取SDK的信息的，且现在第三方提供的SDK大多都经过了混淆或者重命名处理等保护SDK安全性的方法，就造成了我们很难准确地获取APK中存在哪些SDK。这时候就需要另(yong)辟(xian)蹊(cheng)径(de)，在网上能够">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="获取APK中第三方库信息的工具">
+<meta property="og:url" content="http://Se8S0n.github.io.git/2020/01/29/获取APK中第三方库信息的工具/index.html">
+<meta property="og:site_name" content="Se8S0n">
+<meta property="og:description" content="获取APK中第三方库信息的工具前言最近想尝试开发一个Android安全性检测平台，在尝试获取APK第三方SDK的信息的时候出现了一些问题，直接使用androguard是不能获取SDK的信息的，且现在第三方提供的SDK大多都经过了混淆或者重命名处理等保护SDK安全性的方法，就造成了我们很难准确地获取APK中存在哪些SDK。这时候就需要另(yong)辟(xian)蹊(cheng)径(de)，在网上能够">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271030/1_hoyghp.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271047/2_l1icpk.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271055/3_melokb.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271068/4_scgq22.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271072/5_x8k8rj.png">
+<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271263/6_e2d7om.png">
+<meta property="og:updated_time" content="2021-08-05T06:51:27.411Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="获取APK中第三方库信息的工具">
+<meta name="twitter:description" content="获取APK中第三方库信息的工具前言最近想尝试开发一个Android安全性检测平台，在尝试获取APK第三方SDK的信息的时候出现了一些问题，直接使用androguard是不能获取SDK的信息的，且现在第三方提供的SDK大多都经过了混淆或者重命名处理等保护SDK安全性的方法，就造成了我们很难准确地获取APK中存在哪些SDK。这时候就需要另(yong)辟(xian)蹊(cheng)径(de)，在网上能够">
+<meta name="twitter:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271030/1_hoyghp.png">
+  
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+</head></html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="overlay"></div>
+  <div id="header-outer" class="outer">
+    <div id="profile_img">
+      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Se8S0n</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">The more you want, the more you get.</a>
+        </h2>
+      
+    </div>
+    <div id="header-menu">
+      <nav id="main-nav">
+        <ul>
+        
+          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
+        
+          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
+        
+          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
+        
+          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
+        
+          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
+        
+        
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-获取APK中第三方库信息的工具" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/01/29/获取APK中第三方库信息的工具/" class="article-date">
+  <time datetime="2020-01-29T20:04:02.000Z" itemprop="datePublished">2020-01-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      获取APK中第三方库信息的工具
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="获取APK中第三方库信息的工具"><a href="#获取APK中第三方库信息的工具" class="headerlink" title="获取APK中第三方库信息的工具"></a>获取APK中第三方库信息的工具</h2><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近想尝试开发一个Android安全性检测平台，在尝试获取APK第三方SDK的信息的时候出现了一些问题，直接使用androguard是不能获取SDK的信息的，且现在第三方提供的SDK大多都经过了混淆或者重命名处理等保护SDK安全性的方法，就造成了我们很难准确地获取APK中存在哪些SDK。这时候就需要另(yong)辟(xian)蹊(cheng)径(de)，在网上能够收集到的只有16年北大的<a href="https://github.com/pkumza/LibRadar" target="_blank" rel="noopener">LibRadar</a>、reddr开源的<a href="https://github.com/reddr/LibScout" target="_blank" rel="noopener">LibScout</a>和基于LibScout开发的<a href="https://github.com/regNec/apkLibDetect" target="_blank" rel="noopener">apkLibDetect</a>。</p>
+<h3 id="工具的分析"><a href="#工具的分析" class="headerlink" title="工具的分析"></a>工具的分析</h3><h4 id="LibRadar"><a href="#LibRadar" class="headerlink" title="LibRadar"></a>LibRadar</h4><p>为了避免手动做很多重复性的信息收集工作，我决定尝试使用多个工具。提取我所需的信息，现在想得到个SDK信息都需要了解机器学习，是我太菜了。下面我大概地讲讲LibRadar这个工具，详情可看<a href="http://sei.pku.edu.cn/~yaoguo/papers/Wang-JOS-17.pdf" target="_blank" rel="noopener">LibRadar的相关论文</a>。</p>
+<p>LibRadar使用了多级聚类技术识别第三方库（因为第三方库调用的次数多，再加上第三方库一般不会修改，根据这两个特点判断是否为第三方库），使用机器学习对第三方库的功能进行准确分类（应该是使用了分类算法）。但是这个工具不能实现我想判断这个第三方库安全与否的功能，且因工具年代久远，团队不再对该工具进行维护。不过要是能将这个工具在python3的环境下修改和调试，应该能减少获取第三方SDK的工作量，且避免了在python更新之后不能正常使用的情况。但是我还没有研究过，这只能作为一个可行的方案之一。</p>
+<p>搭建环境</p>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>Python 2.7.6</li>
+</ul>
+<p>下面就先在Ubuntu上搭建好Python2的使用环境<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 准备好编译Python的环境</span><br><span class="line">$ sudo apt-get install zlib1g-dev</span><br><span class="line">$ sudo apt-get install gcc</span><br><span class="line"># 获取Python 2.7.6的安装包</span><br><span class="line">$ wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz</span><br><span class="line">$ tar xvf Python-2.7.6.tar.xz</span><br><span class="line">$ cd Python-2.7.6</span><br><span class="line">$ ./configure</span><br><span class="line"># 编译、安装</span><br><span class="line">$ make &amp; make install</span><br></pre></td></tr></table></figure></p>
+<p>接下来就准备好LibRadar的使用环境<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载LiteRadar</span><br><span class="line">$ git clone https://github.com/pkumza/LiteRadar</span><br><span class="line"># 下载SDK特征文件</span><br><span class="line">$ wget https://raw.githubusercontent.com/pkumza/Data_for_LibRadar/master/lite_dataset_10.csv</span><br><span class="line">$ mv lite_dataset_10.csv LiteRadar/LiteRadar/Data</span><br><span class="line"># 获取aaa.apk中的第三方SDK信息</span><br><span class="line">$ python LiteRadar/LiteRadar/literadar.py aaa.apk</span><br></pre></td></tr></table></figure></p>
+<p>获取到的结果如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271030/1_hoyghp.png" alt></p>
+<p>但是处理multi-dex的APK会出现如下报错：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271047/2_l1icpk.png" alt></p>
+<p>但是换了内存2048MB的VPS就能正常解决，而且显示的结果与LibScout比起来感觉更加符合我们的基础需求：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271055/3_melokb.png" alt></p>
+<h4 id="LibScout"><a href="#LibScout" class="headerlink" title="LibScout"></a>LibScout</h4><p>因为apkLibDetect是基于LibScout的，所以就不另外分出模块讲解apkLibDetect了。在操作过程中如果遇到了问题，可以参考文章的末尾，有我遇到的问题及其处理方式。</p>
+<p>搭建环境</p>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>openjdk 11.0.5</li>
+<li>Android Studio</li>
+</ul>
+<p>这里先提供了自己编译LibScout.jar的方法，如果不想自己编译LibScout.jar文件，可以直接用<code>apt install libscout</code>，详细的介绍后面有。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 下载LibScout</span><br><span class="line">$ git clone https://github.com/reddr/LibScout.git</span><br><span class="line"># 下载SDK检测的样本文件</span><br><span class="line">$ git clone https://github.com/reddr/LibScout-Profiles.git</span><br><span class="line">$ cd LibScout</span><br><span class="line"># 生成LibScout.jar</span><br><span class="line">$ ./gradlew build</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271068/4_scgq22.png" alt></p>
+<p>除了我们自己编译之外，我们还可以使用<code>apt</code>直接安装libscout的方式使用LibScout。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ apt update &amp;&amp; apt upgrade</span><br><span class="line">$ apt install libscout</span><br></pre></td></tr></table></figure></p>
+<p>在下好Android Studio环境下找到<code>Android/Sdk/platforms/android-28</code>目录下的<code>android.jar</code>文件，并在LibScout目录下新建sdk文件夹，将<code>android.jar</code>文件放到该目录下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir sdk</span><br><span class="line">$ mv [path of android.jar]/android.jar sdk/android.jar</span><br><span class="line">$ cd ..</span><br><span class="line"># 使用自己编译的LibScout.jar获取第三方SDK信息</span><br><span class="line">$ java -jar ./LibScout/build/libs/LibScout.jar -o match -p ./LibScout-Profiles -c ./LibScout/config/LibScout.toml -a ./LibScout/sdk/android-28.jar aaa.apk</span><br><span class="line"># 使用apt安装的libscout获取第三方SDK信息并输出到LibScout/result目录下</span><br><span class="line">$ libscout -o match -p ./LibScout-Profiles -c ./LibScout/config/LibScout.toml -j ./LibScout/result -a ./LibScout/sdk/android-28.jar test22.apk</span><br></pre></td></tr></table></figure></p>
+<p>执行命令获取SDK信息，并直接输出到屏幕。-o参数指定相关操作，match是获取该APK中存在的SDK信息，-p参数指向我们之前下载的第三方SDK检测的样本文件，-a参数指向我们之前获取的<code>android.jar</code>，这个参数能将SDK与APK区分开来。如果有其它需求，比如将检测结果输入为json文件，可以添加一个-j参数指定输出结果存放的目录。</p>
+<p>根据应用的包名，进入<code>./LibScout/result/cn/ninegame/gamemanager</code>目录下，会发现有一个json文件，该文件储存了第三方SDK信息。下面是格式化过的json文件：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271072/5_x8k8rj.png" alt></p>
+<p>在LibScout平级路径下获取SDK信息出现报错，报错如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">03:59:32.160 [main] ERROR de.infsec.tpl.TplCLI - Error: Could not parse config option logging.log4j_config_file : No valid file: ~/LibScout/config/logback.xml</span><br></pre></td></tr></table></figure></p>
+<p>上面的报错修改了LibScout.toml中logback.xml的路径为./LibScout/config/logback.xml就不会报错了。</p>
+<p>在获取SDK信息的过程中遇到了运行Java代码时堆空间过小的报错：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1580271263/6_e2d7om.png" alt><br>上面的报错同样是可以通过换大内存的VPS或增加虚拟机的内存解决。</p>
+<p>其实LibScout也是存在着不足的，但是它有一个优点就是当遇到multi-dex的APK的时候，它会将多个dex文件整合到一起，再进行检测。同时LibScout还能结合工具判断第三方库是否足够安全，当然这个安全与否是基于是否有漏洞爆出和第三方库的版本的。LibScout的不足还有两个，一是是它需要的内存过大，二是LibScout能检测的SDK虽然能包含大部分，但是还是存在一些第三方SDK检测不出来的情况。</p>
+<h3 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h3><p>比较一下LibRadar和LibScout，会感觉如果不考虑获取第三方库的安全性和检测第三方库的工具的可维护性，LibRadar会更加符合我的需求。但是要考虑到第三方库安全与否，与检测结果是否可延展，可延展指的是可以通过检测结果结合现有的漏洞库信息获取更多我们需要的信息，还是使用LibScout更加合适。</p>
+<p>如果文章中有表述的不够合适的或者有更好的获取第三方库的方法，希望能够交流一下。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://Se8S0n.github.io.git/2020/01/29/获取APK中第三方库信息的工具/" data-id="ckrzo1bjb000fdfrte9cf15vb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">从OWASP CrackMe学Android逆向(二)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2021 Se8S0n<br>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="//imsky.github.io/holder/holder.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+</body>
+</html>
