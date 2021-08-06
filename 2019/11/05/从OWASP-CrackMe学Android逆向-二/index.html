@@ -1,158 +1,185 @@
 <!DOCTYPE html>
-<html>
-<head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
-  
-  <title>从OWASP CrackMe学Android逆向(二) | Se8S0n</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言从OWASP CrackMe学Android逆向(一)感觉用题目来学习会比之前学得内容多很多, 然后这些题目有多种解法, 我也学到很多姿势, 下面就来分析UnCrackable-Level2。这个题目涉及.so动态调试的知识。 UnCrackable-Level2同样的, 先将UnCrackable-Level2.apk放到JEB中分析, 一进到MainActivity, 就发现了一个神奇的东">
-<meta name="keywords" content="Android逆向">
-<meta property="og:type" content="article">
-<meta property="og:title" content="从OWASP CrackMe学Android逆向(二)">
-<meta property="og:url" content="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-二/index.html">
-<meta property="og:site_name" content="Se8S0n">
-<meta property="og:description" content="前言从OWASP CrackMe学Android逆向(一)感觉用题目来学习会比之前学得内容多很多, 然后这些题目有多种解法, 我也学到很多姿势, 下面就来分析UnCrackable-Level2。这个题目涉及.so动态调试的知识。 UnCrackable-Level2同样的, 先将UnCrackable-Level2.apk放到JEB中分析, 一进到MainActivity, 就发现了一个神奇的东">
-<meta property="og:locale" content="zh-cn">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920916/OWASP/OWASP-2/1.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/2.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/3.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/4.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/5.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/6.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/7.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/8.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572922697/OWASP/OWASP-2/re_8.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/9.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/10.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/11.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/12.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/13.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/14.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/15.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/16.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/17.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/18.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/19.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/20.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/21.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/22.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/23.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/24.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/25.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/26.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/27.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/28.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/29.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/30.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/31.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/32.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/33.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/34.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/35.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/36.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/37.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/38.png">
-<meta property="og:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/39.png">
-<meta property="og:updated_time" content="2021-08-05T06:51:27.379Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="从OWASP CrackMe学Android逆向(二)">
-<meta name="twitter:description" content="前言从OWASP CrackMe学Android逆向(一)感觉用题目来学习会比之前学得内容多很多, 然后这些题目有多种解法, 我也学到很多姿势, 下面就来分析UnCrackable-Level2。这个题目涉及.so动态调试的知识。 UnCrackable-Level2同样的, 先将UnCrackable-Level2.apk放到JEB中分析, 一进到MainActivity, 就发现了一个神奇的东">
-<meta name="twitter:image" content="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920916/OWASP/OWASP-2/1.png">
-  
-  
-  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-  
-</head></html>
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="overlay"></div>
-  <div id="header-outer" class="outer">
-    <div id="profile_img">
-      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
-    </div>
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Se8S0n</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">The more you want, the more you get.</a>
-        </h2>
-      
-    </div>
-    <div id="header-menu">
-      <nav id="main-nav">
-        <ul>
-        
-          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
-        
-          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
-        
-          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
-        
-          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
-        
-          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
-        
-        
-        </ul>
-      </nav>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-从OWASP-CrackMe学Android逆向-二" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/" class="article-date">
-  <time datetime="2019-11-06T00:42:48.000Z" itemprop="datePublished">2019-11-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      从OWASP CrackMe学Android逆向(二)
-    </h1>
-  
+<html lang="zh-cn">
 
-      </header>
+
+
+
+
+
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="preconnect" href="//www.googletagmanager.com">
+	<link rel="preconnect" href="//zz.bdstatic.com">
+	<link rel="preconnect" href="//sp0.baidu.com">
+	<link rel="preconnect" href="//www.google-analytics.com">
+	<link rel="preconnect" href="//cdn1.lncld.net">
+	<link rel="preconnect" href="//unpkg.com">
+	<link rel="preconnect" href="//app-router.leancloud.cn">
+	<link rel="preconnect" href="//9qpuwspm.api.lncld.net">
+	<link rel="preconnect" href="//gravatar.loli.net">
+
+	<title>从OWASP CrackMe学Android逆向(二) | Se8S0n</title>
+
+	<meta name="HandheldFriendly" content="True">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+	<meta name="generator" content="hexo">
+	<meta name="author" content="Se8S0n">
+	<meta name="description" content>
+
+	
+	<meta name="keywords" content>
+	
+
+	
+	<link rel="shortcut icon" href="https://i.loli.net/2017/11/26/5a19c0b50432e.png">
+	<link rel="apple-touch-icon" href="https://i.loli.net/2017/11/26/5a19c0b50432e.png">
+	
+
+	
+	<meta name="theme-color" content="#3c484e">
+	<meta name="msapplication-TileColor" content="#3c484e">
+	
+
+	
+
+	
+
+	<meta property="og:site_name" content="Se8S0n">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="从OWASP CrackMe学Android逆向(二) | Se8S0n">
+	<meta property="og:description" content>
+	<meta property="og:url" content="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-二/">
+
+	
+	<meta property="article:published_time" content="2019-11-05T16:11:00+08:00"> 
+	<meta property="article:author" content="Se8S0n">
+	<meta property="article:published_first" content="Se8S0n, /2019/11/05/从OWASP-CrackMe学Android逆向-二/">
+	
+
+	
+	
+	<link rel="stylesheet" href="/css/allinonecss.min.css">
+
+	
+	
+	
+</head>
+
+<body class="post-template">
+	<div class="site-wrapper">
+		
+
+
+
+
+<header class="site-header post-site-header outer">
+    <div class="inner">
+        
+<nav class="site-nav"> 
+    <div class="site-nav-left">
+        <ul class="nav">
+            <li>
+                
+                <a href="/" title="Home">HOME</a>
+                
+            </li>
+            
+            
+            <li>
+                <a href="/about" title="ABOUT">ABOUT</a>
+            </li>
+            
+            <li>
+                <a href="/_posts" title="ARCHIVES">ARCHIVES</a>
+            </li>
+            
+            <li>
+                <a href="/friends" title="FRIENDS">FRIENDS</a>
+            </li>
+            
+            
+        </ul> 
+    </div>
     
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从<a href="https://www.52pojie.cn/thread-1048786-1-1.html" target="_blank" rel="noopener">OWASP CrackMe学Android逆向(一)</a>感觉用题目来学习会比之前学得内容多很多, 然后这些题目有多种解法, 我也学到很多姿势, 下面就来分析<code>UnCrackable-Level2</code>。这个题目涉及.so动态调试的知识。</p>
-<h2 id="UnCrackable-Level2"><a href="#UnCrackable-Level2" class="headerlink" title="UnCrackable-Level2"></a>UnCrackable-Level2</h2><p>同样的, 先将<code>UnCrackable-Level2.apk</code>放到JEB中分析, 一进到MainActivity, 就发现了一个神奇的东西, 这个应用加载了<code>libfoo.so</code>文件。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920916/OWASP/OWASP-2/1.png" alt></p>
-<p>能感觉出来这个应用和之前level1不同的是, check输入的关键代码应该是在<code>libfoo.so</code>中, 所以不能使用Xposed去处理这个CrackMe了, 但是root和debug的检测还是Java层调用<code>System.exit(0)</code>退出。所以上次的cracker.js, 重载系统exit函数部分保留。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/2.png" alt></p>
-<p>将<code>UnCrackable-Level2.apk</code>解压之后在<code>UnCrackable-Level2\lib\arm64-v8a</code>目录下找到<code>ibfoo.so</code>, 把它拖到IDA里面分析一下。查看Export表导出的函数, 发现存在含有关键词CodeCheck的函数。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/3.png" alt></p>
-<p>按下F5查看其反编译的代码, 发现存在可疑的数据<code>xmmword_EA0</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/4.png" alt></p>
-<p> 双击<code>xmmword_EA0</code>, 发现了一个传入v7的是一个大数, 使用Hex-View查看其Ascii码, 发现了一句不完整的话<code>Thank for all t</code><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/5.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/6.png" alt></p>
-<p> CheckCode中还有v8参数, 虽然现在暂时不知道它有什么用, 还是先将它最后处理的过程写出来, 详情可以看注释, 最后我们知道v8的数据转换为ascii码之后为”eish”, 暂时不知道这个的用处, 所以先放着。根据下面的result获取, 我们也就知道了, 我们最终想要的字符串是存放在v6参数中的。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/7.png" alt></p>
-<p> 分析<code>libfoo.so</code>中的其他的函数, 发现应用限制了attach, 还是通过轮询的方法监视应用是否被调试。也就是说, 如果想使用IDA动态调试这个应用的话, 还需要我们绕过这种反调试的机制。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/8.png" alt></p>
-<p> 事先说明，上面静态分析的过程都是对<code>lib\arm64-v8a</code>文件夹下的<code>libfoo.so</code>文件进行分析的。在分析代码的过程中，存在一些函数调用的过程让我们看起来不是很舒服。实际上这些调用的函数都是JNI函数, 我们可以通过导入jni.h文件(File-&gt;Load File-&gt;Parse C header file…)——jni.h文件一般安装了Android Studio都有, 我的存放在<code>Android Studio\jre\include</code>目录下, 选中v4指针，选中后按一下”y”键，然后将类型声明为<code>JNIEnv*</code>即可。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572922697/OWASP/OWASP-2/re_8.png" alt></p>
-<p> 修改之后效果如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/9.png" alt></p>
+    <div class="search-button-area">
+        <a href="#search" class="search-button">Search ...</a>
+    </div>
+     
+    <div class="site-nav-right">
+        
+        <a href="#search" class="search-button">Search ...</a>
+         
+        
+<div class="social-links">
+    
+    
+    <a class="social-link" title="github" href="https://github.com/Se8S0n" target="_blank" rel="noopener">
+        <svg viewbox="0 0 1049 1024" xmlns="http://www.w3.org/2000/svg"><path d="M524.979332 0C234.676191 0 0 234.676191 0 524.979332c0 232.068678 150.366597 428.501342 358.967656 498.035028 26.075132 5.215026 35.636014-11.299224 35.636014-25.205961 0-12.168395-0.869171-53.888607-0.869171-97.347161-146.020741 31.290159-176.441729-62.580318-176.441729-62.580318-23.467619-60.841976-58.234462-76.487055-58.234463-76.487055-47.804409-32.15933 3.476684-32.15933 3.476685-32.15933 53.019436 3.476684 80.83291 53.888607 80.83291 53.888607 46.935238 79.963739 122.553122 57.365291 152.97411 43.458554 4.345855-33.897672 18.252593-57.365291 33.028501-70.402857-116.468925-12.168395-239.022047-57.365291-239.022047-259.012982 0-57.365291 20.860106-104.300529 53.888607-140.805715-5.215026-13.037566-23.467619-66.926173 5.215027-139.067372 0 0 44.327725-13.906737 144.282399 53.888607 41.720212-11.299224 86.917108-17.383422 131.244833-17.383422s89.524621 6.084198 131.244833 17.383422C756.178839 203.386032 800.506564 217.29277 800.506564 217.29277c28.682646 72.1412 10.430053 126.029806 5.215026 139.067372 33.897672 36.505185 53.888607 83.440424 53.888607 140.805715 0 201.64769-122.553122 245.975415-239.891218 259.012982 19.121764 16.514251 35.636014 47.804409 35.636015 97.347161 0 70.402857-0.869171 126.898978-0.869172 144.282399 0 13.906737 9.560882 30.420988 35.636015 25.205961 208.601059-69.533686 358.967656-265.96635 358.967655-498.035028C1049.958663 234.676191 814.413301 0 524.979332 0z"/></svg>
+    </a>
+    
+    
+    
+    <a class="social-link" title="twitter" href="https://twitter.com/Seson84186492" target="_blank" rel="noopener">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+
+    </a>
+    
+    
+    
+    
+</div>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<div id="site-main" class="site-main outer" role="main">
+    <div class="inner">
+        <header class="post-full-header">
+            <div class="post-full-meta">
+                <time class="post-full-meta-date" datetime="2019-11-06T00:42:48.000Z">
+                    2019-11-5
+                </time>
+                
+                <span class="date-divider">/</span>
+                
+                
+            </div>
+            <h1 class="post-full-title">从OWASP CrackMe学Android逆向(二)</h1>
+        </header>
+        <div class="post-full no-image">
+            
+            <div class="post-full-content">
+                <article id="photoswipe" class="markdown-body">
+                    <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>从<a href="https://www.52pojie.cn/thread-1048786-1-1.html" target="_blank" rel="noopener">OWASP CrackMe学Android逆向(一)</a>感觉用题目来学习会比之前学得内容多很多, 然后这些题目有多种解法, 我也学到很多姿势, 下面就来分析<code>UnCrackable-Level2</code>。这个题目涉及.so动态调试的知识。</p>
+<h2 id="UnCrackable-Level2"><a href="#UnCrackable-Level2" class="headerlink" title="UnCrackable-Level2"></a>UnCrackable-Level2</h2><p>同样的, 先将<code>UnCrackable-Level2.apk</code>放到JEB中分析, 一进到MainActivity, 就发现了一个神奇的东西, 这个应用加载了<code>libfoo.so</code>文件。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920916/OWASP/OWASP-2/1.png" data-index="0" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920916/OWASP/OWASP-2/1.png"></p>
+<p>能感觉出来这个应用和之前level1不同的是, check输入的关键代码应该是在<code>libfoo.so</code>中, 所以不能使用Xposed去处理这个CrackMe了, 但是root和debug的检测还是Java层调用<code>System.exit(0)</code>退出。所以上次的cracker.js, 重载系统exit函数部分保留。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/2.png" data-index="1" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/2.png"></p>
+<p>将<code>UnCrackable-Level2.apk</code>解压之后在<code>UnCrackable-Level2\lib\arm64-v8a</code>目录下找到<code>ibfoo.so</code>, 把它拖到IDA里面分析一下。查看Export表导出的函数, 发现存在含有关键词CodeCheck的函数。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/3.png" data-index="2" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/3.png"></p>
+<p>按下F5查看其反编译的代码, 发现存在可疑的数据<code>xmmword_EA0</code>。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/4.png" data-index="3" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920917/OWASP/OWASP-2/4.png"></p>
+<p> 双击<code>xmmword_EA0</code>, 发现了一个传入v7的是一个大数, 使用Hex-View查看其Ascii码, 发现了一句不完整的话<code>Thank for all t</code><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/5.png" data-index="4" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/5.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/6.png" data-index="5" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/6.png"></p>
+<p> CheckCode中还有v8参数, 虽然现在暂时不知道它有什么用, 还是先将它最后处理的过程写出来, 详情可以看注释, 最后我们知道v8的数据转换为ascii码之后为”eish”, 暂时不知道这个的用处, 所以先放着。根据下面的result获取, 我们也就知道了, 我们最终想要的字符串是存放在v6参数中的。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/7.png" data-index="6" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/7.png"></p>
+<p> 分析<code>libfoo.so</code>中的其他的函数, 发现应用限制了attach, 还是通过轮询的方法监视应用是否被调试。也就是说, 如果想使用IDA动态调试这个应用的话, 还需要我们绕过这种反调试的机制。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/8.png" data-index="7" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920918/OWASP/OWASP-2/8.png"></p>
+<p> 事先说明，上面静态分析的过程都是对<code>lib\arm64-v8a</code>文件夹下的<code>libfoo.so</code>文件进行分析的。在分析代码的过程中，存在一些函数调用的过程让我们看起来不是很舒服。实际上这些调用的函数都是JNI函数, 我们可以通过导入jni.h文件(File-&gt;Load File-&gt;Parse C header file…)——jni.h文件一般安装了Android Studio都有, 我的存放在<code>Android Studio\jre\include</code>目录下, 选中v4指针，选中后按一下”y”键，然后将类型声明为<code>JNIEnv*</code>即可。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572922697/OWASP/OWASP-2/re_8.png" data-index="8" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572922697/OWASP/OWASP-2/re_8.png"></p>
+<p> 修改之后效果如下：<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/9.png" data-index="9" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/9.png"></p>
 <p> 那什么时候我们可以使用上面的方法还原函数名呢？在文章<a href="https://wooyun.js.org/drops/%E5%AE%89%E5%8D%93%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95%E4%B8%83%E7%A7%8D%E6%AD%A6%E5%99%A8%E4%B9%8B%E5%AD%94%E9%9B%80%E7%BF%8E%20%E2%80%93%20Ida%20Pro.html" target="_blank" rel="noopener">安卓动态调试七种武器之孔雀翎 – Ida Pro</a>中有提及, 如果出现一个指针加上一个数字，比如v3+676。然后将这个地址作为一个方法指针进行方法调用，并且第一个参数就是指针自己，比如(v3+676)(v3…)。这实际上就是我们在JNI里经常用到的JNIEnv方法。</p>
 <p> 静态分析就分析到这里了。现在, 我们需要开始动手了。</p>
-<h3 id="静态分析代码"><a href="#静态分析代码" class="headerlink" title="静态分析代码"></a>静态分析代码</h3><p>因为我手机arm版本为<code>arm64-v8a</code>(使用命令<code>adb shell getprop ro.product.cpu.abi</code>可查看arm版本), 所以前面的分析都是基于<code>lib\armeabi-v7a\libfoo.so</code>。当我将<code>lib\armeabi-v7a\libfoo.so</code>拖到32位的IDA中分析代码的时候找到含有<code>CodeCheck</code>的函数, 发现密钥以明文字符串的形式出现了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/10.png" alt></p>
-<p> 这时候我们输入”Thanks for all the fish”, 发现我们成功找到密钥。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/11.png" alt></p>
+<h3 id="静态分析代码"><a href="#静态分析代码" class="headerlink" title="静态分析代码"></a>静态分析代码</h3><p>因为我手机arm版本为<code>arm64-v8a</code>(使用命令<code>adb shell getprop ro.product.cpu.abi</code>可查看arm版本), 所以前面的分析都是基于<code>lib\armeabi-v7a\libfoo.so</code>。当我将<code>lib\armeabi-v7a\libfoo.so</code>拖到32位的IDA中分析代码的时候找到含有<code>CodeCheck</code>的函数, 发现密钥以明文字符串的形式出现了。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/10.png" data-index="10" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920919/OWASP/OWASP-2/10.png"></p>
+<p> 这时候我们输入”Thanks for all the fish”, 发现我们成功找到密钥。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/11.png" data-index="11" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/11.png"></p>
 <p>即便如此简单, 我们还是需要学习通过动态调试的方法获取密钥。以防遇到加了密或者其他更难分析的情况，我们无从下手。</p>
 <h3 id="IDA动态调试代码"><a href="#IDA动态调试代码" class="headerlink" title="IDA动态调试代码"></a>IDA动态调试代码</h3><h4 id="绕过反调试机制"><a href="#绕过反调试机制" class="headerlink" title="绕过反调试机制"></a>绕过反调试机制</h4><p>通过上面的分析(不包含静态分析<code>arm64-v7a</code>目录的libfoo.so文件的内容), 静态分析到现在也没找到完整的23个字母长度的密钥, 我们要通过IDA调试的方法获得密钥,。尝试动态调试.so文件的时候会发现应用会闪退, 所以我们需要来过反调试机制才能让应用正常运行并且获得密钥。那我们怎么做才能成功绕过反调试机制呢？</p>
 <p>根据分析，我们要绕过的反调试机制分别处于Java层和Native层。</p>
-<p>我们下面先修改应用的smali源码, 不然我们设置完AndroidManifest.xml文件<code>debuggable=&quot;true&quot;</code>之后, 还要面对下面的弹窗。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/12.png" alt></p>
-<p>还记得我们最开始分析的Java层的代码不, 现在我们来回忆一下。发现应用在root环境或可调试的环境下运行之后, 会调用MainActivity类中的a函数。双击该函数, 分析代码逻辑。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/13.png" alt></p>
-<p>发现这个函数会在我们做了点击OK的操作之后调用系统的exit函数退出。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/14.png" alt></p>
-<p>反编译apk之后, 定位到刚刚的a函数。发现函数最后返回为return-void, 那我们直接把中间的代码删除就ok。接下来就是常规的反编译+重签名的操作, 这里就不赘述了。安装修改之后的应用, Java层的反调试就绕过了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/15.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/16.png" alt></p>
-<p>下面讲一下稍有难度的绕过Native层的代码, 用IDA反编译libfoo.so。从IDA左侧的Function窗口双击<code>Java_sg_vantagepoint_uncrackable2_MainActivity_init</code>, 发现会调用<code>sub_918</code>方法。双击<code>sub_918</code>函数分析代码。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/17.png" alt></p>
-<p>通过代码我们可以知道, <code>sub_918</code>是起反调试作用的关键函数。接下来我们分析一下这个函数是如何实现反调试的，该函数会先fork自身, 产生一个子进程, 父进程在运行的过程中使用了轮询机制, 通过<a href="https://refspecs.linuxbase.org/LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/baselib-ptrace-1.html" target="_blank" rel="noopener">ptrace函数</a>监视自身是否处于被调试的状态。子进程和fock失败的父进程, 会调用waitpid一般情况下, ptrace这种类型的函数是不会被混淆的, 所以我们直接将调用ptrace函数的部分nop掉就好了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/18.png" alt></p>
-<p>使用IDA View-A打开<code>sub_918</code>函数, 可以看到有两个<code>BL .ptrace</code>。选中其中的一个<code>.ptrace</code>, 然后打开Hex View-1页面。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/19.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/20.png" alt></p>
-<p>按下快捷键<code>F2</code>, 输入<code>1F 20 03 D5</code>(NOP), 将原本的<code>9C FF FF 97</code>替换掉, patch结束之后按<code>F2</code>完成修改(两个<code>BL .ptrace</code>都用这种方法修改)。发现网上有部分文章使用指令<code>00 00 00 00</code>和<code>00 00 A0 E1</code>(mov r0,r0)修改, 我按照那种方式修改之后, 发现代码结构被破坏掉了, 应用不能正常运行, 最后直接使用<code>NOP</code>指令才能让应用正常运行, 并绕过反调试的检测。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/21.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/22.png" alt></p>
-<p>最后按下图选中下图<code>Apply patches to input file....</code>, 就可以保存我们修改之后的结果。我们只需要patch我们设备使用到的<code>libfoo.so</code>文件, 比如我设备的arm版本是<code>arm64-v8a</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/23.png" alt></p>
+<p>我们下面先修改应用的smali源码, 不然我们设置完AndroidManifest.xml文件<code>debuggable=&quot;true&quot;</code>之后, 还要面对下面的弹窗。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/12.png" data-index="12" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/12.png"></p>
+<p>还记得我们最开始分析的Java层的代码不, 现在我们来回忆一下。发现应用在root环境或可调试的环境下运行之后, 会调用MainActivity类中的a函数。双击该函数, 分析代码逻辑。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/13.png" data-index="13" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/13.png"></p>
+<p>发现这个函数会在我们做了点击OK的操作之后调用系统的exit函数退出。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/14.png" data-index="14" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/14.png"></p>
+<p>反编译apk之后, 定位到刚刚的a函数。发现函数最后返回为return-void, 那我们直接把中间的代码删除就ok。接下来就是常规的反编译+重签名的操作, 这里就不赘述了。安装修改之后的应用, Java层的反调试就绕过了。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/15.png" data-index="15" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920920/OWASP/OWASP-2/15.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/16.png" data-index="16" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/16.png"></p>
+<p>下面讲一下稍有难度的绕过Native层的代码, 用IDA反编译libfoo.so。从IDA左侧的Function窗口双击<code>Java_sg_vantagepoint_uncrackable2_MainActivity_init</code>, 发现会调用<code>sub_918</code>方法。双击<code>sub_918</code>函数分析代码。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/17.png" data-index="17" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/17.png"></p>
+<p>通过代码我们可以知道, <code>sub_918</code>是起反调试作用的关键函数。接下来我们分析一下这个函数是如何实现反调试的，该函数会先fork自身, 产生一个子进程, 父进程在运行的过程中使用了轮询机制, 通过<a href="https://refspecs.linuxbase.org/LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/baselib-ptrace-1.html" target="_blank" rel="noopener">ptrace函数</a>监视自身是否处于被调试的状态。子进程和fock失败的父进程, 会调用waitpid一般情况下, ptrace这种类型的函数是不会被混淆的, 所以我们直接将调用ptrace函数的部分nop掉就好了。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/18.png" data-index="18" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/18.png"></p>
+<p>使用IDA View-A打开<code>sub_918</code>函数, 可以看到有两个<code>BL .ptrace</code>。选中其中的一个<code>.ptrace</code>, 然后打开Hex View-1页面。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/19.png" data-index="19" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/19.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/20.png" data-index="20" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920921/OWASP/OWASP-2/20.png"></p>
+<p>按下快捷键<code>F2</code>, 输入<code>1F 20 03 D5</code>(NOP), 将原本的<code>9C FF FF 97</code>替换掉, patch结束之后按<code>F2</code>完成修改(两个<code>BL .ptrace</code>都用这种方法修改)。发现网上有部分文章使用指令<code>00 00 00 00</code>和<code>00 00 A0 E1</code>(mov r0,r0)修改, 我按照那种方式修改之后, 发现代码结构被破坏掉了, 应用不能正常运行, 最后直接使用<code>NOP</code>指令才能让应用正常运行, 并绕过反调试的检测。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/21.png" data-index="21" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/21.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/22.png" data-index="22" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/22.png"></p>
+<p>最后按下图选中下图<code>Apply patches to input file....</code>, 就可以保存我们修改之后的结果。我们只需要patch我们设备使用到的<code>libfoo.so</code>文件, 比如我设备的arm版本是<code>arm64-v8a</code>。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/23.png" data-index="23" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/23.png"></p>
 <p>这里只针对这个应用的反调试作了介绍, 如果想了解更多反调试和绕过反调试的内容, 可以看看文章<a href="https://bbs.pediy.com/thread-223460.htm" target="_blank" rel="noopener">【SO壳】17种安卓native反调试收集</a>。</p>
 <h4 id="IDA动态调试Native代码"><a href="#IDA动态调试Native代码" class="headerlink" title="IDA动态调试Native代码"></a>IDA动态调试Native代码</h4><p>在正式开始之前, 我们需要做点准备工作。 首先打开目录<code>&lt;你IDA安装的目录下&gt;\IDA\dbgsrv</code>, 将该目录下的<code>android_server</code>push进手机里面并添加权限。</p>
 <pre><code>$ adb push android_server64 #要按照你自己的使用的设备的内核进行选择, 查看arm版本就知道
@@ -168,79 +195,347 @@ $ ./android_server
 <li>从手机内核中提取出boot.img并修改, 使<code>ro.debuggable=1</code>, 或者可以使用mprop, 但是有版本限制。</li>
 <li>在装有Xposed的手机上安装<a href="https://security.tencent.com/index.php/opensource/detail/17" target="_blank" rel="noopener">BDOpener</a>, 重启激活该模块即可。</li>
 <li><p>设置全局变量, 使<code>ro.debuggable=1</code>（每次开机重启后失效）</p>
-<p>使用上面的方法让应用处于可调试的状态, 用DDMS打开, 效果如下：<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/24.png" alt></p>
+<p>使用上面的方法让应用处于可调试的状态, 用DDMS打开, 效果如下：<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/24.png" data-index="24" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/24.png"></p>
 </li>
 </ul>
-<p>先输入命令<code>adb shell dumpsys activity top | findstr ACTIVITY</code>, 通过输出可知应用的包名及当前的Activity, 输入命令<code>adb shell am start -D -n owasp.mstg.uncrackable2/sg.vantagepoint.uncrackable2.MainActivity</code>可让Uncrackable2这个应用处于被调试状态。这时候查看DDMS, 我们可以看到应用的状态改变了。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/25.png" alt></p>
-<p> 接下来要用IDA对<code>.so</code>文件进行动态调试, 打开64位的IDA，打开debug选项<code>Debugger-&gt;attach-&gt;Remoute Android debugger</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/26.png" alt></p>
-<p> 这时候会出现一个弹窗, 点击<code>Debug option</code>, 勾选上框出来的3项。点击OK之后, 在hostname里面填写127.0.0.1即可。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/27.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/28.png" alt></p>
-<p> 之后会出现手机加载的进程, 我们只需要选中我们想调试的<code>uncrackable2</code>, 就可以进入IDA的调试界面。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/29.png" alt></p>
-<p> 之后使用jdb使应用继续运行, 因为上面的DDMS几次重新打开, 所以端口映射部分会不一致。我们在使用jdb调试的时候, 最好还是先打开DDMS, 查看应用真正映射的端口, 否则会出现<code>无法附加到目标 VM</code>的错误, 按照下面的显示结果, 我们需要输入命令<code>jdb -connect com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=8605</code>(8700端口被DDMS进程占用, 改为8605端口, 不开DDMS就不用改)。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/30.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/31.png" alt></p>
-<p> 双开IDA计算进程动态运行时我们想要定位的函数的地址, 在动态调试的IDA按下<code>F9</code>快捷键让程序正常运行, 这时候我们就能在IDA右侧<code>Module</code>板块搜索到<code>libfoo.so</code>动态加载的地址<code>0x0000007B11291000</code>, 之后我们从分析静态<code>libfoo.so</code>的IDA中获取函数<code>CodeCheck</code>函数的偏移量为<code>0xDAC</code>, 所以最后我们能够计算出我们要跳转到<code>0x0000007B11291DAC</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/32.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/33.png" alt></p>
-<p>按下快捷键<code>G</code>, 跳转到我们计算的CodeCheck函数开始的地址(<code>0x0000007B11291DAC</code>), 发现代码不能解析出来, 选中部分代码, 用快捷键<code>C</code>解析代码(一次不行就先按<code>C</code>再按下<code>Force</code>)。然后在地址<code>0x0000007B11291DAC</code>下断点, 在手机应用界面上输入随便输入长度为23的字符串之后点击<code>Verify</code>, 就可以运行到如下位置。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/34.png" alt></p>
-<p>在动态调试汇编代码的过程中, 会发现我们很难根据变量名获取其中的值, 只能在调试的过程中看到寄存器中存储的内容, 将静态调试的IDA中的汇编代码和动态调试过程中的IDA的代码进行比对, 我们可以找出一些函数, 比如这里的<code>strncmp</code>的函数的位置, 也可以通过静态分析的IDA找到<code>strncmp</code>函数的位置(<code>0x0000007B11291000+0xE5C=0x0000007B11291E5C</code>), 选中<code>unk_7B11281820</code>, 使用快捷键<code>N</code>可将地址名重命名为<code>.strncmp</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/35.png" alt></p>
-<p>IDA右侧有<code>General Registers</code>窗口, 但是这个窗口只会出现地址, 而我们需要获取寄存器中的值, <code>View-&gt;Open subviews-&gt;Hex dump</code>可以查看内存中的数值。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/36.png" alt></p>
-<p><code>F8</code>单步调试到<code>BL .strncmp</code>处, 这时候我们就能看到传递的参数寄存器X1和X0存放的地址。鼠标移至X0存放的地址, 右键选中<code>Select All</code>, 复制地址。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/37.png" alt></p>
-<p>转到<code>Hex View-3</code>的窗口, 按下快捷键<code>G</code>, 跳转到刚刚我们复制的地址处。可以看到我们刚刚在应用中输入的数值, 想要获取X1的值可以用一样的方法, 最终我们得到要输入的密码为<code>Thanks for all the fish</code>。<br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/38.png" alt><br><img src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/39.png" alt></p>
+<p>先输入命令<code>adb shell dumpsys activity top | findstr ACTIVITY</code>, 通过输出可知应用的包名及当前的Activity, 输入命令<code>adb shell am start -D -n owasp.mstg.uncrackable2/sg.vantagepoint.uncrackable2.MainActivity</code>可让Uncrackable2这个应用处于被调试状态。这时候查看DDMS, 我们可以看到应用的状态改变了。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/25.png" data-index="25" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/25.png"></p>
+<p> 接下来要用IDA对<code>.so</code>文件进行动态调试, 打开64位的IDA，打开debug选项<code>Debugger-&gt;attach-&gt;Remoute Android debugger</code>。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/26.png" data-index="26" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/26.png"></p>
+<p> 这时候会出现一个弹窗, 点击<code>Debug option</code>, 勾选上框出来的3项。点击OK之后, 在hostname里面填写127.0.0.1即可。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/27.png" data-index="27" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/27.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/28.png" data-index="28" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/28.png"></p>
+<p> 之后会出现手机加载的进程, 我们只需要选中我们想调试的<code>uncrackable2</code>, 就可以进入IDA的调试界面。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/29.png" data-index="29" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/29.png"></p>
+<p> 之后使用jdb使应用继续运行, 因为上面的DDMS几次重新打开, 所以端口映射部分会不一致。我们在使用jdb调试的时候, 最好还是先打开DDMS, 查看应用真正映射的端口, 否则会出现<code>无法附加到目标 VM</code>的错误, 按照下面的显示结果, 我们需要输入命令<code>jdb -connect com.sun.jdi.SocketAttach:hostname=127.0.0.1,port=8605</code>(8700端口被DDMS进程占用, 改为8605端口, 不开DDMS就不用改)。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/30.png" data-index="30" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/30.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/31.png" data-index="31" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/31.png"></p>
+<p> 双开IDA计算进程动态运行时我们想要定位的函数的地址, 在动态调试的IDA按下<code>F9</code>快捷键让程序正常运行, 这时候我们就能在IDA右侧<code>Module</code>板块搜索到<code>libfoo.so</code>动态加载的地址<code>0x0000007B11291000</code>, 之后我们从分析静态<code>libfoo.so</code>的IDA中获取函数<code>CodeCheck</code>函数的偏移量为<code>0xDAC</code>, 所以最后我们能够计算出我们要跳转到<code>0x0000007B11291DAC</code>。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/32.png" data-index="32" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/32.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/33.png" data-index="33" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/33.png"></p>
+<p>按下快捷键<code>G</code>, 跳转到我们计算的CodeCheck函数开始的地址(<code>0x0000007B11291DAC</code>), 发现代码不能解析出来, 选中部分代码, 用快捷键<code>C</code>解析代码(一次不行就先按<code>C</code>再按下<code>Force</code>)。然后在地址<code>0x0000007B11291DAC</code>下断点, 在手机应用界面上输入随便输入长度为23的字符串之后点击<code>Verify</code>, 就可以运行到如下位置。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/34.png" data-index="34" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/34.png"></p>
+<p>在动态调试汇编代码的过程中, 会发现我们很难根据变量名获取其中的值, 只能在调试的过程中看到寄存器中存储的内容, 将静态调试的IDA中的汇编代码和动态调试过程中的IDA的代码进行比对, 我们可以找出一些函数, 比如这里的<code>strncmp</code>的函数的位置, 也可以通过静态分析的IDA找到<code>strncmp</code>函数的位置(<code>0x0000007B11291000+0xE5C=0x0000007B11291E5C</code>), 选中<code>unk_7B11281820</code>, 使用快捷键<code>N</code>可将地址名重命名为<code>.strncmp</code>。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/35.png" data-index="35" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/35.png"></p>
+<p>IDA右侧有<code>General Registers</code>窗口, 但是这个窗口只会出现地址, 而我们需要获取寄存器中的值, <code>View-&gt;Open subviews-&gt;Hex dump</code>可以查看内存中的数值。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/36.png" data-index="36" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/36.png"></p>
+<p><code>F8</code>单步调试到<code>BL .strncmp</code>处, 这时候我们就能看到传递的参数寄存器X1和X0存放的地址。鼠标移至X0存放的地址, 右键选中<code>Select All</code>, 复制地址。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/37.png" data-index="37" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/37.png"></p>
+<p>转到<code>Hex View-3</code>的窗口, 按下快捷键<code>G</code>, 跳转到刚刚我们复制的地址处。可以看到我们刚刚在应用中输入的数值, 想要获取X1的值可以用一样的方法, 最终我们得到要输入的密码为<code>Thanks for all the fish</code>。<br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/38.png" data-index="38" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/38.png"><br><img alt class="post-img b-lazy" data-img="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/39.png" data-index="39" data-src="https://res.cloudinary.com/dq4c0zqqy/image/upload/v1572920922/OWASP/OWASP-2/39.png"></p>
 <p>IDA动态调试的过程就到这里结束了, 下面还有一种不patch apk的方法可以实现绕过反调试和各种检测的方法, 使用到了Radare2, 感觉重要的是学习思路而不是工具如何使用这句话, 还是很有道理的。</p>
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>实际上最近有很多事情要做, 配置Radare2及其插件上, 我花了很多时间, 现在还有一个小插件没安装好。为了推着自己完成这篇系列文章, 就把UnCrackable2完成的部分先发出来。希望我能尽快完成环境的配置还有之后的文章吧…..</p>
 
-      
+                </article>
+                <ul class="tags-postTags">
+                    
+                    <li>
+                        <a href="/tags/Android逆向/" rel="tag"># Android逆向</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
     </div>
-    <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2019/11/05/从OWASP-CrackMe学Android逆向-二/" data-id="ckrzo1bj9000cdfrtimb5d7d6" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android逆向/">Android逆向</a></li></ul>
 
-    </footer>
-  </div>
-  
     
-<nav id="article-nav">
-  
-    <a href="/2020/01/29/获取APK中第三方库信息的工具/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+    <nav id="gobottom" class="pagination">
         
-          获取APK中第三方库信息的工具
+        <a class="prev-post" title="获取APK中第三方库信息的工具" href="/2020/01/29/获取APK中第三方库信息的工具/">
+            ← 获取APK中第三方库信息的工具
+        </a>
         
-      </div>
-    </a>
-  
-  
-    <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">从OWASP CrackMe学Android逆向(一)</div>
-    </a>
-  
-</nav>
+        <span class="prev-next-post">·</span>
+        
+        <a class="next-post" title="从OWASP CrackMe学Android逆向(一)" href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/">
+            从OWASP CrackMe学Android逆向(一) →
+        </a>
+        
+    </nav>
 
-  
+    
+    <div class="inner">
+        <div id="comment"></div>
+    </div>
+    
+</div>
+
+<div class="toc-bar">
+    <div class="toc-btn-bar">
+        <a href="#site-main" class="toc-btn">
+            <svg viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M793.024 710.272a32 32 0 1 0 45.952-44.544l-310.304-320a32 32 0 0 0-46.4 0.48l-297.696 320a32 32 0 0 0 46.848 43.584l274.752-295.328 286.848 295.808z"/></svg>
+        </a>
+        <div class="toc-btn toc-switch">
+            <svg class="toc-open" viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M779.776 480h-387.2a32 32 0 0 0 0 64h387.2a32 32 0 0 0 0-64M779.776 672h-387.2a32 32 0 0 0 0 64h387.2a32 32 0 0 0 0-64M256 288a32 32 0 1 0 0 64 32 32 0 0 0 0-64M392.576 352h387.2a32 32 0 0 0 0-64h-387.2a32 32 0 0 0 0 64M256 480a32 32 0 1 0 0 64 32 32 0 0 0 0-64M256 672a32 32 0 1 0 0 64 32 32 0 0 0 0-64"/></svg>
+            <svg class="toc-close hide" viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M512 960c-247.039484 0-448-200.960516-448-448S264.960516 64 512 64 960 264.960516 960 512 759.039484 960 512 960zM512 128.287273c-211.584464 0-383.712727 172.128262-383.712727 383.712727 0 211.551781 172.128262 383.712727 383.712727 383.712727 211.551781 0 383.712727-172.159226 383.712727-383.712727C895.712727 300.415536 723.551781 128.287273 512 128.287273z"/><path d="M557.05545 513.376159l138.367639-136.864185c12.576374-12.416396 12.672705-32.671738 0.25631-45.248112s-32.704421-12.672705-45.248112-0.25631l-138.560301 137.024163-136.447897-136.864185c-12.512727-12.512727-32.735385-12.576374-45.248112-0.063647-12.512727 12.480043-12.54369 32.735385-0.063647 45.248112l136.255235 136.671523-137.376804 135.904314c-12.576374 12.447359-12.672705 32.671738-0.25631 45.248112 6.271845 6.335493 14.496116 9.504099 22.751351 9.504099 8.12794 0 16.25588-3.103239 22.496761-9.247789l137.567746-136.064292 138.687596 139.136568c6.240882 6.271845 14.432469 9.407768 22.65674 9.407768 8.191587 0 16.352211-3.135923 22.591372-9.34412 12.512727-12.480043 12.54369-32.704421 0.063647-45.248112L557.05545 513.376159z"/></svg>
+        </div>
+        <a href="#gobottom" class="toc-btn">
+            <svg viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M231.424 346.208a32 32 0 0 0-46.848 43.584l297.696 320a32 32 0 0 0 46.4 0.48l310.304-320a32 32 0 1 0-45.952-44.544l-286.848 295.808-274.752-295.36z"/></svg>
+        </a>
+    </div>
+    <div class="toc-main">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#UnCrackable-Level2"><span class="toc-text">UnCrackable-Level2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#静态分析代码"><span class="toc-text">静态分析代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA动态调试代码"><span class="toc-text">IDA动态调试代码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#绕过反调试机制"><span class="toc-text">绕过反调试机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IDA动态调试Native代码"><span class="toc-text">IDA动态调试Native代码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结语"><span class="toc-text">结语</span></a></li></ol>
+    </div>
+</div>
+
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo https://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+	</div>
+	
+
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+            
+            
+
+<article class="read-next-card" style="background-image: url(https://i.loli.net/2017/11/26/5a19c56faa29f.jpg)">
+  <header class="read-next-card-header">
+    <small class="read-next-card-header-sitetitle">&mdash; Se8S0n &mdash;</small>
+    <h3 class="read-next-card-header-title">Recent Posts</h3>
+  </header>
+  <div class="read-next-divider">
+    <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+      <path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"/>
+    </svg>
+  </div>
+  <div class="read-next-card-content">
+    <ul>
+      
+      
+      
+      <li>
+        <a href="/2020/01/29/获取APK中第三方库信息的工具/">获取APK中第三方库信息的工具</a>
+      </li>
+      
+      
+      
+      <li>
+        <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/">从OWASP CrackMe学Android逆向(二)</a>
+      </li>
+      
+      
+      
+      <li>
+        <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/">从OWASP CrackMe学Android逆向(一)</a>
+      </li>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </ul>
+  </div>
+  <footer class="read-next-card-footer">
+    <a href="/archives">  MORE  → </a>
+  </footer>
 </article>
 
-</section>
+            
+            
+            
+
+
+            
+            
+            
+
+<article class="read-next-card" style="background-image: url(https://i.loli.net/2017/11/26/5a19c56faa29f.jpg)">
+	<header class="read-next-card-header tagcloud-card">
+		<h3 class="read-next-card-header-title">Tag Cloud</h3>
+	</header>
+	<div class="read-next-card-content-ext">
+		<a href="/tags/Android/" style="font-size: 20.67px;">Android</a> <a href="/tags/Android-渗透/" style="font-size: 14px;">Android 渗透</a> <a href="/tags/Android安全-翻译/" style="font-size: 17.33px;">Android安全 翻译</a> <a href="/tags/Android逆向/" style="font-size: 20.67px;">Android逆向</a> <a href="/tags/HTTP/" style="font-size: 24px;">HTTP</a> <a href="/tags/机器学习/" style="font-size: 14px;">机器学习</a>
+	</div>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+	
+
+
+
+
+<div id="search" class="search-overlay">
+    <div class="search-form">
         
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2021 Se8S0n<br>
+        <div class="search-overlay-logo">
+        	<img src="https://i.loli.net/2017/11/26/5a19c0b50432e.png" alt="Se8S0n">
+        </div>
+        
+        <input id="local-search-input" class="search-input" type="text" name="search" placeholder="Search ...">
+        <a class="search-overlay-close" href="#"></a>
     </div>
-  </div>
+    <div id="local-search-result"></div>
+</div>
+
+<footer class="site-footer outer">
+	<div class="site-footer-content inner">
+		<div class="copyright">
+			<a href="/" title="Se8S0n">Se8S0n &copy; 2021</a>
+			
+				
+			        <span hidden="true" id="/2019/11/05/从OWASP-CrackMe学Android逆向-二/" class="leancloud-visitors" data-flag-title="从OWASP CrackMe学Android逆向(二)">
+			            <span>阅读量 </span>
+			            <span class="leancloud-visitors-count">0</span>
+			        </span>
+	    		
+    		
+		</div>
+		<nav class="site-footer-nav">
+			
+			<a href="https://hexo.io" title="Hexo" target="_blank" rel="noopener">Hexo</a>
+			<a href="https://github.com/xzhih/hexo-theme-casper" title="Casper" target="_blank" rel="noopener">Casper</a>
+		</nav>
+	</div>
 </footer>
-    </div>
-    
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script src="//imsky.github.io/holder/holder.js"></script>
+	
 
 
-<script src="/js/script.js"></script>
+<script>
+    if(window.navigator && navigator.serviceWorker) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister()
+            }
+        })
+    }
+</script>
 
-  </div>
-<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+
+<script id="scriptLoad" src="/js/allinone.min.js" async></script>
+
+
+<script>
+    document.getElementById('scriptLoad').addEventListener('load', function () {
+        
+        
+            var bLazy = new Blazy();
+        
+
+        
+        
+
+        
+        
+        
+            searchFunc("/");
+        
+        
+    })
+</script>
+
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+
+
+<script id="valineScript" src="//unpkg.com/valine/dist/Valine.min.js" async></script>
+<script>
+    document.getElementById('valineScript').addEventListener("load", function() {
+        new Valine({
+            el: '#comment' ,
+            verify: false,
+            notify: false,
+            appId: '',
+            appKey: '',
+            placeholder: 'Just go go',
+            pageSize: 10,
+            avatar: 'mm',
+            visitor: true
+        })
+    });
+</script>
+
+
+
+
+
 </body>
 </html>

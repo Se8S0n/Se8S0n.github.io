@@ -1,96 +1,160 @@
 <!DOCTYPE html>
-<html>
-<head><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
-  
-  <title>HTTP系列(一)：HTTP的基础概念概述 | Se8S0n</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译HTTP系列这篇文章。如果想阅读原文, 你可以访问这个网站: https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP协议?  如果你">
-<meta name="keywords" content="HTTP">
-<meta property="og:type" content="article">
-<meta property="og:title" content="HTTP系列(一)：HTTP的基础概念概述">
-<meta property="og:url" content="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/index.html">
-<meta property="og:site_name" content="Se8S0n">
-<meta property="og:description" content="前言在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译HTTP系列这篇文章。如果想阅读原文, 你可以访问这个网站: https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP协议?  如果你">
-<meta property="og:locale" content="zh-cn">
-<meta property="og:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png">
-<meta property="og:image" content="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg">
-<meta property="og:image" content="https://cdn.crunchify.com/wp-content/uploads/2012/10/Crunchify.com-RESTful-Introduction.png">
-<meta property="og:updated_time" content="2021-08-05T06:51:27.323Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="HTTP系列(一)：HTTP的基础概念概述">
-<meta name="twitter:description" content="前言在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译HTTP系列这篇文章。如果想阅读原文, 你可以访问这个网站: https://code-maze.com/ 原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。 正文本文会对HTTP的基础概念进行介绍。 为什么要学HTTP?你可能会问：为什么要了解HTTP协议?  如果你">
-<meta name="twitter:image" content="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png">
-  
-  
-  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-  
-</head></html>
-<body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="overlay"></div>
-  <div id="header-outer" class="outer">
-    <div id="profile_img">
-      <img id="circle_img" src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1507005566072&amp;di=9f9f92b244fc348a76a81879f8e5dbfb&amp;imgtype=0&amp;src=http%3A%2F%2Fpic.58pic.com%2F58pic%2F12%2F36%2F62%2F12c58PICPCj.jpg" />
-    </div>
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Se8S0n</a>
-      </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">The more you want, the more you get.</a>
-        </h2>
-      
-    </div>
-    <div id="header-menu">
-      <nav id="main-nav">
-        <ul>
-        
-          <li><a href="/"><i class="fa fa-home icon-setting"></i></a></li>
-        
-          <li><a href="/archives"><i class="fa fa-archive icon-setting"></i></a></li>
-        
-          <li><a href="/about"><i class="fa fa-user icon-setting"></i></a></li>
-        
-          <li><a href="/friends"><i class="fa fa-users icon-setting"></i></a></li>
-        
-          <li><a href="http://weibo.com/p/1005055968437225/home?from=page_100505_profile&wvr=6&mod=data&is_hot=1#place"><i class="fa fa-weibo icon-setting"></i></a></li>
-        
-        
-        </ul>
-      </nav>
-    </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-HTTP系列(一)" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/19/HTTP系列(一)/" class="article-date">
-  <time datetime="2018-06-19T19:15:45.000Z" itemprop="datePublished">2018-06-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      HTTP系列(一)：HTTP的基础概念概述
-    </h1>
-  
+<html lang="zh-cn">
 
-      </header>
+
+
+
+
+
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="preconnect" href="//www.googletagmanager.com">
+	<link rel="preconnect" href="//zz.bdstatic.com">
+	<link rel="preconnect" href="//sp0.baidu.com">
+	<link rel="preconnect" href="//www.google-analytics.com">
+	<link rel="preconnect" href="//cdn1.lncld.net">
+	<link rel="preconnect" href="//unpkg.com">
+	<link rel="preconnect" href="//app-router.leancloud.cn">
+	<link rel="preconnect" href="//9qpuwspm.api.lncld.net">
+	<link rel="preconnect" href="//gravatar.loli.net">
+
+	<title>HTTP系列(一)：HTTP的基础概念概述 | Se8S0n</title>
+
+	<meta name="HandheldFriendly" content="True">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+	<meta name="generator" content="hexo">
+	<meta name="author" content="Se8S0n">
+	<meta name="description" content>
+
+	
+	<meta name="keywords" content>
+	
+
+	
+	<link rel="shortcut icon" href="https://i.loli.net/2017/11/26/5a19c0b50432e.png">
+	<link rel="apple-touch-icon" href="https://i.loli.net/2017/11/26/5a19c0b50432e.png">
+	
+
+	
+	<meta name="theme-color" content="#3c484e">
+	<meta name="msapplication-TileColor" content="#3c484e">
+	
+
+	
+
+	
+
+	<meta property="og:site_name" content="Se8S0n">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="HTTP系列(一)：HTTP的基础概念概述 | Se8S0n">
+	<meta property="og:description" content>
+	<meta property="og:url" content="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/">
+
+	
+	<meta property="article:published_time" content="2018-06-19T12:06:00+08:00"> 
+	<meta property="article:author" content="Se8S0n">
+	<meta property="article:published_first" content="Se8S0n, /2018/06/19/HTTP系列(一)/">
+	
+
+	
+	
+	<link rel="stylesheet" href="/css/allinonecss.min.css">
+
+	
+	
+	
+</head>
+
+<body class="post-template">
+	<div class="site-wrapper">
+		
+
+
+
+
+<header class="site-header post-site-header outer">
+    <div class="inner">
+        
+<nav class="site-nav"> 
+    <div class="site-nav-left">
+        <ul class="nav">
+            <li>
+                
+                <a href="/" title="Home">HOME</a>
+                
+            </li>
+            
+            
+            <li>
+                <a href="/about" title="ABOUT">ABOUT</a>
+            </li>
+            
+            <li>
+                <a href="/_posts" title="ARCHIVES">ARCHIVES</a>
+            </li>
+            
+            <li>
+                <a href="/friends" title="FRIENDS">FRIENDS</a>
+            </li>
+            
+            
+        </ul> 
+    </div>
     
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译<a href="https://code-maze.com/http-series/" target="_blank" rel="noopener">HTTP系列</a>这篇文章。<br>如果想阅读原文, 你可以访问这个网站: <a href="https://code-maze.com/" target="_blank" rel="noopener">https://code-maze.com/</a></p>
+    <div class="search-button-area">
+        <a href="#search" class="search-button">Search ...</a>
+    </div>
+     
+    <div class="site-nav-right">
+        
+        <a href="#search" class="search-button">Search ...</a>
+         
+        
+<div class="social-links">
+    
+    
+    <a class="social-link" title="github" href="https://github.com/Se8S0n" target="_blank" rel="noopener">
+        <svg viewbox="0 0 1049 1024" xmlns="http://www.w3.org/2000/svg"><path d="M524.979332 0C234.676191 0 0 234.676191 0 524.979332c0 232.068678 150.366597 428.501342 358.967656 498.035028 26.075132 5.215026 35.636014-11.299224 35.636014-25.205961 0-12.168395-0.869171-53.888607-0.869171-97.347161-146.020741 31.290159-176.441729-62.580318-176.441729-62.580318-23.467619-60.841976-58.234462-76.487055-58.234463-76.487055-47.804409-32.15933 3.476684-32.15933 3.476685-32.15933 53.019436 3.476684 80.83291 53.888607 80.83291 53.888607 46.935238 79.963739 122.553122 57.365291 152.97411 43.458554 4.345855-33.897672 18.252593-57.365291 33.028501-70.402857-116.468925-12.168395-239.022047-57.365291-239.022047-259.012982 0-57.365291 20.860106-104.300529 53.888607-140.805715-5.215026-13.037566-23.467619-66.926173 5.215027-139.067372 0 0 44.327725-13.906737 144.282399 53.888607 41.720212-11.299224 86.917108-17.383422 131.244833-17.383422s89.524621 6.084198 131.244833 17.383422C756.178839 203.386032 800.506564 217.29277 800.506564 217.29277c28.682646 72.1412 10.430053 126.029806 5.215026 139.067372 33.897672 36.505185 53.888607 83.440424 53.888607 140.805715 0 201.64769-122.553122 245.975415-239.891218 259.012982 19.121764 16.514251 35.636014 47.804409 35.636015 97.347161 0 70.402857-0.869171 126.898978-0.869172 144.282399 0 13.906737 9.560882 30.420988 35.636015 25.205961 208.601059-69.533686 358.967656-265.96635 358.967655-498.035028C1049.958663 234.676191 814.413301 0 524.979332 0z"/></svg>
+    </a>
+    
+    
+    
+    <a class="social-link" title="twitter" href="https://twitter.com/Seson84186492" target="_blank" rel="noopener">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+
+    </a>
+    
+    
+    
+    
+</div>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<div id="site-main" class="site-main outer" role="main">
+    <div class="inner">
+        <header class="post-full-header">
+            <div class="post-full-meta">
+                <time class="post-full-meta-date" datetime="2018-06-19T19:15:45.000Z">
+                    2018-06-19
+                </time>
+                
+                <span class="date-divider">/</span>
+                
+                
+            </div>
+            <h1 class="post-full-title">HTTP系列(一)：HTTP的基础概念概述</h1>
+        </header>
+        <div class="post-full no-image">
+            
+            <div class="post-full-content">
+                <article id="photoswipe" class="markdown-body">
+                    <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在网上看到这篇很棒的文章, 所以接下来, 我会边学习边翻译<a href="https://code-maze.com/http-series/" target="_blank" rel="noopener">HTTP系列</a>这篇文章。<br>如果想阅读原文, 你可以访问这个网站: <a href="https://code-maze.com/" target="_blank" rel="noopener">https://code-maze.com/</a></p>
 <p>原作者是一个很nice的人, 也花了挺多时间写这篇文章还有维护这个网站的, 相信大家能在网站里找到更多自己想要的东西。</p>
 <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>本文会对HTTP的基础概念进行介绍。</p>
 <h2 id="为什么要学HTTP"><a href="#为什么要学HTTP" class="headerlink" title="为什么要学HTTP?"></a>为什么要学HTTP?</h2><p>你可能会问：为什么要了解HTTP协议? </p>
@@ -114,8 +178,8 @@
 </ul>
 <p>闲话少说, 直接进入下面的学习吧！</p>
 <h2 id="HTTP的定义"><a href="#HTTP的定义" class="headerlink" title="HTTP的定义"></a>HTTP的定义</h2><p>纵观HTTP的发展史,有两个重要人物，一个是发明万维网和HTTP协议的Tim Berners-Lee, 另一个是REST架构风格的发明者Roy Fielding。</p>
-<p><strong>超文本传输协议(The Hypertext Transerfer Protocol)</strong>是应用程序之间的通信协议。本质上, HTTP协议是负责委派互联网中客户端和服务器端之间的媒体文件(包括HTML、图片、文本文件、电影等客户端和服务器端之间传输的所有文件), 通过HTTP协议媒体文件能够快速、可靠地传输。HTTP被用于应用层通信, 因此HTTP协议是应用层协议而不是传输层协议。为了让你们记起相关知识, 我在下面放出了网络栈的构成图。<br><img src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png" alt><br>在上图中, 你可以清晰地看到, HTTP是应用层协议, 而TCP才是传输层协议。</p>
-<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><p><img src="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg" alt><br>因特网上所有的内容都是资源(Resource), HTTP正是处理这些资源的协议——包括文件、(数据)流、 服务和其他所有的东西。HTML页面、youtube上的视频、WEB应用程序上日常任务电子表格…这些都是资源。(相信通过上面的举例)你已经知道了什么是资源了。</p>
+<p><strong>超文本传输协议(The Hypertext Transerfer Protocol)</strong>是应用程序之间的通信协议。本质上, HTTP协议是负责委派互联网中客户端和服务器端之间的媒体文件(包括HTML、图片、文本文件、电影等客户端和服务器端之间传输的所有文件), 通过HTTP协议媒体文件能够快速、可靠地传输。HTTP被用于应用层通信, 因此HTTP协议是应用层协议而不是传输层协议。为了让你们记起相关知识, 我在下面放出了网络栈的构成图。<br><img alt class="post-img b-lazy" data-img="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png" data-index="0" data-src="http://res.cloudinary.com/dq4c0zqqy/image/upload/v1532267037/Network-stack_rf2on4.png"><br>在上图中, 你可以清晰地看到, HTTP是应用层协议, 而TCP才是传输层协议。</p>
+<h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><p><img alt class="post-img b-lazy" data-img="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg" data-index="1" data-src="https://code-maze.com/wp-content/uploads/2017/06/resource-1024x475.jpg"><br>因特网上所有的内容都是资源(Resource), HTTP正是处理这些资源的协议——包括文件、(数据)流、 服务和其他所有的东西。HTML页面、youtube上的视频、WEB应用程序上日常任务电子表格…这些都是资源。(相信通过上面的举例)你已经知道了什么是资源了。</p>
 <p>接下来就要思考另一个问题了, 如何区分不同的资源?</p>
 <p>通过给资源标识URLs(Uniform resource locators, 统一资源定位符)——这里URL和URI(统一资源标识符)在大部分时候都可以混用。</p>
 <p>URL指向唯一的(资源存放)位置。</p>
@@ -184,66 +248,334 @@
 <ol>
 <li><p>表现层(Representation), 直白地说就是<strong>资源(信息实体)具体呈现出来的形式</strong>, 例如:文本表现为TXT格式、HTML格式或者是XML格式。</p>
 </li>
-<li><p>状态转换(State Transfer), 这个状态转换实际上是发生在Client访问Server的过程中。为什么会选择无状态HTTP作为实现REST架构的协议? 因为HTTP可发送四种状态:GET、POST、PUT、DELETE。这四个HTTP协议的动词可以用来进行不同的操作：GET用来获取资源, POST用来新建更新资源,PUT用来更新资源,DELETE用来删除资源。在写的时候我自己有点小迷糊, 什么是有状态的? 什么是无状态的呢? 无状态, 其实就是所有的状态都保存在Server。因此, 状态转换, 是在信息由Client传送到Server的中间过程实现的。<br><img src="https://cdn.crunchify.com/wp-content/uploads/2012/10/Crunchify.com-RESTful-Introduction.png" alt="RESTful"></p>
+<li><p>状态转换(State Transfer), 这个状态转换实际上是发生在Client访问Server的过程中。为什么会选择无状态HTTP作为实现REST架构的协议? 因为HTTP可发送四种状态:GET、POST、PUT、DELETE。这四个HTTP协议的动词可以用来进行不同的操作：GET用来获取资源, POST用来新建更新资源,PUT用来更新资源,DELETE用来删除资源。在写的时候我自己有点小迷糊, 什么是有状态的? 什么是无状态的呢? 无状态, 其实就是所有的状态都保存在Server。因此, 状态转换, 是在信息由Client传送到Server的中间过程实现的。<br><img alt="RESTful" class="post-img b-lazy" data-img="https://cdn.crunchify.com/wp-content/uploads/2012/10/Crunchify.com-RESTful-Introduction.png" data-index="2" data-src="https://cdn.crunchify.com/wp-content/uploads/2012/10/Crunchify.com-RESTful-Introduction.png"></p>
 </li>
 </ol>
 
-      
+                </article>
+                <ul class="tags-postTags">
+                    
+                    <li>
+                        <a href="/tags/HTTP/" rel="tag"># HTTP</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
     </div>
-    <footer class="article-footer">
-      <a data-url="http://Se8S0n.github.io.git/2018/06/19/HTTP系列(一)/" data-id="ckrzo1bj00002dfrtf6zan4hi" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HTTP/">HTTP</a></li></ul>
 
-    </footer>
-  </div>
-  
     
-<nav id="article-nav">
-  
-    <a href="/2018/08/18/HTTP系列(二)/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+    <nav id="gobottom" class="pagination">
         
-          HTTP系列(二):HTTP的结构体系
+        <a class="prev-post" title="HTTP系列(二):HTTP的结构体系" href="/2018/08/18/HTTP系列(二)/">
+            ← HTTP系列(二):HTTP的结构体系
+        </a>
         
-      </div>
-    </a>
-  
-  
-    <a href="/2018/01/22/libsvm环境配置及使用方法/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">libsvm环境配置及使用方法</div>
-    </a>
-  
-</nav>
+        <span class="prev-next-post">·</span>
+        
+        <a class="next-post" title="libsvm环境配置及使用方法" href="/2018/01/22/libsvm环境配置及使用方法/">
+            libsvm环境配置及使用方法 →
+        </a>
+        
+    </nav>
 
-  
+    
+    <div class="inner">
+        <div id="comment"></div>
+    </div>
+    
+</div>
+
+<div class="toc-bar">
+    <div class="toc-btn-bar">
+        <a href="#site-main" class="toc-btn">
+            <svg viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M793.024 710.272a32 32 0 1 0 45.952-44.544l-310.304-320a32 32 0 0 0-46.4 0.48l-297.696 320a32 32 0 0 0 46.848 43.584l274.752-295.328 286.848 295.808z"/></svg>
+        </a>
+        <div class="toc-btn toc-switch">
+            <svg class="toc-open" viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M779.776 480h-387.2a32 32 0 0 0 0 64h387.2a32 32 0 0 0 0-64M779.776 672h-387.2a32 32 0 0 0 0 64h387.2a32 32 0 0 0 0-64M256 288a32 32 0 1 0 0 64 32 32 0 0 0 0-64M392.576 352h387.2a32 32 0 0 0 0-64h-387.2a32 32 0 0 0 0 64M256 480a32 32 0 1 0 0 64 32 32 0 0 0 0-64M256 672a32 32 0 1 0 0 64 32 32 0 0 0 0-64"/></svg>
+            <svg class="toc-close hide" viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M512 960c-247.039484 0-448-200.960516-448-448S264.960516 64 512 64 960 264.960516 960 512 759.039484 960 512 960zM512 128.287273c-211.584464 0-383.712727 172.128262-383.712727 383.712727 0 211.551781 172.128262 383.712727 383.712727 383.712727 211.551781 0 383.712727-172.159226 383.712727-383.712727C895.712727 300.415536 723.551781 128.287273 512 128.287273z"/><path d="M557.05545 513.376159l138.367639-136.864185c12.576374-12.416396 12.672705-32.671738 0.25631-45.248112s-32.704421-12.672705-45.248112-0.25631l-138.560301 137.024163-136.447897-136.864185c-12.512727-12.512727-32.735385-12.576374-45.248112-0.063647-12.512727 12.480043-12.54369 32.735385-0.063647 45.248112l136.255235 136.671523-137.376804 135.904314c-12.576374 12.447359-12.672705 32.671738-0.25631 45.248112 6.271845 6.335493 14.496116 9.504099 22.751351 9.504099 8.12794 0 16.25588-3.103239 22.496761-9.247789l137.567746-136.064292 138.687596 139.136568c6.240882 6.271845 14.432469 9.407768 22.65674 9.407768 8.191587 0 16.352211-3.135923 22.591372-9.34412 12.512727-12.480043 12.54369-32.704421 0.063647-45.248112L557.05545 513.376159z"/></svg>
+        </div>
+        <a href="#gobottom" class="toc-btn">
+            <svg viewbox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path d="M231.424 346.208a32 32 0 0 0-46.848 43.584l297.696 320a32 32 0 0 0 46.4 0.48l310.304-320a32 32 0 1 0-45.952-44.544l-286.848 295.808-274.752-295.36z"/></svg>
+        </a>
+    </div>
+    <div class="toc-main">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#正文"><span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么要学HTTP"><span class="toc-text">为什么要学HTTP?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP的定义"><span class="toc-text">HTTP的定义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#资源"><span class="toc-text">资源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#如何在Web客户端和服务器端之间交换信息"><span class="toc-text">如何在Web客户端和服务器端之间交换信息?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#报文实例"><span class="toc-text">报文实例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#GET请求"><span class="toc-text">GET请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#POST请求"><span class="toc-text">POST请求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#响应报文"><span class="toc-text">响应报文</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MIME类型"><span class="toc-text">MIME类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#请求方法"><span class="toc-text">请求方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#报文首部"><span class="toc-text">报文首部</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#状态码"><span class="toc-text">状态码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol><li class="toc-item toc-level-1"><a class="toc-link" href="#名词解释与概述："><span class="toc-text">名词解释与概述：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#REST"><span class="toc-text">REST</span></a></li></ol></li>
+    </div>
+</div>
+
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo https://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+	</div>
+	
+
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+            
+            
+
+<article class="read-next-card" style="background-image: url(https://i.loli.net/2017/11/26/5a19c56faa29f.jpg)">
+  <header class="read-next-card-header">
+    <small class="read-next-card-header-sitetitle">&mdash; Se8S0n &mdash;</small>
+    <h3 class="read-next-card-header-title">Recent Posts</h3>
+  </header>
+  <div class="read-next-divider">
+    <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+      <path d="M13 14.5s2 3 5 3 5.5-2.463 5.5-5.5S21 6.5 18 6.5c-5 0-7 11-12 11C2.962 17.5.5 15.037.5 12S3 6.5 6 6.5s4.5 3.5 4.5 3.5"/>
+    </svg>
+  </div>
+  <div class="read-next-card-content">
+    <ul>
+      
+      
+      
+      <li>
+        <a href="/2020/01/29/获取APK中第三方库信息的工具/">获取APK中第三方库信息的工具</a>
+      </li>
+      
+      
+      
+      <li>
+        <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-二/">从OWASP CrackMe学Android逆向(二)</a>
+      </li>
+      
+      
+      
+      <li>
+        <a href="/2019/11/05/从OWASP-CrackMe学Android逆向-一/">从OWASP CrackMe学Android逆向(一)</a>
+      </li>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </ul>
+  </div>
+  <footer class="read-next-card-footer">
+    <a href="/archives">  MORE  → </a>
+  </footer>
 </article>
 
-</section>
+            
+            
+            
+
+
+            
+            
+            
+
+<article class="read-next-card" style="background-image: url(https://i.loli.net/2017/11/26/5a19c56faa29f.jpg)">
+	<header class="read-next-card-header tagcloud-card">
+		<h3 class="read-next-card-header-title">Tag Cloud</h3>
+	</header>
+	<div class="read-next-card-content-ext">
+		<a href="/tags/Android/" style="font-size: 20.67px;">Android</a> <a href="/tags/Android-渗透/" style="font-size: 14px;">Android 渗透</a> <a href="/tags/Android安全-翻译/" style="font-size: 17.33px;">Android安全 翻译</a> <a href="/tags/Android逆向/" style="font-size: 20.67px;">Android逆向</a> <a href="/tags/HTTP/" style="font-size: 24px;">HTTP</a> <a href="/tags/机器学习/" style="font-size: 14px;">机器学习</a>
+	</div>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+	
+
+
+
+
+<div id="search" class="search-overlay">
+    <div class="search-form">
         
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2021 Se8S0n<br>
+        <div class="search-overlay-logo">
+        	<img src="https://i.loli.net/2017/11/26/5a19c0b50432e.png" alt="Se8S0n">
+        </div>
+        
+        <input id="local-search-input" class="search-input" type="text" name="search" placeholder="Search ...">
+        <a class="search-overlay-close" href="#"></a>
     </div>
-  </div>
+    <div id="local-search-result"></div>
+</div>
+
+<footer class="site-footer outer">
+	<div class="site-footer-content inner">
+		<div class="copyright">
+			<a href="/" title="Se8S0n">Se8S0n &copy; 2021</a>
+			
+				
+			        <span hidden="true" id="/2018/06/19/HTTP系列(一)/" class="leancloud-visitors" data-flag-title="HTTP系列(一)：HTTP的基础概念概述">
+			            <span>阅读量 </span>
+			            <span class="leancloud-visitors-count">0</span>
+			        </span>
+	    		
+    		
+		</div>
+		<nav class="site-footer-nav">
+			
+			<a href="https://hexo.io" title="Hexo" target="_blank" rel="noopener">Hexo</a>
+			<a href="https://github.com/xzhih/hexo-theme-casper" title="Casper" target="_blank" rel="noopener">Casper</a>
+		</nav>
+	</div>
 </footer>
-    </div>
-    
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script src="//imsky.github.io/holder/holder.js"></script>
+	
 
 
-<script src="/js/script.js"></script>
+<script>
+    if(window.navigator && navigator.serviceWorker) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister()
+            }
+        })
+    }
+</script>
 
-  </div>
-<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script> 
+
+<script id="scriptLoad" src="/js/allinone.min.js" async></script>
+
+
+<script>
+    document.getElementById('scriptLoad').addEventListener('load', function () {
+        
+        
+            var bLazy = new Blazy();
+        
+
+        
+        
+
+        
+        
+        
+            searchFunc("/");
+        
+        
+    })
+</script>
+
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+
+
+<script id="valineScript" src="//unpkg.com/valine/dist/Valine.min.js" async></script>
+<script>
+    document.getElementById('valineScript').addEventListener("load", function() {
+        new Valine({
+            el: '#comment' ,
+            verify: false,
+            notify: false,
+            appId: '',
+            appKey: '',
+            placeholder: 'Just go go',
+            pageSize: 10,
+            avatar: 'mm',
+            visitor: true
+        })
+    });
+</script>
+
+
+
+
+
 </body>
 </html>
